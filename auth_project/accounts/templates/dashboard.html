@@ -1,0 +1,23 @@
+{% extends 'base_with_footer.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Welcome, {{ user.username }} 👋</h2>
+    <p>Email: {{ user.email }}</p>
+
+    {% if redirect_message and redirect_url %}
+        <div class="alert alert-info mt-4">
+            {{ redirect_message }}
+        </div>
+        <script>
+            setTimeout(function() {
+                window.location.href = "{{ redirect_url }}";
+            }, 2000);
+        </script>
+        <p>If you are not redirected automatically, <a href="{{ redirect_url }}">click here</a>.</p>
+    {% endif %}
+
+    <hr>
+    <a href="{% url 'account_logout' %}" class="btn btn-danger">Logout</a>
+</div>
+{% endblock %}

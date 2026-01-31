@@ -1,0 +1,125 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Project | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 min-h-screen flex flex-col text-white">
+
+    <!-- Navbar -->
+    <nav class="bg-white/10 backdrop-blur-lg text-white px-6 py-3 flex justify-between items-center shadow-lg sticky top-0 z-50">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🚀</span>
+            <h1 class="text-2xl font-extrabold tracking-wide">UniSync</h1>
+        </div>
+        <a href="{% url 'post_project' %}" 
+           class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-1 rounded-lg shadow hover:scale-105 transition-transform">
+           ⬅ Back to Projects
+        </a>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="max-w-4xl mx-auto px-6 pt-6">
+            {% for message in messages %}
+                <div class="bg-green-500/20 border border-green-500 text-green-200 px-6 py-4 rounded-lg mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Edit Form -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8">
+                <h2 class="text-3xl font-bold mb-6 text-center">✏️ Edit Your Project</h2>
+                
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold">Project Title</label>
+                        <input type="text" name="title" value="{{ project.title }}" required
+                               class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-gray-300 border border-white/30 focus:ring-2 focus:ring-purple-400">
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold">Description</label>
+                        <textarea name="description" rows="5" required
+                                  class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-gray-300 border border-white/30 focus:ring-2 focus:ring-purple-400">{{ project.description }}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold">Technologies</label>
+                        <select id="technologies" name="technologies" multiple placeholder="Select or type tech stack">
+                            <option value="Django" {% if 'Django' in tech_list %}selected{% endif %}>Django</option>
+                            <option value="React" {% if 'React' in tech_list %}selected{% endif %}>React</option>
+                            <option value="Python" {% if 'Python' in tech_list %}selected{% endif %}>Python</option>
+                            <option value="Machine Learning" {% if 'Machine Learning' in tech_list %}selected{% endif %}>Machine Learning</option>
+                            <option value="Flutter" {% if 'Flutter' in tech_list %}selected{% endif %}>Flutter</option>
+                            <option value="SQL" {% if 'SQL' in tech_list %}selected{% endif %}>SQL</option>
+                            <option value="Blockchain" {% if 'Blockchain' in tech_list %}selected{% endif %}>Blockchain</option>
+                            {% for tech in tech_list %}
+                                {% if tech not in "Django,React,Python,Machine Learning,Flutter,SQL,Blockchain" %}
+                                    <option value="{{ tech }}" selected>{{ tech }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold">Looking For</label>
+                        <select id="looking_for" name="looking_for" multiple placeholder="Select roles you need">
+                            <option value="Designer" {% if 'Designer' in looking_list %}selected{% endif %}>Designer</option>
+                            <option value="Frontend Developer" {% if 'Frontend Developer' in looking_list %}selected{% endif %}>Frontend Developer</option>
+                            <option value="Backend Developer" {% if 'Backend Developer' in looking_list %}selected{% endif %}>Backend Developer</option>
+                            <option value="ML Engineer" {% if 'ML Engineer' in looking_list %}selected{% endif %}>ML Engineer</option>
+                            <option value="Data Scientist" {% if 'Data Scientist' in looking_list %}selected{% endif %}>Data Scientist</option>
+                            <option value="Project Manager" {% if 'Project Manager' in looking_list %}selected{% endif %}>Project Manager</option>
+                            {% for role in looking_list %}
+                                {% if role not in "Designer,Frontend Developer,Backend Developer,ML Engineer,Data Scientist,Project Manager" %}
+                                    <option value="{{ role }}" selected>{{ role }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button type="submit" 
+                                class="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 via-blue-600 to-purple-600 text-white font-bold text-lg shadow-lg hover:scale-105 transition-transform">
+                            💾 Save Changes
+                        </button>
+                        <a href="{% url 'post_project' %}" 
+                           class="flex-1 py-3 text-center rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-bold text-lg shadow-lg transition">
+                            ❌ Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TomSelect Init -->
+    <script>
+        new TomSelect("#technologies", {
+            persist: false,
+            create: true,
+            maxItems: 5,
+            plugins: ['remove_button'],
+        });
+        new TomSelect("#looking_for", {
+            persist: false,
+            create: true,
+            maxItems: 5,
+            plugins: ['remove_button'],
+        });
+    </script>
+
+</body>
+</html>

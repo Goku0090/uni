@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --primary: #60a5fa;
+            --primary-hover: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --text-primary: #f3f4f6;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #374151;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Navbar Styling */
+        nav.glass-effect {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        nav h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        nav p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Conversation Card */
+        .conversation-card {
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .conversation-card:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            box-shadow: 0 8px 16px rgba(96, 165, 250, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .conversation-card.active {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            box-shadow: 0 8px 16px rgba(96, 165, 250, 0.2);
+        }
+
+        /* Avatar */
+        .avatar-glow {
+            background: linear-gradient(135deg, #60a5fa, #8b5cf6) !important;
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .avatar-glow:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
+        }
+
+        /* Online Indicator */
+        .conversation-card .absolute {
+            background: var(--success);
+            box-shadow: 0 0 0 3px var(--bg-primary);
+        }
+
+        /* Message Preview */
+        .message-preview {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--primary);
+            border-radius: 4px;
+        }
+
+        .message-preview p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .message-preview p span {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Unread Badge */
+        .unread-badge {
+            background: var(--error);
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            animation: none;
+        }
+
+        /* Search Input */
+        .search-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+            outline: none;
+        }
+
+        /* Buttons */
+        button, a.px-4 {
+            transition: all 0.2s ease;
+        }
+
+        .floating-action {
+            animation: none;
+        }
+
+        /* Glass Effect Container */
+        .glass-effect.rounded-2xl {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Gradient Border */
+        .gradient-border {
+            background: var(--primary);
+            padding: 1px;
+            border-radius: 8px;
+        }
+
+        .gradient-border > div {
+            background: var(--bg-primary);
+            border-radius: 7px;
+        }
+
+        /* Header Section */
+        .p-6.border-b {
+            border-color: var(--border-color);
+            background: var(--bg-primary);
+        }
+
+        /* Feature Cards */
+        [class*="bg-gradient-to-br"] {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        /* Action Card Icons */
+        [class*="bg-gradient-to-r from-purple"] {
+            background: var(--primary) !important;
+        }
+
+        [class*="from-green"] {
+            background: var(--success) !important;
+        }
+
+        [class*="from-blue"] {
+            background: var(--secondary) !important;
+        }
+
+        [class*="from-orange"] {
+            background: var(--accent) !important;
+        }
+
+        /* Text Hierarchy */
+        h3, h4 {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1.125rem;
+        }
+
+        h4 {
+            font-size: 1rem;
+        }
+
+        /* Dropdown Menu */
+        #settingsMenu {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile Menu */
+        #mobileMenu {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #mobileMenu > div {
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border-color);
+        }
+
+        /* Notification */
+        .notification-dot {
+            background: var(--error);
+            border-color: var(--bg-primary);
+            animation: none;
+        }
+
+        /* Typography */
+        .text-white {
+            color: var(--text-primary);
+        }
+
+        .text-gray-300 {
+            color: var(--text-secondary);
+        }
+
+        .text-gray-400 {
+            color: var(--text-tertiary);
+        }
+
+        .text-gray-500 {
+            color: #d1d5db;
+        }
+
+        /* Background Colors */
+        .bg-gray-800 {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .bg-gray-900 {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .border-gray-600 {
+            border-color: var(--border-color);
+        }
+
+        .border-gray-700 {
+            border-color: #d1d5db;
+        }
+
+        .hover\:bg-gray-700:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .hover\:bg-gray-800:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .bg-accent {
+            background-color: var(--primary);
+        }
+
+        .bg-accent\/20 {
+            background-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .border-accent\/30 {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .text-accent {
+            color: var(--primary);
+        }
+
+        /* Modal Styling */
+        .fixed.inset-0.bg-black {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .bg-gray-800.rounded-2xl {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .conversation-card:hover {
+                transform: translateY(-1px);
+            }
+
+            nav h1 {
+                font-size: 1.125rem;
+            }
+        }
+
+        /* Smooth transitions */
+        a, button {
+            transition: all 0.2s ease;
+        }
+
+        a:hover, button:hover {
+            opacity: 0.9;
+        }
+
+        /* Link colors */
+        a {
+            color: var(--primary);
+        }
+
+        a.text-gray-300, a.text-white {
+            color: var(--text-secondary);
+        }
+
+        a.text-gray-300:hover, a.text-white:hover {
+            color: var(--primary);
+        }
+
+        /* Message Status Indicators */
+        .message-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .status-icon {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-sent::after { content: "✓"; }
+        .status-delivered::after { content: "✓✓"; }
+        .status-read::after { content: "✓✓"; color: var(--primary); }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            background: rgba(96, 165, 250, 0.1);
+            border-left: 3px solid var(--primary);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        /* Draft Indicator */
+        .draft-label {
+            font-size: 0.75rem;
+            color: #f59e0b;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        /* Search Results */
+        .search-result-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .search-highlight {
+            background: rgba(96, 165, 250, 0.3);
+            padding: 0.1rem 0.2rem;
+            border-radius: 2px;
+        }
+    </style>
+    {% load static %}
+    <script src="{% static 'js/api-utils.js' %}"></script>
+</head>
+<body>
+
+
+    <!-- Enhanced Responsive Navbar -->
+    <nav class="glass-effect shadow-xl sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <!-- Mobile Menu Button -->
+            <div class="flex items-center justify-between lg:hidden">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
+                        🚀
+                    </a>
+                    <div>
+                        <h1 class="text-lg font-bold text-white">Messages</h1>
+                        <p class="text-xs text-gray-400 hidden sm:block">Connect & Collaborate</p>
+                    </div>
+                </div>
+                <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden lg:flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'main_home' %}" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
+                        🚀
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">Messages</h1>
+                        <p class="text-xs text-gray-400">Connect & Collaborate</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Items -->
+                <div class="flex items-center gap-2 xl:gap-3">
+                    <!-- Search Bar -->
+                    <div class="relative hidden xl:block">
+                        <input type="text"
+                               id="globalSearch"
+                               placeholder="Search messages..."
+                               class="w-64 px-3 py-2 pl-9 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex items-center gap-1 xl:gap-2">
+                        <a href="{% url 'create_group_chat' %}"
+                           class="floating-action px-3 xl:px-4 py-2 xl:py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg xl:rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-1 xl:gap-2 text-sm xl:text-base">
+                            <i data-lucide="users" class="w-4 h-4 xl:w-5 xl:h-5"></i>
+                            <span class="hidden xl:inline">New Group</span>
+                            <span class="xl:hidden">+</span>
+                        </a>
+
+                        <button onclick="toggleSearch()" class="xl:hidden p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="Search">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                        </button>
+
+                        <a href="{% url 'main_home' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Home">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Home</span>
+                        </a>
+
+                        <a href="{% url 'find_collaborators' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Find People">
+                            <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Find People</span>
+                        </a>
+
+                        <a href="{% url 'post_project' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Post Project">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Post Project</span>
+                        </a>
+
+                        <a href="{% url 'activity_feed' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Activity Feed">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Activity</span>
+                        </a>
+
+                        <!-- Settings Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleSettingsMenu()" class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Settings">
+                                <i data-lucide="settings" class="w-5 h-5"></i>
+                                <span class="hidden xl:inline">Settings</span>
+                            </button>
+
+                            <!-- Settings Dropdown Menu -->
+                            <div id="settingsMenu" class="hidden absolute right-0 top-12 w-56 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50">
+                                <div class="p-2">
+                                    <div class="px-3 py-2 text-sm font-medium text-gray-300 border-b border-gray-600">Settings</div>
+                                    <button onclick="toggleDarkMode()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="moon" class="w-4 h-4"></i>
+                                        <span>Dark Mode</span>
+                                    </button>
+                                    <button onclick="toggleNotifications()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="bell" class="w-4 h-4"></i>
+                                        <span>Notifications</span>
+                                    </button>
+                                    <button onclick="showKeyboardShortcuts()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="keyboard" class="w-4 h-4"></i>
+                                        <span>Keyboard Shortcuts</span>
+                                    </button>
+                                    <div class="border-t border-gray-600 mt-2 pt-2">
+                                        <a href="{% url 'logout' %}" class="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-600/20 hover:text-red-300 rounded-lg transition flex items-center gap-2">
+                                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                                            <span>Logout</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Overlay -->
+            <div id="mobileMenu" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden">
+                <div class="fixed right-0 top-0 h-full w-80 bg-gray-900 border-l border-gray-700 shadow-2xl">
+                    <div class="p-6">
+                        <!-- Mobile Menu Header -->
+                        <div class="flex items-center justify-between mb-8">
+                            <h2 class="text-xl font-bold text-white">Menu</h2>
+                            <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+
+                        <!-- Mobile Search -->
+                        <div class="mb-6">
+                            <div class="relative">
+                                <input type="text"
+                                       id="mobileSearch"
+                                       placeholder="Search messages..."
+                                       class="w-full px-4 py-3 pl-11 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3.5 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Navigation -->
+                        <div class="space-y-2">
+                            <a href="{% url 'main_home' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="home" class="w-5 h-5"></i>
+                                <span>Home</span>
+                            </a>
+
+                            <a href="{% url 'find_collaborators' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                <span>Find People</span>
+                            </a>
+
+                            <a href="{% url 'post_project' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                                <span>Post Project</span>
+                            </a>
+
+                            <a href="{% url 'activity_feed' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="activity" class="w-5 h-5"></i>
+                                <span>Activity Feed</span>
+                            </a>
+
+                            <a href="{% url 'messages' %}" class="flex items-center gap-3 px-4 py-3 bg-accent/20 text-accent border border-accent/30 rounded-xl transition">
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                <span>Messages</span>
+                            </a>
+
+                            <div class="border-t border-gray-700 pt-4 mt-4">
+                                <button onclick="toggleDarkMode()" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition w-full text-left">
+                                    <i data-lucide="moon" class="w-5 h-5"></i>
+                                    <span>Dark Mode</span>
+                                </button>
+
+                                <button onclick="toggleNotifications()" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition w-full text-left">
+                                    <i data-lucide="bell" class="w-5 h-5"></i>
+                                    <span>Notifications</span>
+                                </button>
+
+                                <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-600/20 rounded-xl transition mt-2">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- Enhanced Conversations List -->
+            <div class="lg:col-span-1">
+                <div class="gradient-border">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                                <div class="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                                    <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                                </div>
+                                Conversations
+                            </h3>
+                            <div class="text-sm text-gray-400">
+                                {{ conversations|length }} chats
+                            </div>
+                        </div>
+
+                        <!-- Search Conversations -->
+                        <div class="mb-6">
+                            <div class="relative">
+                                <input type="text"
+                                       id="conversationSearch"
+                                       placeholder="Search conversations..."
+                                       class="search-input w-full px-4 py-3 pl-11 text-white placeholder-gray-400 focus:outline-none">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3.5 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        {% if conversations %}
+                            <div class="space-y-3 max-h-[600px] overflow-y-auto" id="conversationsList">
+                                {% for conversation in conversations %}
+                                    <a href="{% url 'chat' conversation.user.id %}"
+                                       class="conversation-card block rounded-xl p-4 transition-all duration-300 group">
+                                        <div class="flex items-start gap-3">
+                                            <!-- Avatar -->
+                                            <div class="relative">
+                                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                                    {{ conversation.user.username|first|upper }}
+                                                </div>
+
+                                                <!-- Online indicator -->
+                                                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                <h4 class="font-bold text-white truncate group-hover:text-purple-300 transition-colors flex items-center gap-2">
+                                                    <i data-lucide="message-circle" class="w-4 h-4 text-blue-400"></i>
+                                                        {{ conversation.user.username }}
+                                </h4>
+                                {% if conversation.unread_count > 0 %}
+                                    <span class="unread-badge text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                                        {{ conversation.unread_count }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                                                {% if conversation.last_message %}
+                                                    <div class="message-preview rounded-lg p-2 mt-2">
+                                                        <p class="text-sm text-gray-300 truncate">
+                                                            <span class="font-medium text-purple-300">{{ conversation.last_message.sender.username }}:</span>
+                                                            {{ conversation.last_message.content|truncatechars:45 }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                                            {{ conversation.last_message.created_at|timesince }}
+                                                        </p>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-sm text-gray-500 italic mt-2 flex items-center gap-2">
+                                                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                                                        No messages yet
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Hover effect indicator -->
+                                        <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div class="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 h-0.5 rounded-full"></div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-16">
+                                <div class="relative mb-6">
+                                    <div class="text-8xl opacity-20">💬</div>
+                                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full blur-xl"></div>
+                                </div>
+                                <h3 class="text-xl font-bold mb-3 text-white">No conversations yet</h3>
+                                <p class="text-gray-400 mb-8 max-w-sm mx-auto">
+                                    Start connecting with fellow innovators! Create group chats or reach out to collaborators.
+                                </p>
+                                <a href="{% url 'create_group_chat' %}"
+                                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-xl">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <span>Create Your First Group</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="lg:col-span-2">
+                <div class="glass-effect rounded-2xl shadow-2xl overflow-hidden h-[700px] flex flex-col">
+
+                    <!-- Quick Actions Header -->
+                    <div class="p-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                                    <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-white text-lg">Quick Actions</h3>
+                                    <p class="text-sm text-gray-400">Start new conversations</p>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center gap-2">
+                                <button onclick="showNewMessageModal()" class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold transition flex items-center gap-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>New Message</span>
+                                </button>
+                                <button onclick="showGroupChatModal()" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition flex items-center gap-2">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                    <span>Group Chat</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Content -->
+                    <div class="flex-1 overflow-hidden">
+                        <div class="p-6 h-full flex flex-col items-center justify-center text-center">
+                            <div class="max-w-md">
+                                <div class="relative mb-8">
+                                    <div class="text-9xl opacity-20 mb-4">💬</div>
+                                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full blur-xl"></div>
+                                </div>
+
+                                <h3 class="text-2xl font-bold mb-4 text-white">Welcome to Messages</h3>
+                                <p class="text-gray-400 mb-8 text-lg">
+                                    Connect with collaborators, start group discussions, and keep your conversations organized.
+                                </p>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                    <div class="p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                            <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        <h4 class="font-semibold text-white mb-2">Direct Messages</h4>
+                                        <p class="text-sm text-gray-400">Chat one-on-one with your connections</p>
+                                    </div>
+
+                                    <div class="p-6 bg-gradient-to-br from-green-500/10 to-blue-500/10 rounded-xl border border-green-500/20">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                            <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        <h4 class="font-semibold text-white mb-2">Group Chats</h4>
+                                        <p class="text-sm text-gray-400">Collaborate with multiple team members</p>
+                                    </div>
+
+                                    <div class="p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                            <i data-lucide="file" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        <h4 class="font-semibold text-white mb-2">File Sharing</h4>
+                                        <p class="text-sm text-gray-400">Share documents, images, and more</p>
+                                    </div>
+
+                                    <div class="p-6 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/20">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                            <i data-lucide="phone" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        <h4 class="font-semibold text-white mb-2">Voice Calls</h4>
+                                        <p class="text-sm text-gray-400">Make voice and video calls</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <a href="{% url 'find_collaborators' %}"
+                                       class="flex-1 px-6 py-3 bg-accent hover:bg-accent/80 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2">
+                                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                        <span>Find People</span>
+                                    </a>
+                                    <a href="{% url 'create_group_chat' %}"
+                                       class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2">
+                                        <i data-lucide="users" class="w-5 h-5"></i>
+                                        <span>Create Group</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Advanced Features -->
+            <div class="lg:col-span-1">
+                <!-- Tabs Navigation -->
+                <div class="mb-6">
+                    <div class="flex gap-2 bg-gradient border border-gray-700 rounded-lg p-1">
+                        <button onclick="switchTab('contacts')" class="tab-button active flex-1 px-3 py-2 rounded bg-blue-600 text-white text-sm font-medium transition">
+                            <i data-lucide="users" class="w-4 h-4 inline mr-1"></i>
+                            <span class="hidden sm:inline">Contacts</span>
+                        </button>
+                        <button onclick="switchTab('threads')" class="tab-button flex-1 px-3 py-2 rounded text-gray-300 text-sm font-medium hover:bg-gray-700 transition">
+                            <i data-lucide="git-branch" class="w-4 h-4 inline mr-1"></i>
+                            <span class="hidden sm:inline">Threads</span>
+                        </button>
+                        <button onclick="switchTab('status')" class="tab-button flex-1 px-3 py-2 rounded text-gray-300 text-sm font-medium hover:bg-gray-700 transition">
+                            <i data-lucide="signal" class="w-4 h-4 inline mr-1"></i>
+                            <span class="hidden sm:inline">Status</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contacts Tab -->
+                <div id="contacts-tab" class="tab-content">
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-white">Active Contacts</h4>
+                            <span class="text-xs text-green-400">3 online</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700 cursor-pointer transition">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold relative">
+                                    A
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-gray-800"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">Alex Johnson</div>
+                                    <div class="text-xs text-green-400">Online now</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700 cursor-pointer transition">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center text-white text-sm font-bold relative">
+                                    S
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-gray-800"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">Sarah Davis</div>
+                                    <div class="text-xs text-green-400">Active 2m ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700 cursor-pointer transition">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold relative">
+                                    M
+                                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-gray-800"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-white truncate">Mike Chen</div>
+                                    <div class="text-xs text-yellow-400">Away</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threads Tab -->
+                <div id="threads-tab" class="tab-content hidden">
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-white">Message Threads</h4>
+                            <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded">5</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="p-3 rounded-lg bg-gray-700 border-l-2 border-blue-500 cursor-pointer hover:bg-gray-600 transition">
+                                <div class="text-sm font-medium text-white">Project Discussion</div>
+                                <div class="text-xs text-gray-400 mt-1">12 messages • Last reply 2h ago</div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-700 border-l-2 border-purple-500 cursor-pointer hover:bg-gray-600 transition">
+                                <div class="text-sm font-medium text-white">Design Feedback</div>
+                                <div class="text-xs text-gray-400 mt-1">8 messages • Last reply 1h ago</div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-700 border-l-2 border-pink-500 cursor-pointer hover:bg-gray-600 transition">
+                                <div class="text-sm font-medium text-white">Meeting Notes</div>
+                                <div class="text-xs text-gray-400 mt-1">3 messages • Last reply 30m ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Tab -->
+                <div id="status-tab" class="tab-content hidden">
+                    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-semibold text-white">Connection Status</h4>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs mb-2">
+                                    <span class="text-gray-400">Messages Today</span>
+                                    <span class="text-blue-400 font-medium">28</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-1">
+                                    <div class="bg-blue-500 h-1 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-2">
+                                    <span class="text-gray-400">Active Groups</span>
+                                    <span class="text-green-400 font-medium">5</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-1">
+                                    <div class="bg-green-500 h-1 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-2">
+                                    <span class="text-gray-400">Response Time</span>
+                                    <span class="text-yellow-400 font-medium">2.3s</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-1">
+                                    <div class="bg-yellow-500 h-1 rounded-full" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Settings -->
+                <div class="mt-6 bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <h4 class="font-semibold text-white mb-3">Quick Settings</h4>
+                    <div class="space-y-3 text-sm">
+                        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700 p-2 rounded transition">
+                            <input type="checkbox" checked class="w-4 h-4 rounded">
+                            <span class="text-gray-300">Read receipts</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700 p-2 rounded transition">
+                            <input type="checkbox" checked class="w-4 h-4 rounded">
+                            <span class="text-gray-300">Typing indicators</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700 p-2 rounded transition">
+                            <input type="checkbox" class="w-4 h-4 rounded">
+                            <span class="text-gray-300">Message notifications</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Setup event listeners
+            setupEventListeners();
+
+            console.log('Enhanced messages page initialized');
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Conversation search
+            const conversationSearch = document.getElementById('conversationSearch');
+            if (conversationSearch) {
+                conversationSearch.addEventListener('input', filterConversations);
+            }
+
+            // Global search
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        performGlobalSearch(this.value);
+                    }
+                });
+            }
+
+            // Mobile search
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (mobileSearch) {
+                mobileSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        performGlobalSearch(this.value);
+                        toggleMobileMenu();
+                    }
+                });
+            }
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#settingsMenu') && !e.target.closest('button[onclick*="toggleSettingsMenu"]')) {
+                    document.getElementById('settingsMenu').classList.add('hidden');
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+K for search
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    toggleSearch();
+                }
+
+                // Escape to close modals
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+        }
+
+        // Filter conversations
+        function filterConversations() {
+            const searchTerm = document.getElementById('conversationSearch').value.toLowerCase();
+            const conversations = document.querySelectorAll('#conversationsList .conversation-card');
+
+            conversations.forEach(conv => {
+                const username = conv.querySelector('h4').textContent.toLowerCase();
+                const message = conv.querySelector('.message-preview p')?.textContent.toLowerCase() || '';
+
+                if (username.includes(searchTerm) || message.includes(searchTerm)) {
+                    conv.style.display = 'block';
+                } else {
+                    conv.style.display = 'none';
+                }
+            });
+        }
+
+        // Global search functionality
+        async function performGlobalSearch(query) {
+            if (!query.trim()) return;
+
+            try {
+                // ✅ NEW: Use api-utils for real search
+                const data = await apiUtils.searchMessages(query);
+                
+                // Format results for display
+                const results = (data.results || []).map(msg => ({
+                    type: 'message',
+                    content: msg.content.substring(0, 100),
+                    link: '#'
+                }));
+
+                showSearchResults(results, query);
+            } catch (error) {
+                // ✅ NEW: Better error display
+                apiUtils.showErrorNotification('Search failed: ' + error.message, 'error');
+            }
+        }
+
+        function showSearchResults(results, query) {
+            const resultsModal = document.createElement('div');
+            resultsModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+            resultsModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-2xl max-h-[70vh] overflow-y-auto">
+                    <div class="flex items-center gap-3 mb-6">
+                        <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        <div class="flex-1">
+                            <div class="text-lg font-semibold text-white">Search Results</div>
+                            <div class="text-sm text-gray-400">"${query}"</div>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${results.map(result => `
+                            <a href="${result.link}" class="flex items-center gap-3 p-3 hover:bg-gray-700 rounded-lg transition">
+                                <div class="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="${result.type === 'message' ? 'message-circle' : result.type === 'user' ? 'user' : 'folder'}" class="w-4 h-4 text-accent"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-white">${result.content}</div>
+                                    <div class="text-sm text-gray-400">${result.type}</div>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(resultsModal);
+            lucide.createIcons();
+        }
+
+        // Modal functions
+        function showNewMessageModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">New Message</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Select recipient</label>
+                            <select class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent">
+                                <option>Select a connection...</option>
+                                <!-- Connections would be populated here -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Message</label>
+                            <textarea placeholder="Type your message..." rows="3" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent resize-none"></textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="this.closest('.fixed').remove()" class="flex-1 px-4 py-2 text-gray-300 hover:text-white transition">Cancel</button>
+                            <button onclick="sendNewMessage(); this.closest('.fixed').remove()" class="flex-1 px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg transition">Send</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            lucide.createIcons();
+        }
+
+        function showGroupChatModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Create Group Chat</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Group name</label>
+                            <input type="text" placeholder="Enter group name..." class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Add members</label>
+                            <div class="max-h-32 overflow-y-auto space-y-2">
+                                <!-- Member selection would be populated here -->
+                                <div class="text-sm text-gray-400">Select connections to add to the group...</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="this.closest('.fixed').remove()" class="flex-1 px-4 py-2 text-gray-300 hover:text-white transition">Cancel</button>
+                            <button onclick="createGroupChat(); this.closest('.fixed').remove()" class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition">Create Group</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            lucide.createIcons();
+        }
+
+        function sendNewMessage() {
+            showNotification('Message sent successfully!', 'success');
+        }
+
+        function createGroupChat() {
+            showNotification('Group chat created!', 'success');
+        }
+
+        // UI Functions
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        function toggleSettingsMenu() {
+            const settingsMenu = document.getElementById('settingsMenu');
+            settingsMenu.classList.toggle('hidden');
+        }
+
+        function toggleSearch() {
+            // Show mobile search overlay
+            const searchOverlay = document.createElement('div');
+            searchOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+            searchOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        <input type="text"
+                               placeholder="Search messages..."
+                               class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
+                               id="overlaySearchInput" autocomplete="off">
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="text-sm text-gray-400 mb-3">Recent searches:</div>
+                        <div class="space-y-2" id="mobileRecentSearches">
+                            <!-- Recent searches will be populated -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(searchOverlay);
+            lucide.createIcons();
+
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('overlaySearchInput').focus();
+            }, 100);
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark');
+
+            if (isDark) {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                showNotification('Switched to light mode', 'info');
+            } else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                showNotification('Switched to dark mode', 'info');
+            }
+
+            // Close settings menu
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        function toggleNotifications() {
+            showNotification('Notification preferences updated', 'success');
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        function showKeyboardShortcuts() {
+            const shortcutsModal = document.createElement('div');
+            shortcutsModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            shortcutsModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Keyboard Shortcuts</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="px-3 py-2 text-sm font-medium text-gray-300 border-b border-gray-600">Navigation</div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">Search</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Ctrl + K</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">New message</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Ctrl + N</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-gray-300">Close modals</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Escape</kbd>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(shortcutsModal);
+            lucide.createIcons();
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        function closeAllModals() {
+            // Close any open modals
+            const modals = document.querySelectorAll('.fixed.inset-0');
+            modals.forEach(modal => modal.remove());
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-500 ${
+                type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' :
+                type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white' :
+                'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+            }`;
+
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">${icon}</span>
+                    <span class="font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-1 transition">
+                        <span class="text-sm">✕</span>
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.parentElement.removeChild(notification);
+                    }
+                }, 500);
+            }, 4000);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+N for new message
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                showNewMessageModal();
+            }
+        });
+
+        // Tab switching for right sidebar
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('text-gray-300', 'hover:bg-gray-700');
+            });
+
+            event.target.closest('.tab-button').classList.add('bg-blue-600', 'text-white');
+            event.target.closest('.tab-button').classList.remove('text-gray-300', 'hover:bg-gray-700');
+        }
+
+        // ============================================
+        // FEATURE 1: ADVANCED MESSAGE SEARCH (API INTEGRATED)
+        // ============================================
+        class MessageSearchEngine {
+            constructor(roomId = null) {
+                this.roomId = roomId;
+                this.baseUrl = '/api/messages/search/';
+            }
+
+            async search(query) {
+                if (!query.trim()) return [];
+                
+                try {
+                    let url = `${this.baseUrl}?q=${encodeURIComponent(query)}`;
+                    if (this.roomId) {
+                        url += `&room_id=${this.roomId}`;
+                    }
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Search failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return data.results || [];
+                } catch (error) {
+                    console.error('Search error:', error);
+                    showNotification('Search failed: ' + error.message, 'error');
+                    return [];
+                }
+            }
+        }
+
+        let messageSearch = null;
+
+        async function performAdvancedSearch(query) {
+            if (!query.trim()) return;
+
+            try {
+                // ✅ NEW: Use api-utils for real search
+                const data = await apiUtils.searchMessages(query);
+                const results = data.results || [];
+                
+                const resultsModal = document.createElement('div');
+                resultsModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+                resultsModal.innerHTML = `
+                    <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-2xl max-h-[70vh] overflow-y-auto">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                            <div class="flex-1">
+                                <div class="text-lg font-semibold text-white">Search Results</div>
+                                <div class="text-sm text-gray-400">"${query}" - ${results.length} matches</div>
+                            </div>
+                            <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            ${results.length > 0 ? results.map(result => `
+                                <div class="search-result-item bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition cursor-pointer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                                            ${result.sender_name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-white text-sm">${result.sender_name}</div>
+                                            <div class="text-sm text-gray-300 mt-1">${result.content.substring(0, 100)}...</div>
+                                            <div class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                                ${new Date(result.created_at).toLocaleString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('') : `
+                                <div class="text-center py-8 text-gray-400">
+                                    <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                                    <p>No messages found matching your search</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(resultsModal);
+                lucide.createIcons();
+            } catch (error) {
+                // ✅ NEW: Better error display
+                apiUtils.showErrorNotification('Search failed: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================
+        // FEATURE 2: TYPING INDICATORS (API INTEGRATED)
+        // ============================================
+        class TypingIndicator {
+            constructor(roomId = null) {
+                this.roomId = roomId;
+                this.typingTimeout = null;
+            }
+
+            async showTyping(isTyping = true) {
+                if (!this.roomId) {
+                    console.warn('Room ID not set for typing indicator');
+                    return;
+                }
+
+                try {
+                    // ✅ NEW: Use api-utils
+                    const response = await apiUtils.setTypingStatus(this.roomId, isTyping);
+                    console.log('Typing indicator sent:', response);
+                } catch (error) {
+                    // Non-critical, just log
+                    console.warn('Typing indicator failed:', error);
+                }
+            }
+
+            onUserTyping() {
+                // Clear previous timeout
+                if (this.typingTimeout) {
+                    clearTimeout(this.typingTimeout);
+                }
+
+                // Send typing indicator
+                this.showTyping(true);
+
+                // Auto-stop typing after 3 seconds of inactivity
+                this.typingTimeout = setTimeout(() => {
+                    this.showTyping(false);
+                }, 3000);
+            }
+
+            updateTypingDisplay() {
+                const conversationsList = document.getElementById('conversationsList');
+                if (!conversationsList) return;
+
+                const typingContainer = document.getElementById('typing-indicator');
+                if (typingContainer) typingContainer.remove();
+
+                // This would be updated via WebSocket in real-time
+                // For now, showing placeholder
+            }
+        }
+
+        let typingIndicator = null;
+
+        // Send typing indicator on user input
+        document.addEventListener('keydown', (e) => {
+            const activeInput = document.activeElement;
+            if (activeInput && (activeInput.tagName === 'INPUT' || activeInput.tagName === 'TEXTAREA')) {
+                if (typingIndicator) {
+                    typingIndicator.onUserTyping();
+                }
+            }
+        });
+
+        // ============================================
+        // FEATURE 3: AUTO-SAVE DRAFTS (API INTEGRATED)
+        // ============================================
+        class DraftManager {
+            constructor(roomId = null) {
+                this.roomId = roomId;
+                this.autosaveInterval = 1000; // 1 second
+                this.draftTimers = new Map();
+            }
+
+            async saveDraft(content) {
+                if (!this.roomId || !content.trim()) return;
+
+                try {
+                    // ✅ NEW: Use api-utils
+                    const response = await apiUtils.saveDraft(this.roomId, content);
+                    this.showDraftIndicator();
+                    return response;
+                } catch (error) {
+                    console.warn('Draft save error:', error);
+                    // Fallback to localStorage
+                    this.saveDraftLocally(content);
+                }
+            }
+
+            async getDraft() {
+                if (!this.roomId) return '';
+
+                try {
+                    // ✅ NEW: Use api-utils
+                    const data = await apiUtils.getDraft(this.roomId);
+                    return data.draft?.content || '';
+                } catch (error) {
+                    console.warn('Draft fetch error:', error);
+                    return this.getDraftLocally();
+                }
+            }
+
+            async deleteDraft() {
+                if (!this.roomId) return;
+
+                try {
+                    // ✅ NEW: Use api-utils
+                    await apiUtils.deleteDraft(this.roomId);
+                } catch (error) {
+                    console.warn('Draft delete error:', error);
+                    this.deleteDraftLocally();
+                }
+            }
+
+            // Fallback to localStorage
+            saveDraftLocally(content) {
+                const drafts = JSON.parse(localStorage.getItem('messageDrafts') || '{}');
+                drafts[this.roomId] = {
+                    content,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('messageDrafts', JSON.stringify(drafts));
+            }
+
+            getDraftLocally() {
+                const drafts = JSON.parse(localStorage.getItem('messageDrafts') || '{}');
+                return drafts[this.roomId]?.content || '';
+            }
+
+            deleteDraftLocally() {
+                const drafts = JSON.parse(localStorage.getItem('messageDrafts') || '{}');
+                delete drafts[this.roomId];
+                localStorage.setItem('messageDrafts', JSON.stringify(drafts));
+            }
+
+            showDraftIndicator() {
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-40';
+                notification.textContent = '✏️ Draft saved';
+                document.body.appendChild(notification);
+
+                setTimeout(() => notification.remove(), 2000);
+            }
+
+            setupAutoSave(inputElement) {
+                inputElement.addEventListener('input', () => {
+                    if (this.draftTimers.has('draft')) {
+                        clearTimeout(this.draftTimers.get('draft'));
+                    }
+
+                    const timer = setTimeout(() => {
+                        if (inputElement.value.trim()) {
+                            this.saveDraft(inputElement.value);
+                        }
+                    }, this.autosaveInterval);
+
+                    this.draftTimers.set('draft', timer);
+                });
+            }
+        }
+
+        let draftManager = null;
+
+        // ============================================
+        // FEATURE 4: MESSAGE STATUS INDICATORS (API INTEGRATED)
+        // ============================================
+        class MessageStatus {
+            constructor() {
+                this.baseUrl = '/api/messages/';
+            }
+
+            async updateStatus(messageId, status) {
+                // status: 'pending' | 'sent' | 'delivered' | 'read'
+                try {
+                    const response = await fetch(`${this.baseUrl}${messageId}/status/`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({ status })
+                    });
+
+                    if (!response.ok) throw new Error('Status update failed');
+
+                    const data = await response.json();
+                    this.renderStatus(messageId, data.status);
+                } catch (error) {
+                    console.error('Status update error:', error);
+                }
+            }
+
+            renderStatus(messageId, status) {
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (!messageEl) return;
+
+                const existingStatus = messageEl.querySelector('.message-status');
+                if (existingStatus) existingStatus.remove();
+
+                const statusEl = document.createElement('div');
+                statusEl.className = `message-status status-${status}`;
+                
+                const iconMap = {
+                    pending: '⏱️',
+                    sent: '✓',
+                    delivered: '✓✓',
+                    read: '✓✓'
+                };
+
+                statusEl.innerHTML = `
+                    <span class="status-icon">${iconMap[status] || ''}</span>
+                    <span>${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                `;
+
+                messageEl.appendChild(statusEl);
+            }
+
+            async markAsDelivered(messageId) {
+                await this.updateStatus(messageId, 'delivered');
+            }
+
+            async markAsRead(messageId) {
+                await this.updateStatus(messageId, 'read');
+            }
+        }
+
+        const messageStatus = new MessageStatus();
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        // ✅ DEPRECATED: Use apiUtils.getCsrfToken() instead
+        function getCsrfToken() {
+            return apiUtils.getCsrfToken();
+        }
+
+        // ============================================
+        // INITIALIZATION & INTEGRATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            // Initialize advanced features with current room ID
+            // TODO: Set roomId from current page context
+            const roomId = new URLSearchParams(window.location.search).get('room_id') || 1;
+            initializeAdvancedFeatures(roomId);
+        });
+
+        function initializeAdvancedFeatures(roomId) {
+            // Initialize API-based classes with room ID
+            messageSearch = new MessageSearchEngine(roomId);
+            typingIndicator = new TypingIndicator(roomId);
+            draftManager = new DraftManager(roomId);
+
+            // Setup message search
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        performAdvancedSearch(this.value);
+                    }
+                });
+            }
+
+            // Setup draft autosave for input fields
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                draftManager.setupAutoSave(messageInput);
+                
+                // Load and restore draft
+                draftManager.getDraft().then(content => {
+                    if (content) {
+                        messageInput.value = content;
+                    }
+                });
+            }
+
+            showNotification('✨ Advanced features enabled: Search, Typing Indicators, Auto-save Drafts, Message Status', 'info');
+        }
+    </script>
+</body>
+</html>

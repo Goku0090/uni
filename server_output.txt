@@ -1,0 +1,90 @@
+[nltk_data] Downloading package wordnet to
+[nltk_data]     C:\Users\GAUTAM\AppData\Roaming\nltk_data...
+[nltk_data]   Package wordnet is already up-to-date!
+System check identified some issues:
+
+WARNINGS:
+?: settings.ACCOUNT_EMAIL_REQUIRED is deprecated, use: settings.ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
+System check identified 1 issue (0 silenced).
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET /register/ HTTP/1.1" 200 49965
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET /register/ HTTP/1.1" 200 49965
+[INFO] "GET /api/check-username/?username=Goku1 HTTP/1.1" 200 52
+[INFO] "GET /api/check-email/?email=gn867556%40Gmail.com HTTP/1.1" 200 59
+[DEBUG] POST request received for registration
+[DEBUG] Registration attempt for username: Goku1, email: gn867556@gmail.com
+[WARNING] Registration failed: email already exists gn867556@gmail.com
+[INFO] "POST /register/ HTTP/1.1" 302 0
+[INFO] "GET /register/ HTTP/1.1" 200 50551
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "GET /static/js/login.js HTTP/1.1" 200 6195
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /static/images/189046-884476411_small.mp4 HTTP/1.1" 304 0
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET /static/js/login.js HTTP/1.1" 200 6195
+[INFO] "GET /static/images/logo.jpg HTTP/1.1" 200 61400
+[WARNING] Not Found: /favicon.ico
+[WARNING] "GET /favicon.ico HTTP/1.1" 404 9027
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /static/images/logo.jpg HTTP/1.1" 200 61400
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "GET /static/js/login.js HTTP/1.1" 200 6195
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[WARNING] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9138
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[WARNING] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9138
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET / HTTP/1.1" 200 55503
+[INFO] "GET /static/images/logo.jpg HTTP/1.1" 200 61400
+[INFO] "GET /static/images/189046-884476411_small.mp4 HTTP/1.1" 304 0
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "GET /static/js/login.js HTTP/1.1" 200 6195
+[INFO] "GET /login/ HTTP/1.1" 200 25057
+[INFO] "POST /login/ HTTP/1.1" 200 25057
+[INFO] "GET /register/ HTTP/1.1" 200 49965
+[INFO] "GET /static/images/logo.jpg HTTP/1.1" 200 61400
+[INFO] "GET /verify-otp/login/ HTTP/1.1" 200 3230
+[INFO] "GET /main_home/ HTTP/1.1" 302 0
+[INFO] "GET /accounts/login/?next=/main_home/ HTTP/1.1" 200 25057
+[INFO] "GET /static/js/login.js HTTP/1.1" 200 6195

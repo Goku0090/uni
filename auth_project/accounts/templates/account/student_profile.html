@@ -1,0 +1,1450 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Profile - UniSync</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-primary: 0 25px 50px rgba(0, 0, 0, 0.25);
+    --shadow-hover: 0 35px 70px rgba(0, 0, 0, 0.35);
+}
+
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: var(--primary-gradient);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.glass-effect {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--shadow-primary);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 126, 234, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+.profile-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.profile-photo {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.profile-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.edit-btn, .save-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.edit-btn:hover, .save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.cancel-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #6b7280;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+
+.form-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+}
+
+.form-textarea {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+}
+
+.suggestions {
+    border: 2px solid #667eea;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    position: absolute;
+    z-index: 999;
+    width: 100%;
+    display: none;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion {
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 15px;
+}
+
+.suggestion:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: #667eea;
+    transform: translateX(4px);
+}
+
+.suggestion:last-child {
+    border-bottom: none;
+}
+
+.info-item {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+}
+
+.info-item:hover::before {
+    opacity: 1;
+}
+
+.fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.back-btn {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 14px 24px;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 1);
+}
+
+.stats-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #10b981, #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.completion-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.completion-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.photo-upload-area {
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: rgba(102, 126, 234, 0.02);
+}
+
+.photo-upload-area:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.02);
+}
+
+.photo-upload-area.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
+}
+
+.hidden { display: none !important; }
+.position-relative { position: relative; }
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateX(400px);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Enhanced Animations */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4);
+    }
+}
+
+@keyframes typewriter {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+/* Apply animations to elements */
+.profile-card {
+    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.info-item:nth-child(1) { animation: slideInLeft 0.6s ease-out 0.2s both; }
+.info-item:nth-child(2) { animation: slideInRight 0.6s ease-out 0.3s both; }
+.info-item:nth-child(3) { animation: slideInLeft 0.6s ease-out 0.4s both; }
+.info-item:nth-child(4) { animation: slideInRight 0.6s ease-out 0.5s both; }
+
+.stats-card:nth-child(1) { animation: slideInUp 0.6s ease-out 0.6s both; }
+.stats-card:nth-child(2) { animation: slideInUp 0.6s ease-out 0.7s both; }
+.stats-card:nth-child(3) { animation: slideInUp 0.6s ease-out 0.8s both; }
+.stats-card:nth-child(4) { animation: slideInUp 0.6s ease-out 0.9s both; }
+
+.bio-section {
+    animation: slideInUp 0.8s ease-out 1s both;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.bio-content {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.bio-text {
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+.edit-btn {
+    animation: pulse 2s infinite;
+}
+
+.edit-btn:hover {
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+.profile-photo {
+    animation: float 3s ease-in-out infinite;
+}
+
+.completion-bar {
+    animation: slideInUp 0.6s ease-out 0.1s both;
+}
+
+.photo-upload-area {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photo-upload-area:hover {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* Staggered animation for form fields */
+.form-input, .form-textarea {
+    animation: slideInUp 0.5s ease-out both;
+}
+
+.form-input:nth-child(1) { animation-delay: 0.1s; }
+.form-input:nth-child(2) { animation-delay: 0.2s; }
+.form-input:nth-child(3) { animation-delay: 0.3s; }
+.form-input:nth-child(4) { animation-delay: 0.4s; }
+.form-textarea { animation-delay: 0.5s; }
+
+.save-btn, .cancel-btn {
+    animation: slideInUp 0.6s ease-out 0.6s both;
+}
+
+/* Enhanced hover effects */
+.info-item {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-item:hover {
+    animation: glow 1s ease-in-out;
+}
+
+.stats-card:hover .stats-number {
+    animation: pulse 1s ease-in-out;
+}
+
+/* Loading animation for save button */
+.save-btn.saving {
+    animation: pulse 1s infinite;
+}
+
+/* Success animation */
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+}
+
+.save-btn.success {
+    animation: successPulse 0.6s ease-out;
+}
+
+/* Typing animation for bio text */
+.bio-text {
+    overflow: hidden;
+    border-right: 2px solid;
+    white-space: nowrap;
+    animation: typewriter 2s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes blink-caret {
+    from, to {
+        border-color: transparent;
+    }
+    50% {
+        border-color: #667eea;
+    }
+}
+
+/* Custom Scrollbar Styling */
+.profile-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.profile-card::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.profile-card::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-card::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+}
+
+/* Scrollbar styling for suggestion dropdowns */
+.suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 5px;
+}
+
+.suggestions::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
+}
+
+@media (max-width: 768px) {
+    .profile-card {
+        margin: 20px;
+        padding: 24px;
+    }
+
+    .back-btn {
+        top: 16px;
+        left: 16px;
+        padding: 12px 20px;
+    }
+
+    .grid-cols-1.md\\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Adjust animations for mobile */
+    .info-item, .stats-card {
+        animation-duration: 0.4s;
+        animation-delay: 0.1s;
+    }
+
+    .bio-section {
+        animation-duration: 0.6s;
+    }
+
+    /* Mobile scrollbar adjustments */
+    .profile-card::-webkit-scrollbar {
+        width: 6px;
+    }
+}
+</style>
+</head>
+<body class="relative overflow-hidden">
+    <!-- Background Effects -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-72 h-72 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-transparent via-white/5 to-transparent rounded-full"></div>
+    </div>
+
+    <!-- Back Button -->
+    <a href="{% url 'main_home' %}" class="back-btn fade-in flex items-center gap-2">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        Back to Home
+    </a>
+
+    <div class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="max-w-4xl w-full profile-card p-8 fade-in">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="user" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Student Profile</h1>
+                        <p class="text-gray-600">Manage your personal information</p>
+                    </div>
+                </div>
+                <button id="editBtn" class="edit-btn">
+                    <i data-lucide="edit-2" class="w-5 h-5"></i>
+                    Edit Profile
+                </button>
+            </div>
+
+            <!-- Profile Completion Progress -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">Profile Completion</span>
+                    <span class="text-sm text-gray-600" id="completionPercent">0%</span>
+                </div>
+                <div class="completion-bar">
+                    <div class="completion-fill" id="completionFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="profileForm">
+                {% csrf_token %}
+
+                <!-- View Mode -->
+                <div id="viewMode" class="space-y-6">
+                    <!-- Profile Photo Section -->
+                    <div class="text-center mb-8">
+                        {% if profile.profile_photo %}
+                            <img src="{{ profile.profile_photo.url }}?v={{ profile.updated_at|date:'U' }}"
+                                 alt="Profile Photo" class="profile-photo mx-auto" width="150" height="150" id="profileImage">
+                        {% else %}
+                            <div class="w-36 h-36 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full mx-auto flex items-center justify-center profile-photo" id="profilePlaceholder">
+                                <i data-lucide="user" class="w-16 h-16 text-white"></i>
+                            </div>
+                        {% endif %}
+                        <h2 class="text-2xl font-bold text-gray-800 mt-4">{{ user_obj.username }}</h2>
+                        <p class="text-gray-600">{{ user_obj.email }}</p>
+                    </div>
+
+                    <!-- Profile Information Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="info-item flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                                <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-1">Full Name</p>
+                                <p class="font-semibold text-gray-800">{{ profile.full_name|default:"Not set" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                                <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-1">School/College</p>
+                                <p class="font-semibold text-gray-800">{{ profile.college|default:"Not set" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-1">Location</p>
+                                <p class="font-semibold text-gray-800">{{ profile.location|default:"Not set" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item flex items-center gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                                <i data-lucide="heart" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-1">Interests</p>
+                                <p class="font-semibold text-gray-800">{{ profile.interests|default:"Not set" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bio Section -->
+                    {% if profile.bio %}
+                    <div class="info-item bio-section">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mt-1 bio-icon">
+                                <i data-lucide="file-text" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1 bio-content">
+                                <p class="text-sm text-gray-600 mb-2 bio-label">Bio</p>
+                                <p class="text-gray-800 leading-relaxed bio-text">{{ profile.bio }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card">
+                            <div class="stats-number" id="projectsCount">0</div>
+                            <p class="text-sm text-gray-600 mt-1">Projects</p>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number" id="connectionsCount">0</div>
+                            <p class="text-sm text-gray-600 mt-1">Connections</p>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number" id="likesCount">0</div>
+                            <p class="text-sm text-gray-600 mt-1">Likes</p>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-number" id="commentsCount">0</div>
+                            <p class="text-sm text-gray-600 mt-1">Comments</p>
+                        </div>
+                    </div>
+
+                    <!-- Account Info -->
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="shield" class="w-5 h-5 text-gray-600"></i>
+                            Account Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Username:</span>
+                                <span class="font-medium text-gray-800 ml-2">{{ user_obj.username }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Email:</span>
+                                <span class="font-medium text-gray-800 ml-2">{{ user_obj.email }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Member since:</span>
+                                <span class="font-medium text-gray-800 ml-2">{{ user_obj.date_joined|date:"M d, Y" }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Last updated:</span>
+                                <span class="font-medium text-gray-800 ml-2">{{ profile.updated_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode -->
+                <div id="editMode" class="hidden space-y-6">
+                    <!-- Profile Photo Upload -->
+                    <div class="text-center mb-8">
+                        <div class="photo-upload-area" id="photoUploadArea">
+                            <div id="photoPreview">
+                                {% if profile.profile_photo %}
+                                    <img src="{{ profile.profile_photo.url }}?v={{ profile.updated_at|date:'U' }}"
+                                         alt="Current Photo" class="profile-photo mx-auto mb-4" width="120" height="120" id="editProfileImage">
+                                {% else %}
+                                    <div class="w-28 h-28 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                        <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <input type="file" id="id_profile_photo" name="profile_photo" accept="image/*" class="hidden">
+                            <p class="text-gray-600 mb-2">Click to upload a new photo</p>
+                            <p class="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                        </div>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="id_full_name" class="block text-sm font-medium text-gray-700">
+                                <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
+                                Full Name
+                            </label>
+                            <input type="text" id="id_full_name" name="full_name" class="form-input"
+                                   value="{{ profile.full_name }}" placeholder="Enter your full name">
+                        </div>
+
+                        <div class="space-y-2 position-relative">
+                            <label for="id_college" class="block text-sm font-medium text-gray-700">
+                                <i data-lucide="graduation-cap" class="w-4 h-4 inline mr-2"></i>
+                                School/College
+                            </label>
+                            <input type="text" id="id_college" name="college" class="form-input"
+                                   autocomplete="off" value="{{ profile.college }}" placeholder="Enter your school/college">
+                            <div class="suggestions" id="collegeSuggestions"></div>
+
+                            <!-- Manual College Entry Field (Hidden by default) -->
+                            <div id="manualCollegeContainer" class="manual-college-container mt-4" style="display: none;">
+                                <label for="manualCollegeInput" class="block text-sm font-semibold text-gray-800 mb-2">
+                                    <i data-lucide="edit" class="w-4 h-4 inline mr-2 text-green-600"></i>
+                                    Enter College Name Manually
+                                </label>
+                                <input
+                                    type="text"
+                                    id="manualCollegeInput"
+                                    name="manual_college"
+                                    placeholder="Type your college name here..."
+                                    class="form-input border-green-500 shadow-lg shadow-green-100"
+                                />
+                                <p class="text-xs text-gray-600 mt-1">
+                                    This will override the search field above
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="id_location" class="block text-sm font-medium text-gray-700">
+                                <i data-lucide="map-pin" class="w-4 h-4 inline mr-2"></i>
+                                Location
+                            </label>
+                            <input type="text" id="id_location" name="location" class="form-input"
+                                   value="{{ profile.location }}" placeholder="Enter your location">
+                        </div>
+
+                        <div class="space-y-2 position-relative">
+                            <label for="id_interests" class="block text-sm font-medium text-gray-700">
+                                <i data-lucide="heart" class="w-4 h-4 inline mr-2"></i>
+                                Interests
+                            </label>
+                            <input type="text" id="id_interests" name="interests" class="form-input"
+                                   autocomplete="off" value="{{ profile.interests }}" placeholder="e.g. AI, Web Development, Gaming">
+                            <div class="suggestions" id="interestSuggestions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bio Field -->
+                    <div class="space-y-2">
+                        <label for="id_bio" class="block text-sm font-medium text-gray-700">
+                            <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
+                            Bio
+                        </label>
+                        <textarea id="id_bio" name="bio" class="form-textarea" rows="4"
+                                  placeholder="Tell us about yourself...">{{ profile.bio }}</textarea>
+                        <p class="text-xs text-gray-500">Share a brief description about yourself (optional)</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 pt-6">
+                        <button type="submit" class="save-btn" id="saveBtn">
+                            <span class="loading-spinner hidden" id="saveSpinner"></span>
+                            Save Changes
+                        </button>
+                        <button type="button" class="cancel-btn" id="cancelBtn">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+<script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // DOM Elements
+    const editBtn = document.getElementById('editBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const saveSpinner = document.getElementById('saveSpinner');
+    const viewMode = document.getElementById('viewMode');
+    const editMode = document.getElementById('editMode');
+    const profileForm = document.getElementById('profileForm');
+    const photoUploadArea = document.getElementById('photoUploadArea');
+    const photoInput = document.getElementById('id_profile_photo');
+    const photoPreview = document.getElementById('photoPreview');
+    const completionFill = document.getElementById('completionFill');
+    const completionPercent = document.getElementById('completionPercent');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    // Statistics elements
+    const projectsCount = document.getElementById('projectsCount');
+    const connectionsCount = document.getElementById('connectionsCount');
+    const likesCount = document.getElementById('likesCount');
+    const commentsCount = document.getElementById('commentsCount');
+
+    // Form elements
+    const fullNameInput = document.getElementById('id_full_name');
+    const collegeInput = document.getElementById('id_college');
+    const locationInput = document.getElementById('id_location');
+    const interestsInput = document.getElementById('id_interests');
+    const bioTextarea = document.getElementById('id_bio');
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateProfileCompletion();
+        loadUserStatistics();
+        setupEventListeners();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Edit/Cancel buttons
+        editBtn.addEventListener('click', switchToEditMode);
+        cancelBtn.addEventListener('click', switchToViewMode);
+
+        // Photo upload
+        photoUploadArea.addEventListener('click', () => photoInput.click());
+        photoInput.addEventListener('change', handlePhotoUpload);
+
+        // Drag and drop for photo
+        photoUploadArea.addEventListener('dragover', handleDragOver);
+        photoUploadArea.addEventListener('dragleave', handleDragLeave);
+        photoUploadArea.addEventListener('drop', handlePhotoDrop);
+
+        // Form submission
+        profileForm.addEventListener('submit', handleFormSubmit);
+
+        // Real-time validation
+        [fullNameInput, collegeInput, locationInput, interestsInput, bioTextarea].forEach(input => {
+            input.addEventListener('input', () => validateField(input));
+        });
+
+        // Auto-save draft (optional)
+        let saveTimeout;
+        [fullNameInput, collegeInput, locationInput, interestsInput, bioTextarea].forEach(input => {
+            input.addEventListener('input', () => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    // Could implement auto-save to localStorage here
+                }, 1000);
+            });
+        });
+    }
+
+    // Switch to edit mode
+    function switchToEditMode() {
+        viewMode.classList.add('hidden');
+        editMode.classList.remove('hidden');
+        editBtn.style.display = 'none';
+
+        // Focus on first input
+        setTimeout(() => fullNameInput.focus(), 100);
+    }
+
+    // Switch to view mode
+    function switchToViewMode() {
+        if (hasUnsavedChanges()) {
+            if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                return;
+            }
+        }
+
+        editMode.classList.add('hidden');
+        viewMode.classList.remove('hidden');
+        editBtn.style.display = 'inline-flex';
+
+        // Reset photo preview
+        resetPhotoPreview();
+    }
+
+    // Handle photo upload
+    function handlePhotoUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            validateAndPreviewPhoto(file);
+        }
+    }
+
+    // Handle drag and drop
+    function handleDragOver(event) {
+        event.preventDefault();
+        photoUploadArea.classList.add('dragover');
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        photoUploadArea.classList.remove('dragover');
+    }
+
+    function handlePhotoDrop(event) {
+        event.preventDefault();
+        photoUploadArea.classList.remove('dragover');
+
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                photoInput.files = files;
+                validateAndPreviewPhoto(file);
+            } else {
+                showToast('Please upload a valid image file.', 'error');
+            }
+        }
+    }
+
+    // Validate and preview photo
+    function validateAndPreviewPhoto(file) {
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File size must be less than 5MB.', 'error');
+            resetPhotoInput();
+            return;
+        }
+
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            showToast('Please upload a valid image file.', 'error');
+            resetPhotoInput();
+            return;
+        }
+
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'profile-photo mx-auto mb-4';
+            img.width = 120;
+            img.height = 120;
+            img.alt = 'Preview';
+
+            photoPreview.innerHTML = '';
+            photoPreview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Reset photo preview
+    function resetPhotoPreview() {
+        photoPreview.innerHTML = `
+            {% if profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}?v={{ profile.updated_at|date:'U' }}"
+                     alt="Current Photo" class="profile-photo mx-auto mb-4" width="120" height="120" id="editProfileImage">
+            {% else %}
+                <div class="w-28 h-28 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                </div>
+            {% endif %}
+        `;
+        resetPhotoInput();
+    }
+
+    // Reset photo input
+    function resetPhotoInput() {
+        photoInput.value = '';
+    }
+
+    // Handle form submission
+    function handleFormSubmit(event) {
+        // Validate all fields
+        const isValid = validateAllFields();
+        if (!isValid) {
+            event.preventDefault();
+            showToast('Please fill in all required fields correctly.', 'error');
+            return;
+        }
+
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span id="saveSpinner" class="loading-spinner"></span> Saving...';
+
+        // Form will submit normally, but we'll show success message on page reload
+        showToast('Profile updated successfully!', 'success');
+    }
+
+    // Validate field
+    function validateField(field) {
+        const value = field.value.trim();
+        let isValid = true;
+        let errorMessage = '';
+
+        switch (field.id) {
+            case 'id_full_name':
+                if (value.length < 2) {
+                    isValid = false;
+                    errorMessage = 'Full name must be at least 2 characters.';
+                }
+                break;
+            case 'id_college':
+                if (value && value.length < 3) {
+                    isValid = false;
+                    errorMessage = 'College name must be at least 3 characters.';
+                }
+                break;
+            case 'id_location':
+                if (value && value.length < 2) {
+                    isValid = false;
+                    errorMessage = 'Location must be at least 2 characters.';
+                }
+                break;
+            case 'id_bio':
+                if (value.length > 500) {
+                    isValid = false;
+                    errorMessage = 'Bio must be less than 500 characters.';
+                }
+                break;
+        }
+
+        // Visual feedback
+        if (!isValid) {
+            field.style.borderColor = '#ef4444';
+            field.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+        } else {
+            field.style.borderColor = '#667eea';
+            field.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.1)';
+        }
+
+        return isValid;
+    }
+
+    // Validate all fields
+    function validateAllFields() {
+        const fields = [fullNameInput, collegeInput, locationInput, interestsInput, bioTextarea];
+        return fields.every(field => validateField(field));
+    }
+
+    // Check for unsaved changes
+    function hasUnsavedChanges() {
+        // Compare current values with original values
+        const originalValues = {
+            full_name: '{{ profile.full_name|default:"" }}',
+            college: '{{ profile.college|default:"" }}',
+            location: '{{ profile.location|default:"" }}',
+            interests: '{{ profile.interests|default:"" }}',
+            bio: '{{ profile.bio|default:"" }}'
+        };
+
+        return fullNameInput.value !== originalValues.full_name ||
+               collegeInput.value !== originalValues.college ||
+               locationInput.value !== originalValues.location ||
+               interestsInput.value !== originalValues.interests ||
+               bioTextarea.value !== originalValues.bio ||
+               photoInput.files.length > 0;
+    }
+
+    // Calculate profile completion
+    function calculateProfileCompletion() {
+        const fields = [
+            { value: '{{ profile.full_name }}', weight: 20 },
+            { value: '{{ profile.college }}', weight: 20 },
+            { value: '{{ profile.location }}', weight: 15 },
+            { value: '{{ profile.interests }}', weight: 15 },
+            { value: '{{ profile.bio }}', weight: 15 },
+            { value: '{% if profile.profile_photo %}photo{% endif %}', weight: 15 }
+        ];
+
+        let completion = 0;
+        fields.forEach(field => {
+            if (field.value && field.value.trim() !== '' && field.value !== 'Not set') {
+                completion += field.weight;
+            }
+        });
+
+        completionPercent.textContent = completion + '%';
+        completionFill.style.width = completion + '%';
+    }
+
+    // Load user statistics
+    function loadUserStatistics() {
+        // In a real app, this would be an AJAX call to get user stats
+        // For now, we'll simulate with some demo data
+        fetch('/api/user-stats/')  // You'll need to create this endpoint
+            .then(response => response.json())
+            .then(data => {
+                projectsCount.textContent = data.projects_created || '0';
+                connectionsCount.textContent = data.connections_made || '0';
+                likesCount.textContent = data.likes_received || '0';
+                commentsCount.textContent = data.comments_made || '0';
+            })
+            .catch(error => {
+                console.log('Stats not available, using defaults');
+                // Keep default values
+            });
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // College autocomplete with RapidAPI integration
+    const collegeSuggestions = document.getElementById("collegeSuggestions");
+    let collegeSearchTimeout;
+    let manualEntryMode = false;
+
+    collegeInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        // If in manual entry mode, don't show suggestions
+        if (manualEntryMode) {
+            return;
+        }
+
+        // Clear previous timeout
+        clearTimeout(collegeSearchTimeout);
+
+        // Clear suggestions if query is too short
+        if (query.length < 1) {
+            collegeSuggestions.innerHTML = "";
+            collegeSuggestions.style.display = 'none';
+            return;
+        }
+
+        // Debounce API calls
+        collegeSearchTimeout = setTimeout(() => {
+            // Show loading state
+            collegeSuggestions.innerHTML = '<div class="suggestion" style="color: #667eea; font-style: italic;">Searching...</div>';
+            collegeSuggestions.style.display = 'block';
+
+            // Call our RapidAPI-integrated endpoint
+            fetch(`/api/college-search/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    let suggestionsHTML = '';
+
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(college => {
+                            const div = document.createElement("div");
+                            div.className = "suggestion";
+                            div.innerText = college;
+                            div.onclick = () => {
+                                collegeInput.value = college;
+                                collegeSuggestions.innerHTML = "";
+                                collegeSuggestions.style.display = 'none';
+                                validateField(collegeInput);
+                            };
+                            suggestionsHTML += div.outerHTML;
+                        });
+                    } else {
+                        suggestionsHTML = '<div class="suggestion" style="color: #6b7280; font-style: italic;">No colleges found</div>';
+                    }
+
+                    // Always add "Others" option
+                    suggestionsHTML += `<div class="suggestion" style="border-top: 1px solid #e5e7eb; background: rgba(102, 126, 234, 0.05); cursor: pointer;" onclick="selectOthers()">
+                        <strong>✏️ Others - Enter manually</strong><br>
+                        <small style="color: #6b7280;">Click here to type your college name</small>
+                    </div>`;
+
+                    collegeSuggestions.innerHTML = suggestionsHTML;
+                    collegeSuggestions.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('College search error:', error);
+                    collegeSuggestions.innerHTML = `
+                        <div class="suggestion" style="color: #ef4444; font-style: italic;">Search error - try again</div>
+                        <div class="suggestion" style="border-top: 1px solid #e5e7eb; background: rgba(102, 126, 234, 0.05); cursor: pointer;" onclick="selectOthers()">
+                            <strong>✏️ Others - Enter manually</strong><br>
+                            <small style="color: #6b7280;">Click here to type your college name</small>
+                        </div>
+                    `;
+                    collegeSuggestions.style.display = 'block';
+                });
+        }, 300); // 300ms debounce
+    });
+
+    // Interest suggestions
+    const predefinedInterests = {{ interest_suggestions|safe }};
+    const interestSuggestions = document.getElementById("interestSuggestions");
+
+    interestsInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        interestSuggestions.innerHTML = "";
+        if (!value) { interestSuggestions.style.display = 'none'; return; }
+        const currentInterests = interestsInput.value.split(',').map(i => i.trim().toLowerCase());
+        const matches = predefinedInterests.filter(interest =>
+            interest.toLowerCase().includes(value) && !currentInterests.includes(interest.toLowerCase())
+        ).slice(0, 10);
+        if (matches.length) {
+            interestSuggestions.style.display = 'block';
+            matches.forEach(match => {
+                const div = document.createElement("div");
+                div.className = "suggestion";
+                div.innerText = match;
+                div.onclick = () => {
+                    let interests = interestsInput.value.split(',').map(i => i.trim()).filter(i => i);
+                    if (!interests.includes(match)) {
+                        interests.push(match);
+                        interestsInput.value = interests.join(', ');
+                    }
+                    interestSuggestions.innerHTML = "";
+                    interestSuggestions.style.display = 'none';
+                    validateField(interestsInput);
+                };
+                interestSuggestions.appendChild(div);
+            });
+        } else {
+            interestSuggestions.style.display = 'none';
+        }
+    });
+
+    function selectOthers() {
+        // Clear suggestions
+        collegeSuggestions.style.display = 'none';
+
+        // Show manual college entry field
+        const manualContainer = document.getElementById('manualCollegeContainer');
+        const manualInput = document.getElementById('manualCollegeInput');
+
+        if (manualContainer) {
+            manualContainer.style.display = 'block';
+            manualInput.focus();
+
+            // Make manual field required when shown
+            manualInput.setAttribute('required', 'required');
+
+            // Update progress to include the new field
+            updateProgress();
+        }
+    }
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!collegeInput.contains(event.target) && !collegeSuggestions.contains(event.target)) {
+            collegeSuggestions.style.display = 'none';
+        }
+        if (!interestsInput.contains(event.target) && !interestSuggestions.contains(event.target)) {
+            interestSuggestions.style.display = 'none';
+        }
+    });
+
+    // Keyboard navigation for suggestions
+    document.addEventListener('keydown', function(event) {
+        const activeSuggestions = document.querySelector('.suggestions[style*="display: block"]');
+        if (!activeSuggestions) return;
+
+        const suggestions = activeSuggestions.querySelectorAll('.suggestion');
+        let activeIndex = -1;
+
+        suggestions.forEach((suggestion, index) => {
+            if (suggestion.classList.contains('active')) {
+                activeIndex = index;
+            }
+        });
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                if (activeIndex < suggestions.length - 1) {
+                    if (activeIndex >= 0) suggestions[activeIndex].classList.remove('active');
+                    suggestions[activeIndex + 1].classList.add('active');
+                }
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                if (activeIndex > 0) {
+                    suggestions[activeIndex].classList.remove('active');
+                    suggestions[activeIndex - 1].classList.add('active');
+                }
+                break;
+            case 'Enter':
+                event.preventDefault();
+                if (activeIndex >= 0) {
+                    suggestions[activeIndex].click();
+                }
+                break;
+            case 'Escape':
+                activeSuggestions.style.display = 'none';
+                break;
+        }
+    });
+</script>
+</body>
+</html>

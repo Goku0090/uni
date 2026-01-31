@@ -1,0 +1,68 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Post a Project | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-800 shadow-md p-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-blue-400">UniSync</h1>
+        <a href="{% url 'student_profile' %}" class="text-sm text-gray-300 hover:text-white">Profile</a>
+    </nav>
+
+    <div class="flex-1 p-6 max-w-3xl mx-auto">
+
+        <!-- Post Project Form -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-lg font-semibold mb-4">Post a New Project</h2>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit"
+                        class="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold">
+                    Post Project
+                </button>
+            </form>
+        </div>
+
+        <!-- Projects Feed -->
+        <h2 class="text-lg font-semibold mb-4">Recent Projects</h2>
+        <div class="space-y-4">
+            {% for project in projects %}
+                <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg">{{ project.title }}</h3>
+                    <p class="text-gray-400 text-sm">Posted by {{ project.user.username }} • {{ project.created_at|date:"M d, Y" }}</p>
+                    <p class="mt-2">{{ project.description }}</p>
+                    {% if project.tech_stack %}
+                        <p class="mt-2 text-sm"><span class="font-semibold">Tech Stack:</span> {{ project.tech_stack }}</p>
+                    {% endif %}
+                    {% if project.collaboration_needs %}
+                        <p class="mt-1 text-sm"><span class="font-semibold">Needs:</span> {{ project.collaboration_needs }}</p>
+                    {% endif %}
+                    {% if project.github_link %}
+                        <a href="{{ project.github_link }}" target="_blank" class="text-blue-400 hover:underline mt-2 block">
+                            🔗 GitHub / Project Link
+                        </a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="text-gray-400">No projects posted yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="p-6 text-center">
+        <a href="{% url 'home' %}" 
+           class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg shadow-md">
+            ⬅ Back
+        </a>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,2192 @@
+{% load static custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Collaborators | UniSync</title>
+    <style>
+        .logo-link {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .logo-link:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #1d4ed8;
+            --accent-purple: #7c3aed;
+            --accent-pink: #ec4899;
+            --light-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--light-bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(100px); }
+        }
+
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float-up 15s linear infinite;
+        }
+
+        .shape:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            top: 60%;
+            left: 80%;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            top: 40%;
+            left: 60%;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #ec4899);
+            transform: rotate(45deg);
+            animation-delay: 10s;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea, #764ba2, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glow-effect {
+            position: relative;
+        }
+
+        .glow-effect::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #ec4899);
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-effect:hover::before {
+            opacity: 0.3;
+        }
+
+        .collaborator-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .collaborator-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary-blue);
+        }
+
+        .collaborator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-purple));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .collaborator-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-container::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .avatar-container.connected::after {
+            background: #10b981;
+        }
+
+        .avatar-container.pending::after {
+            background: #f59e0b;
+        }
+
+        .skill-badge {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .skill-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .connect-button {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connect-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .connect-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .connect-button:hover::before {
+            left: 100%;
+        }
+
+        .search-input {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .filter-button {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-button:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .filter-button.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        .stats-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            transform: translateX(420px) scale(0.8);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification.show {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        }
+
+        .notification.error {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(220, 38, 38, 0.05));
+        }
+
+        .notification.info {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(29, 78, 216, 0.05));
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .notification-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .notification.success .notification-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .notification.error .notification-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .notification.info .notification-icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .notification-text {
+            flex: 1;
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .notification-message {
+            opacity: 0.8;
+            font-size: 13px;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            z-index: 3;
+        }
+
+        .notification-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+        }
+
+        .notification-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(37, 99, 235, 0.2);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+
+        .notification-progress-fill {
+            height: 100%;
+            background: var(--primary-blue);
+            border-radius: inherit;
+            animation: progressShrink linear forwards;
+        }
+
+        @keyframes progressShrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-blue);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Filter Modal */
+        .filter-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-modal.show {
+            display: flex;
+        }
+
+        .filter-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Profile Modal */
+        .profile-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .profile-modal.show {
+            display: flex;
+        }
+
+        .profile-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .collaborator-card:hover {
+                transform: translateY(-2px);
+            }
+
+            .search-input {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    {% csrf_token %}
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="{% url 'main_home' %}" class="logo-link flex items-center gap-2 hover:opacity-80 transition-opacity" title="Back to Home">
+                    <div class="flex-shrink-0">
+                        <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        UniSync
+                    </h1>
+                </a>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="{% url 'main_home' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Home
+                    </a>
+                    <a href="{% url 'enhanced_messages' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Messages
+                    </a>
+                    <a href="{% url 'post_project' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Projects
+                    </a>
+                    <a href="{% url 'student_profile' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Profile
+                    </a>
+                </nav>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-blue-600">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-gray-100">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'main_home' %}" class="block px-3 py-2 text-gray-700 hover:text-blue-600 text-base font-medium">
+                    Home
+                </a>
+                <a href="{% url 'enhanced_messages' %}" class="block px-3 py-2 text-gray-700 hover:text-blue-600 text-base font-medium">
+                    Messages
+                </a>
+                <a href="{% url 'post_project' %}" class="block px-3 py-2 text-gray-700 hover:text-blue-600 text-base font-medium">
+                    Projects
+                </a>
+                <a href="{% url 'student_profile' %}" class="block px-3 py-2 text-gray-700 hover:text-blue-600 text-base font-medium">
+                    Profile
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient py-16 relative overflow-hidden">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 glow-effect">
+                Find Your Perfect
+                <span class="block gradient-text">
+                    Collaborator
+                </span>
+            </h1>
+            <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                Connect with talented students from universities worldwide. Build amazing projects together and turn your ideas into reality.
+            </p>
+            <div class="flex justify-center gap-4 mt-8">
+                <div class="glass-card px-6 py-3 rounded-full">
+                    <span class="text-white font-medium">🚀 Neural Matching</span>
+                </div>
+                <div class="glass-card px-6 py-3 rounded-full">
+                    <span class="text-white font-medium">🎯 Smart Filters</span>
+                </div>
+                <div class="glass-card px-6 py-3 rounded-full">
+                    <span class="text-white font-medium">⚡ Real-time Updates</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Search Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Discover Collaborators</h2>
+                <p class="text-gray-600 text-lg">Search by skills, interests, or location to find your next project partner</p>
+            </div>
+
+            <form method="GET" class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <input type="text"
+                        id="searchInput"
+                        name="q"
+                        value="{{ query }}"
+                        placeholder="Search by name, skills, college, or location..."
+                                class="search-input w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0">
+                    </div>
+                    <button type="submit" class="connect-button px-8 py-4 text-lg font-semibold whitespace-nowrap">
+                        <i data-lucide="search" class="w-5 h-5 inline mr-2"></i>
+                        Search
+                    </button>
+                </div>
+
+                <!-- Quick Filters - Only show if search is active -->
+                <div id="quickFiltersSection" class="flex flex-wrap justify-center gap-3 mb-6 hidden transition-all duration-300">
+                    <button onclick="console.log('Python button clicked'); quickSearch('python')" class="filter-button">
+                        🐍 Python
+                    </button>
+                    <button onclick="console.log('JavaScript button clicked'); quickSearch('javascript')" class="filter-button">
+                        🟨 JavaScript
+                    </button>
+                    <button onclick="console.log('React button clicked'); quickSearch('react')" class="filter-button">
+                        ⚛️ React
+                    </button>
+                    <button onclick="console.log('Design button clicked'); quickSearch('design')" class="filter-button">
+                        🎨 Design
+                    </button>
+                    <button onclick="console.log('AI button clicked'); quickSearch('ai')" class="filter-button">
+                        🤖 AI/ML
+                    </button>
+                    <button onclick="console.log('Advanced filters clicked'); showAdvancedFilters()" class="filter-button border-dashed">
+                        <i data-lucide="filter" class="w-4 h-4 inline mr-1"></i>
+                        Advanced Filters
+                    </button>
+                </div>
+
+                <!-- Active Filters Display -->
+                {% if active_filters %}
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        <span class="text-sm font-medium text-gray-600">Active filters:</span>
+                        {% for key, value in active_filters.items %}
+                            {% if value %}
+                                {% if key == 'skills' and value %}
+                                    {% for skill in value %}
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                            {{ skill }}
+                                            <button onclick="removeFilter('{{ key }}', '{{ skill }}')" class="ml-1 text-blue-600 hover:text-blue-800">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                            </button>
+                                        </span>
+                                    {% endfor %}
+                                {% elif key == 'college' and value %}
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                                        College: {{ value }}
+                                        <button onclick="removeFilter('{{ key }}', '{{ value }}')" class="ml-1 text-purple-600 hover:text-purple-800">
+                                            <i data-lucide="x" class="w-3 h-3"></i>
+                                        </button>
+                                    </span>
+                                {% elif key == 'location' and value %}
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                        Location: {{ value }}
+                                        <button onclick="removeFilter('{{ key }}', '{{ value }}')" class="ml-1 text-green-600 hover:text-green-800">
+                                            <i data-lucide="x" class="w-3 h-3"></i>
+                                        </button>
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <button onclick="clearAllFilters()" class="text-sm text-gray-500 hover:text-gray-700 underline ml-2">
+                            Clear all
+                        </button>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div class="stats-card">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ total_users|default:"500+" }}</div>
+                <div class="text-gray-600 font-medium">Active Students</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold text-purple-600 mb-2">{{ active_projects|default:"150+" }}</div>
+                <div class="text-gray-600 font-medium">Projects Created</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ connections_today|default:"25" }}</div>
+                <div class="text-gray-600 font-medium">Connections Today</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-3xl font-bold text-orange-600 mb-2">{{ skills_count|default:"50+" }}</div>
+                <div class="text-gray-600 font-medium">Skills Available</div>
+            </div>
+        </div>
+
+        <!-- Collaborators Section -->
+        {% if query or active_filters %}
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                            {% if query %}Search Results{% else %}Filtered Results{% endif %}
+                        </h3>
+                        <p class="text-gray-600">
+                            {% if query %}
+                                Found {{ search_results|length }} collaborators matching "{{ query }}"
+                            {% else %}
+                                Found {{ search_results|length }} collaborators
+                            {% endif %}
+                        </p>
+                    </div>
+                    <button onclick="clearSearch()" class="text-blue-600 hover:text-blue-800 font-medium">
+                        <i data-lucide="x" class="w-4 h-4 inline mr-1"></i>
+                        Clear Search
+                    </button>
+                </div>
+
+                {% if search_results %}
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for profile in search_results %}
+                            <div class="collaborator-card p-6 fade-in-up" onclick="showProfileModal({{ profile.user.id }})">
+                                <!-- Connection Status Indicator -->
+                                <div class="flex justify-end mb-4">
+                                    {% if connection_status|get_item:profile.user.id == 'accepted' %}
+                                        <div class="avatar-container connected">
+                                            <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                        </div>
+                                    {% elif connection_status|get_item:profile.user.id == 'pending' %}
+                                        <div class="avatar-container pending">
+                                            <div class="w-3 h-3 bg-yellow-500 rounded-full border-2 border-white"></div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Avatar -->
+                                <div class="text-center mb-4">
+                                    {% if profile.profile_photo %}
+                                        <img src="{{ profile.profile_photo.url }}"
+                                             alt="{{ profile.full_name }}"
+                                             class="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-gray-100">
+                                    {% else %}
+                                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
+                                            {{ profile.full_name|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Profile Info -->
+                                <div class="text-center mb-4">
+                                    <h4 class="text-lg font-bold text-gray-900 mb-1">{{ profile.full_name }}</h4>
+                                    <p class="text-gray-600 text-sm mb-2">@{{ profile.user.username }}</p>
+                                    <div class="flex items-center justify-center text-gray-500 text-sm mb-2">
+                                        <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                                        {{ profile.location|default:"Location not specified" }}
+                                    </div>
+                                    <div class="text-gray-700 font-medium text-sm">{{ profile.college }}</div>
+                                </div>
+
+                                <!-- Skills -->
+                                {% if profile.interests %}
+                                    <div class="mb-4">
+                                        <div class="flex flex-wrap gap-2 justify-center">
+                                            {% for interest in profile.interests|split:","|slice:":3" %}
+                                                <span class="skill-badge">
+                                                    {{ interest|strip }}
+                                                </span>
+                                            {% endfor %}
+                                            {% if profile.interests|split:","|length > 3 %}
+                                                <span class="text-gray-500 text-xs font-medium">
+                                                    +{{ profile.interests|split:","|length|add:"-3" }} more
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Bio -->
+                                {% if profile.bio %}
+                                    <div class="text-gray-600 text-sm text-center mb-4 italic">
+                                        "{{ profile.bio|truncatewords:12 }}"
+                                    </div>
+                                {% endif %}
+
+                                <!-- Actions -->
+                                <div class="space-y-2">
+                                    {% if connection_status|get_item:profile.user.id == 'accepted' %}
+                                        <div class="flex gap-2">
+                                            <button disabled class="flex-1 px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium cursor-not-allowed">
+                                                Connected
+                                            </button>
+                                            <a href="{% url 'chat' profile.user.id %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                                Message
+                                            </a>
+                                        </div>
+                                    {% elif connection_status|get_item:profile.user.id == 'pending' %}
+                                        <button disabled class="w-full px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium cursor-not-allowed">
+                                            Request Pending
+                                        </button>
+                                    {% else %}
+                                        <div class="flex gap-2">
+                                            <button onclick="sendConnectionRequest({{ profile.user.id }}, event)" class="flex-1 connect-button text-sm">
+                                                Connect
+                                            </button>
+                                            <button onclick="showQuickActions({{ profile.user.id }}, event)" class="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4 text-gray-300">🔍</div>
+                        <h4 class="text-xl font-semibold text-gray-900 mb-2">No collaborators found</h4>
+                        <p class="text-gray-600 mb-6">Try adjusting your search terms or browse suggested collaborators below.</p>
+                        <div class="flex gap-3 justify-center">
+                            <button onclick="clearSearch()" class="connect-button px-6 py-2">
+                                Clear Search
+                            </button>
+                            <button onclick="showAdvancedFilters()" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                                Advanced Filters
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Suggested Collaborators -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-3xl font-bold text-gray-900 mb-2">Suggested Collaborators</h3>
+                    <p class="text-gray-600">Students with complementary skills and interests</p>
+                </div>
+                <button onclick="refreshSuggestions()" class="p-2 text-gray-600 hover:text-blue-600 transition">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            {% if suggestions %}
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for profile in suggestions %}
+                        <div class="collaborator-card p-6 fade-in-up" onclick="showProfileModal({{ profile.user.id }})">
+                            <!-- Connection Status Indicator -->
+                            <div class="flex justify-end mb-4">
+                                {% if connection_status|get_item:profile.user.id == 'accepted' %}
+                                    <div class="avatar-container connected">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                    </div>
+                                {% elif connection_status|get_item:profile.user.id == 'pending' %}
+                                    <div class="avatar-container pending">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full border-2 border-white"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Avatar -->
+                            <div class="text-center mb-4">
+                                {% if profile.profile_photo %}
+                                    <img src="{{ profile.profile_photo.url }}"
+                                         alt="{{ profile.full_name }}"
+                                         class="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-gray-100">
+                                {% else %}
+                                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
+                                        {{ profile.full_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Profile Info -->
+                            <div class="text-center mb-4">
+                                <h4 class="text-lg font-bold text-gray-900 mb-1">{{ profile.full_name }}</h4>
+                                <p class="text-gray-600 text-sm mb-2">@{{ profile.user.username }}</p>
+                                <div class="flex items-center justify-center text-gray-500 text-sm mb-2">
+                                    <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                                    {{ profile.location|default:"Location not specified" }}
+                                </div>
+                                <div class="text-gray-700 font-medium text-sm">{{ profile.college }}</div>
+                            </div>
+
+                            <!-- Skills -->
+                            {% if profile.interests %}
+                                <div class="mb-4">
+                                    <div class="flex flex-wrap gap-2 justify-center">
+                                        {% for interest in profile.interests|split:","|slice:":3" %}
+                                            <span class="skill-badge">
+                                                {{ interest|strip }}
+                                            </span>
+                                        {% endfor %}
+                                        {% if profile.interests|split:","|length > 3 %}
+                                            <span class="text-gray-500 text-xs font-medium">
+                                                +{{ profile.interests|split:","|length|add:"-3" }} more
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Compatibility Score -->
+                            {% if user_interests %}
+                                <div class="mb-4">
+                                    <div class="flex items-center justify-between text-sm mb-2">
+                                        <span class="text-gray-600 font-medium">Compatibility</span>
+                                        <span class="text-blue-600 font-semibold">{{ profile.match_score|default:"85" }}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" style="width: {{ profile.match_score|default:'85' }}%"></div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Bio -->
+                            {% if profile.bio %}
+                                <div class="text-gray-600 text-sm text-center mb-4 italic">
+                                    "{{ profile.bio|truncatewords:12 }}"
+                                </div>
+                            {% endif %}
+
+                            <!-- Actions -->
+                            <div class="space-y-2">
+                                {% if connection_status|get_item:profile.user.id == 'accepted' %}
+                                    <div class="flex gap-2">
+                                        <button disabled class="flex-1 px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium cursor-not-allowed">
+                                            Connected
+                                        </button>
+                                        <a href="{% url 'chat' profile.user.id %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                                            Message
+                                        </a>
+                                    </div>
+                                {% elif connection_status|get_item:profile.user.id == 'pending' %}
+                                    <button disabled class="w-full px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium cursor-not-allowed">
+                                        Request Pending
+                                    </button>
+                                {% else %}
+                                    <div class="flex gap-2">
+                                        <button onclick="sendConnectionRequest({{ profile.user.id }}, event)" class="flex-1 connect-button text-sm">
+                                            Connect
+                                        </button>
+                                        <button onclick="showQuickActions({{ profile.user.id }}, event)" class="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="text-6xl mb-4 text-gray-300">👥</div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">No suggestions available</h4>
+                    <p class="text-gray-600 mb-6">Complete your profile to get personalized collaborator suggestions.</p>
+                    <a href="{% url 'student_profile' %}" class="inline-flex items-center gap-3 connect-button px-6 py-3">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                        <span>Complete Your Profile</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+
+
+    <!-- Advanced Filters Modal -->
+    <div id="filterModal" class="filter-modal">
+        <div class="filter-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <i data-lucide="filter" class="w-6 h-6 text-blue-600"></i>
+                    Advanced Filters
+                </h3>
+                <button onclick="closeFilters()" class="p-2 text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <form id="advancedFiltersForm" class="space-y-6">
+                <!-- Skills & Interests -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Skills & Interests</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="python" class="mr-2">
+                            <span class="text-sm">🐍 Python</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="javascript" class="mr-2">
+                            <span class="text-sm">🟨 JavaScript</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="react" class="mr-2">
+                            <span class="text-sm">⚛️ React</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="design" class="mr-2">
+                            <span class="text-sm">🎨 Design</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="ai" class="mr-2">
+                            <span class="text-sm">🤖 AI/ML</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="skills" value="blockchain" class="mr-2">
+                            <span class="text-sm">⛓️ Blockchain</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- College/University -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">College/University</label>
+                    <select name="college" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Any College</option>
+                        <option value="iit">IITs</option>
+                        <option value="nit">NITs</option>
+                        <option value="iiit">IIITs</option>
+                        <option value="other">Other Universities</option>
+                    </select>
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Location</label>
+                    <select name="location" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Any Location</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="mumbai">Mumbai</option>
+                        <option value="bangalore">Bangalore</option>
+                        <option value="chennai">Chennai</option>
+                        <option value="remote">Remote Work</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="clearAdvancedFilters()" class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition">
+                        Clear All
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                        Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Preview Modal -->
+    <div id="profileModal" class="profile-modal">
+        <div class="profile-content">
+            <div id="profileModalContent">
+                <!-- Profile content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container"></div>
+
+    <!-- Professional Footer -->
+    {% include "components/footer.html" %}
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        // Global variables
+        let currentFilters = {
+            skills: [],
+            college: '',
+            location: '',
+            experience: [],
+            availability: []
+        };
+        let currentViewMode = 'grid';
+        let currentSortBy = 'relevance';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Setup event listeners
+            setupEventListeners();
+
+            // Initialize features
+            initializeFeatures();
+
+            // Load initial data
+            loadInitialData();
+
+            console.log('Enhanced collaborator finder initialized');
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input - allow normal form submission
+            const mainSearch = document.getElementById('mainSearch');
+            if (mainSearch) {
+                // For main search, don't use real-time search - let the form submit normally
+                // The real-time search is for filtering existing results, not for new searches
+            }
+
+            // Advanced filters form
+            const advancedFiltersForm = document.getElementById('advancedFiltersForm');
+            if (advancedFiltersForm) {
+                advancedFiltersForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    applyAdvancedFilters();
+                });
+            }
+
+            // Sort select
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    currentSortBy = this.value;
+                    sortResults();
+                });
+            }
+
+            // Mobile search
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (mobileSearch) {
+                mobileSearch.addEventListener('input', debounce(handleRealTimeSearch, 300));
+            }
+
+            // Global search
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('input', debounce(handleGlobalSearch, 300));
+            }
+        }
+
+        // Initialize features
+        function initializeFeatures() {
+            // Set initial view mode
+            setViewMode('grid');
+
+            // Load saved filters from localStorage
+            loadSavedFilters();
+
+            // Setup keyboard shortcuts
+            setupKeyboardShortcuts();
+        }
+
+        // Load initial data
+        function loadInitialData() {
+            // This would typically load data from the server
+            // For now, we'll work with the template data
+        }
+
+        // Real-time search functionality
+        function handleRealTimeSearch(e) {
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                showLoadingState();
+                // Simulate API call
+                setTimeout(() => {
+                    performSearch(query);
+                    hideLoadingState();
+                }, 500);
+            } else if (query.length === 0) {
+                clearSearch();
+            }
+        }
+
+        // Global search across all content
+        function handleGlobalSearch(e) {
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                // Search across conversations, projects, etc.
+                performGlobalSearch(query);
+            }
+        }
+
+        // Perform search
+        function performSearch(query) {
+            // Update URL without page reload
+            const url = new URL(window.location);
+            url.searchParams.set('q', query);
+            window.history.pushState({}, '', url);
+
+            // Show loading state
+            showLoadingState();
+
+            // Simulate search (in real app, this would be an AJAX call)
+            setTimeout(() => {
+                // Filter existing results or load new ones
+                filterResults(query);
+                hideLoadingState();
+                showNotification(`Found ${document.querySelectorAll('.profile-card').length} collaborators`, 'info');
+            }, 800);
+        }
+
+        // Filter results based on query
+        function filterResults(query) {
+            const cards = document.querySelectorAll('.profile-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+                const username = card.querySelector('p')?.textContent.toLowerCase() || '';
+                const college = card.querySelector('.text-gray-300')?.textContent.toLowerCase() || '';
+                const bio = card.querySelector('.italic')?.textContent.toLowerCase() || '';
+                const skills = Array.from(card.querySelectorAll('.skill-tag')).map(tag => tag.textContent.toLowerCase());
+
+                const searchableText = `${name} ${username} ${college} ${bio} ${skills.join(' ')}`;
+                const isVisible = searchableText.includes(query.toLowerCase());
+
+                card.style.display = isVisible ? 'block' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            // Update results count
+            const resultsCount = document.querySelector('.text-gray-400');
+            if (resultsCount) {
+                resultsCount.textContent = `${visibleCount} results found`;
+            }
+        }
+
+        // Clear search
+        function clearSearch() {
+        const mainSearch = document.getElementById('mainSearch');
+        if (mainSearch) mainSearch.value = '';
+
+        const mobileSearch = document.getElementById('mobileSearch');
+        if (mobileSearch) mobileSearch.value = '';
+
+        // Clear search input
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) searchInput.value = '';
+
+             // Hide filters section
+        const filtersSection = document.getElementById('quickFiltersSection');
+        if (filtersSection) {
+            filtersSection.classList.add('hidden');
+             }
+
+        // Reset URL
+        const url = new URL(window.location);
+        url.searchParams.delete('q');
+        window.history.pushState({}, '', url);
+
+             // Show all cards
+             const cards = document.querySelectorAll('.profile-card');
+             cards.forEach(card => card.style.display = 'block');
+
+             // Reset results count
+             const resultsCount = document.querySelector('.text-gray-400');
+             if (resultsCount) {
+                 resultsCount.textContent = `${cards.length} results found`;
+             }
+         }
+
+        // Quick search by skill
+        function quickSearch(skill) {
+            console.log('Quick search called with skill:', skill);
+            // Build URL with skill filter
+            const url = new URL(window.location);
+            url.searchParams.delete('skills');
+            url.searchParams.append('skills', skill);
+            // Clear other filter parameters to avoid conflicts
+            url.searchParams.delete('college');
+            url.searchParams.delete('location');
+            url.searchParams.delete('q');
+            console.log('Navigating to:', url.toString());
+            // Navigate to filtered URL
+            window.location.href = url.toString();
+        }
+
+        // Remove a specific filter
+        function removeFilter(filterType, filterValue) {
+            const url = new URL(window.location);
+            if (filterType === 'skills') {
+                // Remove specific skill from skills list
+                const currentSkills = url.searchParams.getAll('skills');
+                const newSkills = currentSkills.filter(skill => skill !== filterValue);
+                url.searchParams.delete('skills');
+                newSkills.forEach(skill => url.searchParams.append('skills', skill));
+            } else {
+                // Remove other filter types
+                url.searchParams.delete(filterType);
+            }
+            window.location.href = url.toString();
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            const url = new URL(window.location);
+            // Keep only the search query
+            const query = url.searchParams.get('q');
+            url.search = '';
+            if (query) {
+                url.searchParams.set('q', query);
+            }
+            window.location.href = url.toString();
+        }
+
+        // Sort results
+        function sortResults() {
+            const container = document.getElementById('resultsContainer');
+            if (!container) return;
+
+            const cards = Array.from(container.children);
+            cards.sort((a, b) => {
+                switch (currentSortBy) {
+                    case 'name':
+                        const nameA = a.querySelector('h3')?.textContent || '';
+                        const nameB = b.querySelector('h3')?.textContent || '';
+                        return nameA.localeCompare(nameB);
+                    case 'college':
+                        const collegeA = a.querySelector('.text-gray-300')?.textContent || '';
+                        const collegeB = b.querySelector('.text-gray-300')?.textContent || '';
+                        return collegeA.localeCompare(collegeB);
+                    case 'recent':
+                        // Simulate recent activity sorting
+                        return Math.random() - 0.5;
+                    default: // relevance
+                        return 0;
+                }
+            });
+
+            // Re-append sorted cards
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const container = document.getElementById('resultsContainer');
+            const gridBtn = document.getElementById('gridViewBtn');
+            const listBtn = document.getElementById('listViewBtn');
+
+            // Only proceed if elements exist
+            if (!container || !gridBtn || !listBtn) {
+                console.warn('View mode elements not found. This is OK if not on results page.');
+                return;
+            }
+
+            if (mode === 'grid') {
+                container.className = 'grid md:grid-cols-2 lg:grid-cols-3 gap-6';
+                gridBtn.className = 'p-2 bg-accent/20 text-accent rounded-lg transition';
+                listBtn.className = 'p-2 text-gray-400 hover:text-white rounded-lg transition';
+            } else {
+                container.className = 'space-y-4';
+                // Apply list view styles
+                container.querySelectorAll('.profile-card').forEach(card => {
+                    card.className = 'profile-card rounded-2xl p-6 flex gap-6 fade-in-up';
+                });
+                listBtn.className = 'p-2 bg-accent/20 text-accent rounded-lg transition';
+                gridBtn.className = 'p-2 text-gray-400 hover:text-white rounded-lg transition';
+            }
+        }
+
+        // Advanced filters functionality
+        function showAdvancedFilters() {
+            const modal = document.getElementById('filterModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            // Initialize select values from current filters
+            const collegeSelect = modal.querySelector('select');
+            if (collegeSelect && currentFilters.college) {
+                collegeSelect.value = currentFilters.college;
+            }
+
+            const locationSelect = modal.querySelectorAll('select')[1];
+            if (locationSelect && currentFilters.location) {
+                locationSelect.value = currentFilters.location;
+            }
+
+            // Update visual states for active filters
+            updateFilterVisualStates();
+        }
+
+        function closeFilters() {
+            const modal = document.getElementById('filterModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function updateFilterVisualStates() {
+            // Update skill buttons
+            document.querySelectorAll('[onclick*="toggleSkillFilter"]').forEach(btn => {
+                const skill = btn.onclick.toString().match(/'([^']+)'/)[1];
+                if (currentFilters.skills.includes(skill)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update experience buttons
+            document.querySelectorAll('[onclick*="toggleExperienceFilter"]').forEach(btn => {
+                const level = btn.onclick.toString().match(/'([^']+)'/)[1];
+                if (currentFilters.experience.includes(level)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update availability buttons
+            document.querySelectorAll('[onclick*="toggleAvailabilityFilter"]').forEach(btn => {
+                const type = btn.onclick.toString().match(/'([^']+)'/)[1];
+                if (currentFilters.availability.includes(type)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function toggleSkillFilter(skill) {
+            const index = currentFilters.skills.indexOf(skill);
+            if (index > -1) {
+                currentFilters.skills.splice(index, 1);
+            } else {
+                currentFilters.skills.push(skill);
+            }
+
+            // Update visual state
+            event.target.classList.toggle('active');
+        }
+
+        function toggleExperienceFilter(level) {
+            const index = currentFilters.experience.indexOf(level);
+            if (index > -1) {
+                currentFilters.experience.splice(index, 1);
+            } else {
+                currentFilters.experience.push(level);
+            }
+
+            event.target.classList.toggle('active');
+        }
+
+        function toggleAvailabilityFilter(type) {
+            const index = currentFilters.availability.indexOf(type);
+            if (index > -1) {
+                currentFilters.availability.splice(index, 1);
+            } else {
+                currentFilters.availability.push(type);
+            }
+
+            event.target.classList.toggle('active');
+        }
+
+        // Handle select changes
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('#filterModal select')) {
+                const selects = document.querySelectorAll('#filterModal select');
+                const collegeSelect = selects[0];
+                const locationSelect = selects[1];
+
+                if (e.target === collegeSelect) {
+                    currentFilters.college = e.target.value;
+                } else if (e.target === locationSelect) {
+                    currentFilters.location = e.target.value;
+                }
+            }
+        });
+
+        function applyFilters() {
+            // Build URL with current filters
+            const url = new URL(window.location);
+
+            // Clear existing filter params
+            url.searchParams.delete('skills');
+            url.searchParams.delete('college');
+            url.searchParams.delete('location');
+
+            // Add skills
+            currentFilters.skills.forEach(skill => {
+                url.searchParams.append('skills', skill);
+            });
+
+            // Add college filter
+            if (currentFilters.college) {
+                url.searchParams.set('college', currentFilters.college);
+            }
+
+            // Add location filter
+            if (currentFilters.location) {
+                url.searchParams.set('location', currentFilters.location);
+            }
+
+            // Navigate to filtered URL
+            window.location.href = url.toString();
+        }
+
+        function applyAdvancedFilters() {
+            const form = document.getElementById('advancedFiltersForm');
+            const formData = new FormData(form);
+
+            // Build URL with form data
+            const url = new URL(window.location);
+
+            // Clear existing filter params
+            url.searchParams.delete('skills');
+            url.searchParams.delete('college');
+            url.searchParams.delete('location');
+
+            // Add skills (multiple values)
+            const skills = formData.getAll('skills');
+            skills.forEach(skill => {
+                url.searchParams.append('skills', skill);
+            });
+
+            // Add college filter
+            const college = formData.get('college');
+            if (college) {
+                url.searchParams.set('college', college);
+            }
+
+            // Add location filter
+            const location = formData.get('location');
+            if (location) {
+                url.searchParams.set('location', location);
+            }
+
+            // Close modal and navigate
+            closeFilters();
+            window.location.href = url.toString();
+        }
+
+        function clearAdvancedFilters() {
+            const form = document.getElementById('advancedFiltersForm');
+
+            // Clear all checkboxes
+            form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            // Clear all selects
+            form.querySelectorAll('select').forEach(select => {
+                select.value = '';
+            });
+        }
+
+        function clearAllFilters() {
+            currentFilters = {
+                skills: [],
+                college: '',
+                location: '',
+                experience: [],
+                availability: []
+            };
+
+            // Clear visual states
+            document.querySelectorAll('.filter-chip.active').forEach(chip => {
+                chip.classList.remove('active');
+            });
+
+            // Clear selects
+            document.querySelectorAll('select').forEach(select => {
+                select.value = '';
+            });
+
+            // Remove from localStorage
+            localStorage.removeItem('collaboratorFilters');
+        }
+
+        function loadSavedFilters() {
+            const saved = localStorage.getItem('collaboratorFilters');
+            if (saved) {
+                currentFilters = JSON.parse(saved);
+                // Apply saved filters to UI
+                applySavedFiltersToUI();
+            }
+        }
+
+        function applySavedFiltersToUI() {
+            // Apply skills
+            currentFilters.skills.forEach(skill => {
+                const button = document.querySelector(`[onclick*="toggleSkillFilter('${skill}')"]`);
+                if (button) button.classList.add('active');
+            });
+
+            // Apply experience
+            currentFilters.experience.forEach(level => {
+                const button = document.querySelector(`[onclick*="toggleExperienceFilter('${level}')"]`);
+                if (button) button.classList.add('active');
+            });
+
+            // Apply availability
+            currentFilters.availability.forEach(type => {
+                const button = document.querySelector(`[onclick*="toggleAvailabilityFilter('${type}')"]`);
+                if (button) button.classList.add('active');
+            });
+        }
+
+        // Profile modal functionality
+        function showProfileModal(userId) {
+            const modal = document.getElementById('profileModal');
+            const content = document.getElementById('profileModalContent');
+
+            // Load profile data via AJAX
+            showLoadingState();
+            fetch(`/api/user-profile/${userId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingState();
+                if (data.error) {
+                    showNotification('Failed to load profile: ' + data.error, 'error');
+                    return;
+                }
+                content.innerHTML = generateProfileModalContent(data);
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                lucide.createIcons();
+            })
+            .catch(error => {
+                hideLoadingState();
+                console.error('Error loading profile:', error);
+                showNotification('Failed to load profile. Please try again.', 'error');
+            });
+        }
+
+        function generateProfileModalContent(profileData) {
+            const skillsHtml = profileData.interests ?
+                profileData.interests.split(',').map(skill =>
+                    `<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">${skill.trim()}</span>`
+                ).join(' ') : 'No skills listed';
+
+            return `
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900">Profile Details</h3>
+                        <button onclick="closeProfileModal()" class="p-2 text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Profile Header -->
+                        <div class="text-center">
+                            ${profileData.profile_photo ?
+                                `<img src="${profileData.profile_photo}" alt="${profileData.full_name}" class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200">` :
+                                `<div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-4xl font-bold text-white mx-auto mb-4">
+                                    ${profileData.full_name.charAt(0).toUpperCase()}
+                                </div>`
+                            }
+                            <h4 class="text-xl font-bold text-gray-900">${profileData.full_name}</h4>
+                            <p class="text-gray-600">@${profileData.username}</p>
+                        </div>
+
+                        <!-- Detailed Info -->
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">College</label>
+                                    <p class="text-gray-900">${profileData.college || 'Not specified'}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Location</label>
+                                    <p class="text-gray-900">${profileData.location || 'Not specified'}</p>
+                                </div>
+                                ${profileData.bio ? `
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Bio</label>
+                                    <p class="text-gray-600 italic">${profileData.bio}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Skills & Interests</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${skillsHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-3 pt-4 border-t border-gray-200">
+                            <button onclick="sendConnectionRequest(${profileData.id}, event)" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition">
+                                Send Connection Request
+                            </button>
+                            <a href="/accounts/chat/${profileData.id}/" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition">
+                                Start Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Get CSRF token from cookie
+        function getCsrfToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                         break;
+                     }
+                 }
+             }
+             // Fallback to form field
+             return cookieValue || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+         }
+
+         // Connection request functionality
+         function sendConnectionRequest(userId, event) {
+         if (event) event.stopPropagation();
+         
+         // Get the button that was clicked
+         const button = event && event.target ? event.target.closest('button') : null;
+         
+         if (!button) {
+             showNotification('Error: Could not find button element', 'error');
+              return;
+         }
+           
+           const originalContent = button.innerHTML;
+         const csrftoken = getCsrfToken();
+         
+         // Show loading state on button
+              button.disabled = true;
+              button.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin mr-2"></i>Sending...';
+              
+              fetch(`/accounts/send-connection-request/${userId}/`, {
+                  method: 'POST',
+               headers: {
+                      'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken,
+               'X-Requested-With': 'XMLHttpRequest'
+           },
+         body: JSON.stringify({})
+         })
+         .then(response => response.json())
+           .then(data => {
+         if (data.success) {
+                   showNotification('Connection request sent successfully!', 'success');
+                      button.disabled = true;
+                      button.innerHTML = '<i data-lucide="clock" class="w-4 h-4 mr-2"></i><span>Pending</span>';
+                   button.className = 'flex-1 connect-button text-sm bg-yellow-600/20 text-yellow-800 cursor-not-allowed opacity-75';
+                      
+               if (typeof lucide !== 'undefined') {
+               lucide.createIcons();
+               }
+                  } else {
+                      showNotification(data.message || 'Failed to send connection request', 'error');
+                      button.disabled = false;
+                   button.innerHTML = originalContent;
+           }
+         })
+         .catch(error => {
+         console.error('Error:', error);
+         showNotification('Failed to send connection request. Please try again.', 'error');
+          button.disabled = false;
+              button.innerHTML = originalContent;
+              });
+         }
+
+        // Quick actions menu
+        function showQuickActions(userId, event) {
+            event.stopPropagation();
+
+            // Create quick actions menu
+            const menu = document.createElement('div');
+            menu.className = 'absolute bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-2 z-50';
+            menu.innerHTML = `
+                <button onclick="viewProfile(${userId})" class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">View Profile</button>
+                <button onclick="sendMessage(${userId})" class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">Send Message</button>
+                <button onclick="followUser(${userId})" class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">Follow User</button>
+            `;
+
+            // Position menu
+            menu.style.right = '0';
+            menu.style.top = '100%';
+            menu.style.marginTop = '4px';
+
+            event.target.parentElement.appendChild(menu);
+
+            // Close on click outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!menu.contains(e.target)) {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 10);
+        }
+
+        function viewProfile(userId) {
+            showProfileModal(userId);
+        }
+
+        function sendMessage(userId) {
+            // Navigate to chat
+            window.location.href = "{% url 'chat' 0 %}".replace('0', userId);
+        }
+
+        function followUser(userId) {
+            showNotification('User followed successfully!', 'success');
+        }
+
+        // Refresh suggestions
+        function refreshSuggestions() {
+            const button = event.target.closest('button');
+            if (!button) {
+                console.error('Button not found');
+                return;
+            }
+            
+            const icon = button.querySelector('i');
+
+            // Add spinning animation if icon exists
+            if (icon) {
+                icon.classList.add('animate-spin');
+            }
+
+            showLoadingState();
+            setTimeout(() => {
+                // Simulate refreshing suggestions
+                showNotification('Suggestions refreshed!', 'success');
+                if (icon) {
+                    icon.classList.remove('animate-spin');
+                }
+                hideLoadingState();
+            }, 1500);
+        }
+
+        // Loading states
+        function showLoadingState() {
+            const loading = document.getElementById('loadingState');
+            if (loading) {
+                loading.classList.remove('hidden');
+            }
+        }
+
+        function hideLoadingState() {
+            const loading = document.getElementById('loadingState');
+            if (loading) {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Global search functionality
+        function performGlobalSearch(query) {
+            // This would search across conversations, projects, etc.
+            showNotification(`Searching for "${query}" across all content...`, 'info');
+        }
+
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleSearch() {
+            // Show mobile search overlay
+            const searchOverlay = document.createElement('div');
+            searchOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+            searchOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        <input type="text"
+                               placeholder="Search collaborators..."
+                               class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
+                               id="overlaySearchInput" autocomplete="off">
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="text-sm text-gray-400 mb-3">Recent searches:</div>
+                        <div class="space-y-2" id="mobileRecentSearches">
+                            <!-- Recent searches will be populated -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(searchOverlay);
+            lucide.createIcons();
+
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('overlaySearchInput').focus();
+            }, 100);
+        }
+
+        // Keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl/Cmd + K for search
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    const mainSearch = document.getElementById('mainSearch');
+                    if (mainSearch) {
+                        mainSearch.focus();
+                        mainSearch.select();
+                    }
+                }
+
+                // Escape to close modals
+                if (e.key === 'Escape') {
+                    closeFilters();
+                    closeProfileModal();
+                }
+            });
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', options = {}) {
+            const {
+                title = '',
+                duration = 4000,
+                actions = [],
+                persistent = false,
+                sound = false,
+                position = 'top-right'
+            } = options;
+
+            // Create notification container if it doesn't exist
+            let container = document.querySelector('.notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'notification-container';
+                document.body.appendChild(container);
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            // Get icon based on type
+            const iconMap = {
+                success: 'check-circle',
+                error: 'x-circle',
+                warning: 'alert-triangle',
+                info: 'info'
+            };
+
+            const icon = iconMap[type] || 'info';
+
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">
+                        <i data-lucide="${icon}" class="w-6 h-6"></i>
+                    </div>
+                    <div class="notification-text">
+                        ${title ? `<div class="notification-title">${title}</div>` : ''}
+                        <div class="notification-message">${message}</div>
+                        ${actions.length > 0 ? `
+                            <div class="notification-actions">
+                                ${actions.map(action => `
+                                    <button class="notification-btn ${action.primary ? 'primary' : 'secondary'}"
+                                            onclick="${action.onClick}">${action.label}</button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${!persistent ? `
+                        <button class="notification-close" onclick="dismissNotification(this)">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    ` : ''}
+                </div>
+                ${duration > 0 && !persistent ? `
+                    <div class="notification-progress">
+                        <div class="notification-progress-fill" style="animation-duration: ${duration}ms"></div>
+                    </div>
+                ` : ''}
+            `;
+
+            container.appendChild(notification);
+            lucide.createIcons();
+
+            // Trigger entrance animation
+            requestAnimationFrame(() => {
+                notification.classList.add('show');
+            });
+
+            // Auto-dismiss if not persistent
+            if (!persistent && duration > 0) {
+                setTimeout(() => {
+                    dismissNotification(notification.querySelector('.notification-close') || notification);
+                }, duration);
+            }
+
+            return notification;
+        }
+
+        function dismissNotification(button) {
+            const notification = button.closest('.notification');
+            if (!notification) return;
+
+            notification.classList.remove('show');
+            notification.classList.add('notification-exit');
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.parentElement.removeChild(notification);
+                }
+            }, 300);
+        }
+
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Neural Network Functions
+        function quickNeuralSearch(skill) {
+            const form = document.querySelector('form[method="GET"]');
+            const input = form.querySelector('input[name="q"]');
+            if (input) {
+                input.value = skill;
+                form.submit();
+            }
+        }
+
+        function showNeuralFilters() {
+            showAdvancedFilters();
+        }
+
+        function establishNeuralLink(userId, event) {
+            sendConnectionRequest(userId, event);
+        }
+
+        function showNeuralOptions(userId, event) {
+            showQuickActions(userId, event);
+        }
+
+        function refreshNeuralMatrix() {
+            refreshSuggestions();
+        }
+
+        function showHologramProfile(userId) {
+            showProfileModal(userId);
+        }
+
+        function clearNeuralSearch() {
+            clearSearch();
+        }
+
+        // Show/Hide filters based on search input
+        function setupSearchFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const filtersSection = document.getElementById('quickFiltersSection');
+
+            if (searchInput && filtersSection) {
+                // Show filters if there's already a search query (page load after search)
+                if (searchInput.value.trim()) {
+                    filtersSection.classList.remove('hidden');
+                }
+
+                // Show filters on input
+                searchInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        filtersSection.classList.remove('hidden');
+                    } else {
+                        filtersSection.classList.add('hidden');
+                    }
+                });
+
+                // Show filters on focus (even if empty)
+                searchInput.addEventListener('focus', function() {
+                    if (this.value.trim()) {
+                        filtersSection.classList.remove('hidden');
+                    }
+                });
+            }
+        }
+
+        // Initialize filters on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupSearchFilters);
+        } else {
+            // If script runs after DOM is ready
+            setupSearchFilters();
+        }
+
+        // Export functions for global access
+         window.quickNeuralSearch = quickNeuralSearch;
+         window.showNeuralFilters = showNeuralFilters;
+         window.establishNeuralLink = establishNeuralLink;
+         window.showNeuralOptions = showNeuralOptions;
+         window.refreshNeuralMatrix = refreshNeuralMatrix;
+         window.showHologramProfile = showHologramProfile;
+         window.clearNeuralSearch = clearNeuralSearch;
+         window.showAdvancedFilters = showAdvancedFilters;
+         window.closeFilters = closeFilters;
+         window.toggleSkillFilter = toggleSkillFilter;
+         window.toggleExperienceFilter = toggleExperienceFilter;
+         window.toggleAvailabilityFilter = toggleAvailabilityFilter;
+         window.applyFilters = applyFilters;
+         window.clearAllFilters = clearAllFilters;
+         window.showProfileModal = showProfileModal;
+         window.closeProfileModal = closeProfileModal;
+         window.sendConnectionRequest = sendConnectionRequest;
+         window.showQuickActions = showQuickActions;
+         window.refreshSuggestions = refreshSuggestions;
+         window.toggleMobileMenu = toggleMobileMenu;
+         window.toggleSearch = toggleSearch;
+         window.setViewMode = setViewMode;
+         window.clearSearch = clearSearch;
+         window.showNotification = showNotification;
+         window.setupSearchFilters = setupSearchFilters;
+    </script>
+</body>
+</html>

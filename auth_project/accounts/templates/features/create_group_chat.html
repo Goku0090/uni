@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Group Chat - UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #60a5fa;
+            --primary-hover: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --text-primary: #f3f4f6;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #374151;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: var(--text-primary);
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .card-accent {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .input-base {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .input-base:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(96, 165, 250, 0.3);
+        }
+
+        .member-badge {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--text-primary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .avatar {
+            background: linear-gradient(135deg, #60a5fa, #8b5cf6);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .step.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .step.active .step-num {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .stat-box {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .ts-wrapper {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+        }
+
+        .ts-wrapper.focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .ts-input, .ts-control {
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .ts-dropdown {
+            background: var(--bg-primary);
+            border-color: var(--border-color);
+        }
+
+        .ts-dropdown-content {
+            color: var(--text-secondary);
+        }
+
+        .ts-item {
+            color: var(--text-secondary);
+        }
+
+        .ts-item.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .info-banner {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .success-banner {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .member-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .step-indicator {
+                gap: 0.5rem;
+            }
+
+            .step {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="bg-var(--bg-primary) border-b border-var(--border-color) sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'messages' %}" class="p-2 hover:bg-gray-700 rounded-lg transition">
+                    <i data-lucide="arrow-left" class="w-6 h-6 text-gray-400"></i>
+                </a>
+                <a href="{% url 'main_home' %}" class="text-2xl font-bold text-blue-400">🚀</a>
+                <div>
+                    <h1 class="text-lg font-bold text-white">Create Group Chat</h1>
+                    <p class="text-xs text-gray-400">Build your collaboration space</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-3xl mx-auto px-6 py-12">
+
+        <!-- Step Indicator -->
+        <div class="step-indicator mb-8">
+            <div class="step active">
+                <div class="step-num">1</div>
+                <span>Details</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-700 my-3"></div>
+            <div class="step active">
+                <div class="step-num">2</div>
+                <span>Members</span>
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-700 my-3"></div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <span>Confirm</span>
+            </div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="card mb-8 p-8">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="avatar w-16 h-16 rounded-xl text-2xl flex-shrink-0">
+                    👥
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white mb-2">Start a Group Conversation</h1>
+                    <p class="text-gray-400">Create a dedicated space for your team to collaborate and communicate efficiently</p>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-700">
+                <div class="stat-box">
+                    <div class="stat-value" id="member-count">0</div>
+                    <div class="stat-label">Members Selected</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Message Limit</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Available</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+            <div class="flex gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-sm text-blue-300 font-medium">Tips for a great group</p>
+                    <p class="text-xs text-blue-200 mt-1">Keep group names descriptive, add relevant members, and set clear conversation goals</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" class="space-y-8" id="create-group-form">
+            {% csrf_token %}
+
+            <!-- Section 1: Group Details -->
+            <div class="card p-6">
+                <h2 class="section-title mb-6">
+                    <i data-lucide="tag" class="w-5 h-5"></i>
+                    Group Details
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
+                            Group Name
+                            <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="name" name="name"
+                               placeholder="e.g., Design Team, Project Alpha, Marketing Sprint..."
+                               class="w-full px-4 py-3 input-base rounded-lg"
+                               required>
+                        <p class="text-xs text-gray-500 mt-2">Choose a name that clearly identifies your group's purpose</p>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-300 mb-2">
+                            Description (Optional)
+                        </label>
+                        <textarea id="description" name="description"
+                                  placeholder="What's this group about? What topics will you discuss?"
+                                  rows="3"
+                                  class="w-full px-4 py-3 input-base rounded-lg resize-none"
+                        ></textarea>
+                        <p class="text-xs text-gray-500 mt-2">Help members understand the group's purpose</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Select Members -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="section-title m-0">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        Add Members
+                    </h2>
+                    <span class="member-count" id="selected-count">0 selected</span>
+                </div>
+
+                {% if potential_members %}
+                    <div>
+                        <label for="members" class="block text-sm font-medium text-gray-300 mb-3">
+                            Connected Users
+                            <span class="text-red-400">*</span>
+                        </label>
+                        <select id="members" name="members" multiple
+                                placeholder="Search and select members..."
+                                class="w-full px-4 py-3 input-base rounded-lg">
+                            {% for user in potential_members %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-3 flex items-center gap-1">
+                            <i data-lucide="info" class="w-3 h-3"></i>
+                            Select at least 2 members. You'll automatically be added as the group creator.
+                        </p>
+                    </div>
+
+                    <!-- Selected Members Preview -->
+                    <div id="selected-members-container" class="hidden mt-6 pt-6 border-t border-gray-700">
+                        <h3 class="text-sm font-medium text-gray-300 mb-4 flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            Selected Members
+                        </h3>
+                        <div id="members-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                    </div>
+
+                {% else %}
+                    <!-- No Connected Users State -->
+                    <div class="error-banner text-center py-8">
+                        <div class="mb-4">
+                            <i data-lucide="user-x" class="w-12 h-12 text-red-400 mx-auto mb-3"></i>
+                        </div>
+                        <h3 class="font-semibold text-white mb-2">No Connected Users Yet</h3>
+                        <p class="text-gray-400 text-sm mb-4">You need to connect with other users first to create a group chat</p>
+                        <a href="{% url 'find_collaborators' %}"
+                           class="inline-flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                            Find Collaborators
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Section 3: Privacy & Settings -->
+            <div class="card p-6">
+                <h2 class="section-title mb-6">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                    Privacy & Settings
+                </h2>
+
+                <div class="space-y-4">
+                    <label class="flex items-center gap-3 p-4 card-accent rounded-lg cursor-pointer hover:border-blue-500 transition">
+                        <input type="radio" name="privacy" value="private" checked class="w-4 h-4">
+                        <div class="flex-1">
+                            <div class="font-medium text-white">Private</div>
+                            <div class="text-xs text-gray-400">Only invited members can access</div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-3 p-4 card-accent rounded-lg cursor-pointer hover:border-blue-500 transition">
+                        <input type="radio" name="privacy" value="public" class="w-4 h-4">
+                        <div class="flex-1">
+                            <div class="font-medium text-white">Public</div>
+                            <div class="text-xs text-gray-400">Anyone can join and view messages</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-gray-700 space-y-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4">
+                        <span class="text-sm text-gray-300">Allow members to invite others</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4">
+                        <span class="text-sm text-gray-300">Enable message history for new members</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <a href="{% url 'messages' %}" class="flex-1 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-medium hover:bg-gray-700 transition text-center">
+                    Cancel
+                </a>
+                <button type="submit" class="flex-1 px-6 py-3 btn-primary rounded-lg font-medium flex items-center justify-center gap-2">
+                    <i data-lucide="rocket" class="w-5 h-5"></i>
+                    <span>Create Group</span>
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initializeTomSelect();
+            attachEventListeners();
+        });
+
+        function initializeTomSelect() {
+            const selectEl = document.getElementById('members');
+            if (!selectEl) return;
+
+            window.tomSelect = new TomSelect('#members', {
+                plugins: ['remove_button', 'no_backspace_delete'],
+                placeholder: 'Search members by name...',
+                maxItems: null,
+                onChange: updateMembersList,
+                searchField: ['text'],
+                render: {
+                    option: function(data, escape) {
+                        return `<div class="flex items-center gap-2 py-2">
+                            <div class="w-6 h-6 rounded-full avatar text-xs">${escape(data.text).charAt(0).toUpperCase()}</div>
+                            <span>${escape(data.text)}</span>
+                        </div>`;
+                    },
+                    item: function(data, escape) {
+                        return `<div class="member-badge">
+                            <div class="w-4 h-4 rounded-full avatar text-xs">${escape(data.text).charAt(0).toUpperCase()}</div>
+                            ${escape(data.text)}
+                        </div>`;
+                    }
+                }
+            });
+        }
+
+        function updateMembersList() {
+            const selected = window.tomSelect ? window.tomSelect.getValue() : [];
+            const container = document.getElementById('selected-members-container');
+            const list = document.getElementById('members-list');
+            const count = document.getElementById('selected-count');
+            const memberCount = document.getElementById('member-count');
+
+            if (selected.length > 0) {
+                container.classList.remove('hidden');
+                count.textContent = `${selected.length} selected`;
+                memberCount.textContent = selected.length;
+
+                list.innerHTML = selected.map(id => {
+                    const option = window.tomSelect.getOption(id);
+                    const username = option.textContent;
+                    return `
+                        <div class="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                            <div class="w-8 h-8 rounded-lg avatar text-sm">${username.charAt(0).toUpperCase()}</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-white">${username}</div>
+                            </div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.classList.add('hidden');
+                count.textContent = '0 selected';
+                memberCount.textContent = '0';
+            }
+
+            lucide.createIcons();
+        }
+
+        function attachEventListeners() {
+            const form = document.getElementById('create-group-form');
+            if (form) {
+                form.addEventListener('submit', validateForm);
+            }
+
+            document.querySelectorAll('input[type="text"], textarea').forEach(el => {
+                el.addEventListener('focus', function() {
+                    this.parentElement.classList.add('ring-1', 'ring-blue-500');
+                });
+                el.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('ring-1', 'ring-blue-500');
+                });
+            });
+        }
+
+        function validateForm(e) {
+            const groupName = document.getElementById('name').value.trim();
+            const selectedMembers = window.tomSelect ? window.tomSelect.getValue() : [];
+
+            if (!groupName) {
+                e.preventDefault();
+                showError('Please enter a group name');
+                return;
+            }
+
+            if (selectedMembers.length < 2) {
+                e.preventDefault();
+                showError('Please select at least 2 members');
+                return;
+            }
+        }
+
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 error-banner max-w-sm animate-pulse';
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
+                    <span class="text-red-300 text-sm">${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+    </script>
+
+</body>
+</html>

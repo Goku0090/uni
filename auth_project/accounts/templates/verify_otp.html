@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify OTP{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>🔐 Email Verification</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="text-center mb-4">
+        <p><strong>We've sent a 6-digit OTP to your email address.</strong></p>
+        <p>Please enter the OTP below to {{ purpose }} your account:</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group text-center">
+            <label for="{{ form.otp_code.id_for_label }}">Enter OTP:</label>
+            {{ form.otp_code }}
+            {% if form.otp_code.errors %}
+                <div class="text-danger">
+                    {% for error in form.otp_code.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block mt-3">Verify OTP</button>
+    </form>
+    
+    <div class="text-center mt-4">
+        <p class="text-muted">
+            <small>⏰ OTP is valid for 5 minutes only</small>
+        </p>
+        {% if purpose == 'registration' %}
+            <a href="{% url 'register' %}" class="text-secondary">← Back to Registration</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="text-secondary">← Back to Login</a>
+        {% endif %}
+    </div>
+</div>
+<!-- Add this where appropriate in your OTP forms -->
+<a href="{% url 'resend_otp' purpose %}">Resend OTP</a>
+
+<style>
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .alert-error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    .btn-block {
+        width: 100%;
+    }
+</style>
+{% endblock %}

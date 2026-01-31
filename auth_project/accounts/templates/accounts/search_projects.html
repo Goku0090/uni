@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Search Projects</h2>
+<form method="get">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search projects...">
+    <button type="submit">Search</button>
+</form>
+<ul>
+    {% for project in projects %}
+        <li>{{ project.title }} - {{ project.description|truncatewords:20 }}</li>
+    {% empty %}
+        <li>No projects found.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

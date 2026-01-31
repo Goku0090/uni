@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Upgrade | UniSync{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="mb-4">
+        <a href="{% url 'main_home' %}" class="btn btn-secondary">⬅ Back to Home</a>
+    </div>
+    <h2 class="mb-4">Upgrade to Premium</h2>
+    <p class="lead">Get access to exclusive features like posting to the investor feed and more.</p>
+    <button class="btn btn-warning">Upgrade Now</button>
+</div>
+{% endblock %}

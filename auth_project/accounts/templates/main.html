@@ -1,0 +1,999 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniSync - Where Innovation Meets Collaboration</title>
+    <meta name="description" content="Connect with talented students, build amazing projects, and get discovered by investors. The ultimate platform for student innovation and collaboration.">
+    <meta name="keywords" content="student collaboration, project building, innovation platform, startup networking, student projects">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --github-dark: #0d1117;
+            --github-darker: #161b22;
+            --github-darkest: #21262d;
+            --github-light: #f6f8fa;
+            --github-lighter: #ffffff;
+            --github-accent: #58a6ff;
+            --github-success: #238636;
+            --github-text: #c9d1d9;
+            --github-text-secondary: #8b949e;
+            --github-border: #30363d;
+            --github-border-light: #21262d;
+            --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+            --shadow-large: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+            --border-radius: 6px;
+            --border-radius-large: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+            line-height: 1.5;
+            color: var(--github-text);
+            background: var(--github-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--github-dark);
+            border-bottom: 1px solid var(--github-border);
+            padding: 16px 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+
+        .unisync-logo {
+            color: var(--github-lighter);
+            font-weight: 600;
+            font-size: 18px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero {
+            background: var(--github-dark);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            padding: 120px 0 80px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(88, 166, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(35, 134, 54, 0.05) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+            text-align: center;
+        }
+
+        .hero-visual {
+            position: relative;
+            z-index: 1;
+            margin: 60px auto 0;
+            max-width: 400px;
+        }
+
+        .glow-text {
+            color: var(--github-lighter);
+            text-shadow: none;
+        }
+
+        .feature-card {
+            background: var(--github-darker);
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            background: var(--github-darkest);
+            border-color: var(--github-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .feature-card h3 {
+            color: var(--github-lighter);
+            margin: 16px 0 8px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--github-text-secondary);
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            background: var(--github-accent);
+            border: 1px solid var(--github-accent);
+            border-radius: var(--border-radius);
+            padding: 12px 24px;
+            color: var(--github-lighter);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: #388bfd;
+            border-color: #388bfd;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            color: var(--github-text);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: var(--github-darker);
+            border-color: var(--github-accent);
+            color: var(--github-accent);
+        }
+
+        .testimonial-card {
+            background: var(--github-darker);
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .testimonial-card:hover {
+            background: var(--github-darkest);
+            border-color: var(--github-accent);
+        }
+
+        .testimonial-card h4 {
+            color: var(--github-lighter);
+            margin: 12px 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .testimonial-card p {
+            color: var(--github-text-secondary);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .testimonial-card .text-sm {
+            color: var(--github-text-secondary);
+            font-size: 12px;
+        }
+
+        .faq-item {
+            background: var(--github-darker);
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 16px 20px;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .faq-item:hover {
+            background: var(--github-darkest);
+            border-color: var(--github-accent);
+        }
+
+        .faq-item h3 {
+            color: var(--github-lighter);
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .faq-item p {
+            color: var(--github-text-secondary);
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.025em;
+            color: var(--github-lighter);
+            margin: 0;
+        }
+
+        h1 { font-size: 48px; }
+        h2 { font-size: 32px; }
+        h3 { font-size: 24px; }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .hero-content {
+                padding: 0 20px;
+            }
+
+            .hero-visual {
+                margin: 40px auto 0;
+            }
+
+            h1 { font-size: 36px; }
+            h2 { font-size: 24px; }
+            h3 { font-size: 20px; }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+        }
+
+        /* GitHub-style code elements */
+        .code-snippet {
+            background: var(--github-darkest);
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            color: var(--github-text);
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: linear-gradient(90deg, var(--github-accent), var(--github-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* GitHub-style sections */
+        section {
+            padding: 80px 0;
+        }
+
+        section:nth-child(even) {
+            background: var(--github-darker);
+        }
+
+        /* GitHub-style footer */
+        footer {
+            background: var(--github-dark);
+            border-top: 1px solid var(--github-border);
+            padding: 40px 0 20px;
+        }
+
+        footer h4 {
+            color: var(--github-lighter);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        footer ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        footer a {
+            color: var(--github-text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--github-accent);
+        }
+
+        /* GitHub-style social links */
+        .social-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: var(--github-text-secondary);
+            font-size: 24px;
+            transition: color 0.2s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--github-accent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                <div class="relative">
+                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg">
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                </div>
+                <h1 class="unisync-logo">UniSync</h1>
+                </div>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#features" class="nav-link text-gray-300 hover:text-white font-medium transition-all duration-200 relative group">
+                        Features
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 group-hover:w-full transition-all duration-200"></span>
+                    </a>
+                    <a href="#how-it-works" class="nav-link text-gray-300 hover:text-white font-medium transition-all duration-200 relative group">
+                        How It Works
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 group-hover:w-full transition-all duration-200"></span>
+                    </a>
+                    <a href="#testimonials" class="nav-link text-gray-300 hover:text-white font-medium transition-all duration-200 relative group">
+                        Success Stories
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 group-hover:w-full transition-all duration-200"></span>
+                    </a>
+                    <div class="flex items-center gap-4 ml-4">
+                        <a href="/login/" class="text-gray-300 hover:text-white font-medium transition-colors px-4 py-2 rounded hover:bg-gray-800">
+                            Login
+                        </a>
+                        <a href="/register/" class="btn-primary transform hover:scale-105 transition-transform duration-200">
+                            Get Started
+                        </a>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-gray-300 hover:text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Mobile Menu -->
+            <div class="md:hidden hidden mt-4 pb-4 border-t border-gray-700" id="mobile-menu">
+                <div class="flex flex-col space-y-3 pt-4">
+                    <a href="#features" class="text-gray-300 hover:text-white font-medium py-2 transition-colors">Features</a>
+                    <a href="#how-it-works" class="text-gray-300 hover:text-white font-medium py-2 transition-colors">How It Works</a>
+                    <a href="#testimonials" class="text-gray-300 hover:text-white font-medium py-2 transition-colors">Success Stories</a>
+                    <div class="flex flex-col space-y-2 pt-2">
+                        <a href="/login/" class="text-gray-300 hover:text-white font-medium py-2 transition-colors">Login</a>
+                        <a href="/register/" class="btn-primary text-center">Get Started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero relative overflow-hidden">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
+            <source src="{% static 'images/189046-884476411_small.mp4' %}" type="video/mp4">
+        </video>
+        
+        <!-- Video Overlay - Darker gradient for text readability -->
+        <div class="absolute inset-0 bg-black/50"></div>
+        
+        <!-- Animated background elements -->
+        <div class="absolute inset-0">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 rounded-full blur-3xl animate-spin" style="animation-duration: 20s;"></div>
+        </div>
+
+        <div class="container mx-auto px-4 sm:px-6 relative z-10 py-12 lg:py-16">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+                <!-- Left Content -->
+                <div class="hero-content flex-1 max-w-2xl text-center lg:text-left">
+                    <!-- Main heading with enhanced typography -->
+                    <h1 class="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
+                        <span class="block text-white glow-text mb-3">Build</span>
+                        <span class="block bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 bg-clip-text text-transparent animate-pulse mb-2">
+                            Extraordinary
+                        </span>
+                        <span class="block text-white/90 text-xl md:text-3xl lg:text-4xl font-light">
+                            Projects Together
+                        </span>
+                    </h1>
+
+                    <!-- Enhanced description -->
+                    <p class="text-base md:text-lg lg:text-xl text-white/80 mb-8 font-light leading-relaxed">
+                        Join the <strong class="text-white font-semibold">ultimate platform</strong> for student innovation.
+                        Connect, collaborate, and launch your ideas with talented peers worldwide.
+                    </p>
+
+                    <!-- Feature highlights with icons -->
+                    <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
+                        <div class="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 hover:bg-white/10 transition-colors">
+                            <span class="text-xl">🎯</span>
+                            <span class="text-white font-medium text-sm">Smart Matching</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 hover:bg-white/10 transition-colors">
+                            <span class="text-xl">⚡</span>
+                            <span class="text-white font-medium text-sm">Real-time Tools</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 hover:bg-white/10 transition-colors">
+                            <span class="text-xl">🚀</span>
+                            <span class="text-white font-medium text-sm">Launch Ready</span>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced CTA buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-6">
+                        <a href="/register/" class="btn-primary transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-indigo-500/50 text-center px-6 py-3">
+                            Start Building Free →
+                        </a>
+                        <a href="#features" class="btn-secondary transform hover:scale-105 transition-all duration-300 text-center px-6 py-3">
+                            Explore Features ▶
+                        </a>
+                    </div>
+
+                    <!-- Trust indicators -->
+                    <div class="flex items-center justify-center lg:justify-start gap-4 text-white/60 text-sm">
+                        <span class="flex items-center gap-1">
+                            <span class="text-green-400">●</span>
+                            <span>No credit card</span>
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="text-blue-400">●</span>
+                            <span>Free forever</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right Visual - Creative Illustration -->
+                <div class="hero-visual flex-1 relative max-w-sm lg:max-w-md">
+                    <!-- Enhanced illustration container -->
+                    <div class="relative w-full max-w-xs lg:max-w-sm mx-auto">
+                        <!-- Background glow effects -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl transform rotate-6 scale-110"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-teal-500/10 rounded-3xl blur-xl transform -rotate-3 scale-105"></div>
+
+                        <!-- Global Student Connection Network Illustration -->
+                        <div class="relative bg-white/5 backdrop-blur-sm rounded-3xl p-4 border border-white/10 shadow-2xl mx-auto" style="width: 320px; height: 320px;">
+                            <!-- Central UniSync Hub -->
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                <div class="relative w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full shadow-lg border-2 border-white/30 flex items-center justify-center">
+                                    <div class="text-white text-lg">🚀</div>
+                                    <!-- Pulsing rings around center -->
+                                    <div class="absolute inset-0 rounded-full border-2 border-blue-400/50 animate-ping"></div>
+                                    <div class="absolute inset-0 rounded-full border border-purple-400/30 animate-pulse" style="animation-delay: 1s;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Global Student Nodes -->
+                            <!-- North America -->
+                            <div class="absolute top-12 left-8">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg">
+                                        👨‍💻
+                                    </div>
+                                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        North America
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- South America -->
+                            <div class="absolute bottom-16 left-12">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg" style="animation-delay: 0.3s;">
+                                        👩‍🎨
+                                    </div>
+                                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        South America
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Europe -->
+                            <div class="absolute top-8 right-16">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg" style="animation-delay: 0.6s;">
+                                        👨‍🔬
+                                    </div>
+                                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Europe
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Africa -->
+                            <div class="absolute bottom-12 right-12">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg" style="animation-delay: 0.9s;">
+                                        👩‍💼
+                                    </div>
+                                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Africa
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Asia -->
+                            <div class="absolute top-16 right-8">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg" style="animation-delay: 1.2s;">
+                                        👨‍🎓
+                                    </div>
+                                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Asia
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Australia -->
+                            <div class="absolute bottom-8 left-20">
+                                <div class="relative group">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-lg animate-bounce border-2 border-white/30 shadow-lg" style="animation-delay: 1.5s;">
+                                        👩‍🔧
+                                    </div>
+                                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Australia
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Global Connection Network -->
+                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 320 320">
+                                <defs>
+                                    <style>
+                                        .global-line {
+                                            stroke: rgba(88, 166, 255, 0.6);
+                                            stroke-width: 2;
+                                            fill: none;
+                                            stroke-dasharray: 4,4;
+                                            animation: globalFlow 3s ease-in-out infinite;
+                                        }
+                                        @keyframes globalFlow {
+                                            from { stroke-dashoffset: 0; }
+                                            to { stroke-dashoffset: -8; }
+                                        }
+                                        .data-packet {
+                                            fill: #58a6ff;
+                                            animation: dataTravel 4s linear infinite;
+                                        }
+                                        @keyframes dataTravel {
+                                            0% { opacity: 0; transform: translateX(-10px); }
+                                            10% { opacity: 1; }
+                                            90% { opacity: 1; }
+                                            100% { opacity: 0; transform: translateX(10px); }
+                                        }
+                                    </style>
+                                </defs>
+
+                                <!-- Connection lines between continents -->
+                                <line x1="80" y1="60" x2="160" y2="160" class="global-line" />
+                                <line x1="100" y1="200" x2="160" y2="160" class="global-line" style="animation-delay: 0.5s;" />
+                                <line x1="240" y1="80" x2="160" y2="160" class="global-line" style="animation-delay: 1s;" />
+                                <line x1="240" y1="180" x2="160" y2="160" class="global-line" style="animation-delay: 1.5s;" />
+                                <line x1="280" y1="100" x2="160" y2="160" class="global-line" style="animation-delay: 2s;" />
+                                <line x1="140" y1="240" x2="160" y2="160" class="global-line" style="animation-delay: 2.5s;" />
+
+                                <!-- Data packets traveling along connections -->
+                                <circle cx="120" cy="110" r="3" class="data-packet" style="animation-delay: 0s;" />
+                                <circle cx="200" cy="140" r="3" class="data-packet" style="animation-delay: 1s;" />
+                                <circle cx="180" cy="190" r="3" class="data-packet" style="animation-delay: 2s;" />
+                                <circle cx="220" cy="120" r="3" class="data-packet" style="animation-delay: 3s;" />
+                            </svg>
+
+                            <!-- Floating global elements -->
+                            <div class="absolute top-4 right-4 w-6 h-6 bg-blue-400/80 rounded-full flex items-center justify-center text-xs animate-pulse opacity-90" style="animation-delay: 1s;">
+                                🌍
+                            </div>
+                            <div class="absolute bottom-4 left-4 w-5 h-5 bg-green-400/80 rounded-full flex items-center justify-center text-xs animate-bounce opacity-90" style="animation-delay: 1.5s;">
+                                🤝
+                            </div>
+                            <div class="absolute top-6 left-6 w-5 h-5 bg-purple-400/80 rounded-full flex items-center justify-center text-xs animate-pulse opacity-90" style="animation-delay: 2s;">
+                                ⚡
+                            </div>
+                            <div class="absolute bottom-6 right-6 w-5 h-5 bg-yellow-400/80 rounded-full flex items-center justify-center text-xs animate-bounce opacity-90" style="animation-delay: 2.5s;">
+                                🚀
+                            </div>
+
+                            <!-- Global network status -->
+                            <div class="absolute top-3 right-3 bg-black/20 backdrop-blur-sm rounded-md p-1.5 text-[8px] text-white/70 font-mono">
+                                <div class="text-[6px] text-blue-400 mb-0.5">// Global Network</div>
+                                <div>🌍 6 Continents</div>
+                                <div>🔗 Connected</div>
+                            </div>
+
+                            <!-- Global connectivity meter -->
+                            <div class="absolute bottom-3 left-3 right-3">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <span class="text-[8px] text-white/60">Global Reach</span>
+                                    <span class="text-[8px] text-blue-400">98%</span>
+                                </div>
+                                <div class="w-full bg-white/20 rounded-full h-1.5">
+                                    <div class="bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 h-1.5 rounded-full animate-pulse" style="width: 98%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Floating achievement badges -->
+                        <div class="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg animate-bounce">
+                            ✨ Innovative
+                        </div>
+                        <div class="absolute -bottom-1.5 -left-1.5 bg-gradient-to-r from-green-400 to-blue-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg animate-bounce" style="animation-delay: 1s;">
+                            🤝 Collaborative
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce">
+            <div class="flex flex-col items-center gap-0.5">
+                <span class="text-xs">Scroll to explore</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2>Why Choose UniSync?</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">Everything you need to bring your ideas to life and connect with the right collaborators.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="feature-card text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-2xl mx-auto mb-6">
+                        🔍
+                    </div>
+                    <h3>Smart Matching</h3>
+                    <p>Our intelligent algorithm connects you with students who share your interests and complement your skills perfectly.</p>
+                </div>
+
+                <div class="feature-card text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-2xl mx-auto mb-6">
+                        🚀
+                    </div>
+                    <h3>Project Showcase</h3>
+                    <p>Build an impressive portfolio and get discovered by companies and investors looking for fresh talent.</p>
+                </div>
+
+                <div class="feature-card text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center text-white text-2xl mx-auto mb-6">
+                        🤝
+                    </div>
+                    <h3>Team Collaboration</h3>
+                    <p>Seamlessly work together with integrated tools for messaging, file sharing, and project management.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2>How UniSync Works</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">Get started in just a few simple steps and begin building amazing things.</p>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="text-center scroll-reveal">
+                    <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
+                        1
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Create Profile</h3>
+                    <p class="text-gray-300">Sign up and tell us about your skills, interests, and what you're passionate about building.</p>
+                </div>
+
+                <div class="text-center scroll-reveal">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
+                        2
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Discover Projects</h3>
+                    <p class="text-gray-300">Browse innovative projects and find opportunities that match your interests and skills.</p>
+                </div>
+
+                <div class="text-center scroll-reveal">
+                    <div class="w-20 h-20 bg-gradient-to-r from-pink-500 to-red-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
+                        3
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Connect & Collaborate</h3>
+                    <p class="text-gray-300">Send connection requests, join teams, and start building together with your new collaborators.</p>
+                </div>
+
+                <div class="text-center scroll-reveal">
+                    <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6">
+                        4
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Launch & Grow</h3>
+                    <p class="text-gray-300">Showcase your work, attract investors, and turn your ideas into successful ventures.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2>Success Stories</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">See how students are building amazing projects and launching successful careers with UniSync.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="testimonial-card">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            A
+                        </div>
+                        <div>
+                            <h4>Alex Chen</h4>
+                            <p class="text-gray-300 text-sm">Computer Science Student</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"Found my perfect team for a mobile app project. We launched it on the App Store and got acquired by a tech company!"</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            S
+                        </div>
+                        <div>
+                            <h4>Sarah Johnson</h4>
+                            <p class="text-gray-300 text-sm">Design Student</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"Connected with developers who brought my design ideas to life. Now working as a UX designer at a Fortune 500 company."</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            M
+                        </div>
+                        <div>
+                            <h4>Marcus Rodriguez</h4>
+                            <p class="text-gray-300 text-sm">Engineering Student</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"Built an AI-powered study assistant with my team. Got funding from three different investors and now we're beta testing with 10,000+ users!"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2>Frequently Asked Questions</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">Everything you need to know about getting started with UniSync.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="faq-item">
+                    <h3>Is UniSync free to use?</h3>
+                    <p>Yes! UniSync offers a free tier with all essential features. We also have premium plans for teams that need advanced collaboration tools and priority support.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Who can join UniSync?</h3>
+                    <p>UniSync is designed for students, recent graduates, and young professionals. We welcome anyone passionate about building innovative projects and learning new technologies.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>How does the matching algorithm work?</h3>
+                    <p>Our smart matching considers your skills, interests, project preferences, and collaboration style to connect you with the most compatible teammates and project opportunities.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>Can I work on multiple projects at once?</h3>
+                    <p>Absolutely! Many students juggle multiple projects simultaneously. Our platform supports multiple project memberships and helps you manage your time effectively across different teams.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>What if I don't have technical skills?</h3>
+                    <p>No problem! UniSync is for all types of creators. Whether you're a designer, marketer, business developer, or have domain expertise, you'll find projects that need your unique skills.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h3>How do I get started?</h3>
+                    <p>Simply sign up, complete your profile, and start exploring projects. You can join existing projects or post your own idea to find collaborators. It's that easy!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-white mb-6">Ready to Build Something Amazing?</h2>
+            <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+                Join thousands of students who are already creating the next big thing. Your next great collaboration is just one click away.
+            </p>
+            <div class="flex gap-6 flex-wrap justify-center">
+                <a href="/register/" class="btn-primary">Start Building Today</a>
+                <a href="#features" class="btn-secondary">Explore Features</a>
+            </div>
+        </div>
+    </section>
+
+    {% include "components/footer.html" %}
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="fixed bottom-8 right-8 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg opacity-0 transition-all duration-300 transform translate-y-4 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+        ↑
+    </button>
+
+    <script>
+        // Scroll animations
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll to top button
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.remove('opacity-0', 'translate-y-4');
+                scrollToTopBtn.classList.add('opacity-100', 'translate-y-0');
+            } else {
+                scrollToTopBtn.classList.remove('opacity-100', 'translate-y-0');
+                scrollToTopBtn.classList.add('opacity-0', 'translate-y-4');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Navbar background on scroll
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg');
+            } else {
+                navbar.classList.remove('shadow-lg');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            // Change hamburger icon to X
+            const icon = mobileMenuBtn.querySelector('svg');
+            if (mobileMenu.classList.contains('hidden')) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+            }
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                const icon = mobileMenuBtn.querySelector('svg');
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+            });
+        });
+
+        // Initialize animations when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initScrollAnimations();
+
+            // Add loading animation to stat counters
+            const statCounters = document.querySelectorAll('.stat-counter');
+            statCounters.forEach((counter, index) => {
+                setTimeout(() => {
+                    counter.style.animationDelay = `${index * 0.2}s`;
+                }, 100);
+            });
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.feature-card, .testimonial-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

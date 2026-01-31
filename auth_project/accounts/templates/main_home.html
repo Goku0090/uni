@@ -1,0 +1,1702 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>UniSync | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#1E1E2F',
+                        primary: '#2D2D44',
+                        accent: '#3AB7BF',
+                        text: '#EAEAEA',
+                        softDark: '#28293E',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-background text-text min-h-screen font-sans">
+    {% csrf_token %}
+    <!-- Navbar -->
+    <nav class="bg-primary shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="{% url 'main_home' %}" class="flex items-center">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
+                    <span class="text-white font-bold text-xl ml-2">UniSync</span>
+                </a>
+            </div>
+            <div class="flex gap-6">
+                <a href="{% url 'main_home' %}" class="hover:text-accent transition flex items-center gap-2" title="Dashboard - View Projects & Activity Feed">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-9 9a1 1 0 001.414 1.414L2 12.414V19a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-9-9z"/>
+                    </svg>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="{% url 'student_profile' %}" class="hover:text-accent transition flex items-center gap-2" title="My Profile - Edit Skills & Portfolio">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+                <a href="{% url 'find_collaborators' %}" class="hover:text-accent transition flex items-center gap-2" title="Discover Partners - Connect with Like-minded Students">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-xs font-medium">Collaborators</span>
+                </a>
+                <a href="{% url 'my_connections' %}" class="hover:text-accent transition flex items-center gap-2" title="Network Hub - Manage Your Professional Connections">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                    </svg>
+                    <span class="text-xs font-medium">Connections</span>
+                </a>
+                <a href="{% url 'post_project' %}" class="hover:text-accent transition flex items-center gap-2" title="Create Project - Share Your Ideas & Find Team Members">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-medium">Post Project</span>
+                </a>
+                <a href="{% url 'messages' %}" class="hover:text-accent transition flex items-center gap-2" title="Inbox - Chat with Collaborators & Teams">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-medium">Messages</span>
+                </a>
+                <a href="{% url 'notifications' %}" class="hover:text-accent transition flex items-center gap-2 relative" title="Activity Feed - Stay Updated on Projects & Connections">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                    </svg>
+                    <span class="text-xs font-medium">Notifications</span>
+                    {% if unread_notification_count > 0 %}
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {{ unread_notification_count }}
+                    </span>
+                    {% endif %}
+                </a>
+                <!-- Temporarily commented out - Investment features not ready for production -->
+                <!-- <a href="{% url 'upgrade' %}" class="hover:text-accent transition flex items-center gap-2" title="Upgrade">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                </svg>
+                </a>
+                <a href="{% url 'investor_dashboard' %}" class="hover:text-accent transition flex items-center gap-2" title="Investor Dashboard">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                </svg>
+                </a> -->
+                <a href="{% url 'logout' %}" class="hover:text-red-400 transition flex items-center gap-2" title="Logout">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-medium">Logout</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Dynamic Background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+            <!-- Animated Background Orbs -->
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-2xl animate-pulse" style="animation-delay: 4s;"></div>
+
+            <!-- Floating Particles -->
+            <div class="floating-particles">
+                <div class="particle" style="left: 12%; animation-duration: 9s; animation-delay: 1s;"></div>
+                <div class="particle" style="left: 24%; animation-duration: 10s; animation-delay: 2s;"></div>
+                <div class="particle" style="left: 36%; animation-duration: 11s; animation-delay: 3s;"></div>
+                <div class="particle" style="left: 48%; animation-duration: 12s; animation-delay: 4s;"></div>
+                <div class="particle" style="left: 60%; animation-duration: 13s; animation-delay: 5s;"></div>
+                <div class="particle" style="left: 72%; animation-duration: 14s; animation-delay: 6s;"></div>
+                <div class="particle" style="left: 84%; animation-duration: 15s; animation-delay: 7s;"></div>
+                <div class="particle" style="left: 96%; animation-duration: 16s; animation-delay: 8s;"></div>
+            </div>
+
+            <!-- Geometric Shapes -->
+            <div class="geometric-bg">
+                <div class="geometric-shape" style="top: 15%; left: 10%; animation-delay: 0s;"></div>
+                <div class="geometric-shape" style="top: 70%; right: 15%; animation-delay: 3s;"></div>
+                <div class="geometric-shape" style="top: 40%; left: 80%; animation-delay: 6s;"></div>
+            </div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="relative z-10 text-center px-6 max-w-6xl mx-auto">
+            <!-- Logo and Welcome Badge -->
+            <div class="flex flex-col items-center mb-8 fade-in-up">
+                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-16 w-16 object-contain mb-4 rounded-xl shadow-lg">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium text-white">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    Welcome back, {{ user.username }}! Ready to innovate?
+                </div>
+            </div>
+
+            <!-- Main Heading -->
+            <h1 class="text-6xl md:text-8xl font-black mb-6 fade-in-up" style="animation-delay: 0.2s;">
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 animate-pulse">
+                    Build the Future
+                </span>
+                <span class="block text-white text-4xl md:text-6xl font-light mt-2">
+                    Together
+                </span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12 fade-in-up" style="animation-delay: 0.4s;">
+                Join the ultimate platform for student innovators. Share ideas, find collaborators,
+                build projects, and launch your startup dreams. 🚀
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 fade-in-up" style="animation-delay: 0.6s;">
+                <a href="{% url 'post_project' %}" class="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-2xl font-bold text-lg text-white shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 button-3d glow-3d">
+                    <span class="relative z-10 flex items-center gap-3">
+                        <span class="text-2xl">🚀</span>
+                        Start Your Project
+                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </span>
+                </a>
+
+                <a href="{% url 'find_collaborators' %}" class="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 rounded-2xl font-semibold text-lg text-white transition-all duration-300 transform hover:scale-105 magnetic-hover">
+                    <span class="flex items-center gap-3">
+                        <span class="text-2xl">🤝</span>
+                        Find Collaborators
+                    </span>
+                </a>
+            </div>
+
+            <!-- Enhanced Stats Dashboard -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto fade-in-up" style="animation-delay: 0.8s;">
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 text-center card-3d group cursor-pointer" onclick="window.location.href='{% url 'main_home' %}'">
+                    <div class="text-4xl font-black text-cyan-400 mb-2 group-hover:scale-110 transition-transform" id="totalProjects">{{ homepage_stats.total_projects|default:0|intcomma }}</div>
+                    <div class="text-sm text-gray-400 font-medium">Projects Created</div>
+                    <div class="mt-2 flex justify-center">
+                        <div class="w-12 h-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full group-hover:w-16 transition-all"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 text-center card-3d group cursor-pointer" onclick="window.location.href='{% url 'find_collaborators' %}'">
+                    <div class="text-4xl font-black text-purple-400 mb-2 group-hover:scale-110 transition-transform" id="activeUsers">{{ homepage_stats.active_users|default:0|intcomma }}</div>
+                    <div class="text-sm text-gray-400 font-medium">Active Users</div>
+                    <div class="mt-2 flex justify-center">
+                        <div class="w-12 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full group-hover:w-16 transition-all"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 text-center card-3d group cursor-pointer" onclick="window.location.href='{% url 'my_connections' %}'">
+                    <div class="text-4xl font-black text-pink-400 mb-2 group-hover:scale-110 transition-transform" id="totalConnections">{{ homepage_stats.total_connections|default:0|intcomma }}</div>
+                    <div class="text-sm text-gray-400 font-medium">Connections Made</div>
+                    <div class="mt-2 flex justify-center">
+                        <div class="w-12 h-1 bg-gradient-to-r from-pink-400 to-red-400 rounded-full group-hover:w-16 transition-all"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 text-center card-3d group cursor-pointer" onclick="window.location.href='{% url 'activity_feed' %}'">
+                    <div class="text-4xl font-black text-green-400 mb-2 group-hover:scale-110 transition-transform" id="successStories">{{ homepage_stats.success_stories|default:0|intcomma }}</div>
+                    <div class="text-sm text-gray-400 font-medium">Success Stories</div>
+                    <div class="mt-2 flex justify-center">
+                        <div class="w-12 h-1 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full group-hover:w-16 transition-all"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div class="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+                    <div class="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Bar Section -->
+    <section class="px-6 py-6 max-w-7xl mx-auto relative">
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <!-- Search Bar -->
+            <div class="flex-1">
+                <form method="GET" action="{% url 'main_home' %}" class="relative" id="search-form">
+                    <input type="text" name="q" value="{{ active_filters.search }}" placeholder="Search projects, technologies, or users..."
+                           class="w-full px-4 py-3 pl-12 bg-softDark border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-400 shadow-lg transition-all duration-300"
+                           id="search-input">
+                    <div class="absolute left-3 top-3.5 text-gray-400">
+                        🔍
+                    </div>
+                    <button type="submit" class="absolute right-2 top-2 px-4 py-1.5 bg-accent hover:bg-accent/80 text-white rounded-lg text-sm font-semibold transition z-10">
+                        Search
+                    </button>
+                </form>
+            </div>
+
+            <!-- Clear Filters Button -->
+            {% if has_filters %}
+            <button onclick="clearAllFilters()" class="px-4 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-semibold transition whitespace-nowrap">
+                ✕ Clear All
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Share Modal (Hidden by default) -->
+        <div id="share-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeShareModal()">
+        <div class="flex items-center justify-center min-h-screen px-4" onclick="event.stopPropagation()">
+        <div class="bg-softDark rounded-2xl shadow-2xl border border-gray-700 p-6 w-full max-w-md transform scale-95 transition-transform duration-300" id="share-modal-content">
+                    <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-white">Share Project</h3>
+                    <button type="button" onclick="closeShareModal()" class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white cursor-pointer">
+                    <span class="text-xl">✕</span>
+                    </button>
+                    </div>
+
+                    <div class="space-y-4">
+                    <!-- Project Title -->
+                    <div id="share-project-title" class="text-gray-300 text-sm font-semibold mb-4"></div>
+
+                    <!-- Social Share Buttons -->
+                    <div class="grid grid-cols-2 gap-3">
+                    <a id="twitter-share-btn" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition cursor-pointer">
+                    🐦 Twitter
+                    </a>
+                    <a id="linkedin-share-btn" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 p-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold transition cursor-pointer">
+                    💼 LinkedIn
+                    </a>
+                    <a id="facebook-share-btn" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition cursor-pointer">
+                    📘 Facebook
+                    </a>
+                    <button type="button" onclick="copyShareLink()" class="flex items-center justify-center gap-2 p-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition cursor-pointer">
+                    🔗 Copy Link
+                    </button>
+                    </div>
+
+                    <!-- Copy Success Message -->
+                    <div id="share-copy-success" class="text-green-400 text-sm text-center hidden mt-3">
+                    ✓ Link copied to clipboard!
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Overlay (Hidden by default) -->
+        <div id="search-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-40 hidden opacity-0 transition-opacity duration-300">
+            <div class="flex items-start justify-center min-h-screen pt-16 px-4">
+                <div class="bg-softDark rounded-2xl shadow-2xl border border-gray-700 p-8 w-full max-w-4xl max-h-[80vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="search-modal">
+                    <div class="flex items-center gap-4 mb-8">
+                    <div class="text-3xl">🔍</div>
+                    <div class="flex-1">
+                    <form method="GET" action="{% url 'main_home' %}" id="overlay-search-form">
+                    <input type="text" name="q" value="{{ active_filters.search }}" placeholder="Search projects, technologies, or users..."
+                    class="w-full px-6 py-4 bg-gray-800 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-400 text-xl font-medium shadow-lg"
+                    id="overlay-search-input" autocomplete="off">
+                    </form>
+                    </div>
+                        <button onclick="closeSearch()" class="p-3 hover:bg-gray-700 rounded-xl transition">
+                            <span class="text-gray-400 text-2xl">✕</span>
+                        </button>
+                    </div>
+
+                    <!-- Recent Searches -->
+                    <div class="mb-6" id="recent-searches">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-sm text-gray-400">Recent searches:</div>
+                            <button onclick="clearRecentSearches()" class="text-xs text-gray-500 hover:text-gray-300 transition">
+                                Clear all
+                            </button>
+                        </div>
+                        <div id="recent-searches-list" class="space-y-1">
+                            <!-- Recent searches will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Search Suggestions -->
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-400 mb-4">Popular searches:</div>
+                        {% for category in categories %}
+                        <a href="?q={{ category }}" onclick="addToRecentSearches('{{ category }}')" class="flex items-center gap-3 p-3 hover:bg-gray-800 rounded-lg transition">
+                            <span class="text-accent">📂</span>
+                            <span class="text-gray-300">{{ category }} projects</span>
+                        </a>
+                        {% endfor %}
+                        {% for tech in available_techs|slice:":8" %}
+                        <a href="?q={{ tech }}" onclick="addToRecentSearches('{{ tech }}')" class="flex items-center gap-3 p-3 hover:bg-gray-800 rounded-lg transition">
+                            <span class="text-accent">⚙️</span>
+                            <span class="text-gray-300">{{ tech }} projects</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section class="px-6 py-16 max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-white mb-4">🎯 Quick Start Guide</h2>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">Your journey to building amazing projects starts here</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- Step 1: Complete Profile -->
+            <div class="bg-gradient-to-br from-cyan-600/20 to-cyan-800/20 border border-cyan-500/30 rounded-2xl p-6 card-3d group cursor-pointer" onclick="window.location.href='{% url 'student_profile' %}'">
+                <div class="text-center mb-4">
+                    <div class="text-6xl mb-4 group-hover:animate-bounce">👤</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Complete Your Profile</h3>
+                    <p class="text-cyan-200 text-sm">Add your skills, interests, and experience to get better matches</p>
+                </div>
+                <div class="flex justify-center">
+                    <span class="px-4 py-2 bg-cyan-600/50 text-cyan-200 rounded-full text-sm font-medium">Update Profile →</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Post Project -->
+            <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-500/30 rounded-2xl p-6 card-3d group cursor-pointer" onclick="window.location.href='{% url 'post_project' %}'">
+                <div class="text-center mb-4">
+                    <div class="text-6xl mb-4 group-hover:animate-bounce">🚀</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Post Your Project</h3>
+                    <p class="text-purple-200 text-sm">Share your idea and find collaborators who share your vision</p>
+                </div>
+                <div class="flex justify-center">
+                    <span class="px-4 py-2 bg-purple-600/50 text-purple-200 rounded-full text-sm font-medium">Create Project →</span>
+                </div>
+            </div>
+
+            <!-- Step 3: Connect -->
+            <div class="bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/30 rounded-2xl p-6 card-3d group cursor-pointer" onclick="window.location.href='{% url 'find_collaborators' %}'">
+                <div class="text-center mb-4">
+                    <div class="text-6xl mb-4 group-hover:animate-bounce">🤝</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Find Collaborators</h3>
+                    <p class="text-green-200 text-sm">Browse profiles and connect with talented students worldwide</p>
+                </div>
+                <div class="flex justify-center">
+                    <span class="px-4 py-2 bg-green-600/50 text-green-200 rounded-full text-sm font-medium">Explore Network →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Stories Section -->
+    <section class="px-6 py-16 max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-white mb-4">✨ Success Stories</h2>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">Real projects that turned ideas into reality</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- Success Story 1 -->
+            <div class="bg-gradient-to-br from-green-600/20 to-emerald-800/20 border border-green-500/30 rounded-2xl p-6 card-3d group cursor-pointer">
+                <div class="text-center mb-4">
+                    <div class="text-5xl mb-4 group-hover:animate-bounce">🌱</div>
+                    <h3 class="text-xl font-bold text-white mb-2">EcoTrack</h3>
+                    <p class="text-green-200 text-sm mb-3">AI-powered carbon footprint tracker</p>
+                    <p class="text-xs text-gray-400">"Helping users reduce their environmental impact through innovative technology"</p>
+                </div>
+            </div>
+
+            <!-- Success Story 2 -->
+            <div class="bg-gradient-to-br from-blue-600/20 to-cyan-800/20 border border-blue-500/30 rounded-2xl p-6 card-3d group cursor-pointer">
+                <div class="text-center mb-4">
+                    <div class="text-5xl mb-4 group-hover:animate-bounce">🎓</div>
+                    <h3 class="text-xl font-bold text-white mb-2">StudyBuddy</h3>
+                    <p class="text-blue-200 text-sm mb-3">AI study companion for students</p>
+                    <p class="text-xs text-gray-400">"Supporting student success through personalized learning assistance"</p>
+                </div>
+            </div>
+
+            <!-- Success Story 3 -->
+            <div class="bg-gradient-to-br from-purple-600/20 to-pink-800/20 border border-purple-500/30 rounded-2xl p-6 card-3d group cursor-pointer">
+                <div class="text-center mb-4">
+                    <div class="text-5xl mb-4 group-hover:animate-bounce">🏥</div>
+                    <h3 class="text-xl font-bold text-white mb-2">MediConnect</h3>
+                    <p class="text-purple-200 text-sm mb-3">Healthcare coordination platform</p>
+                    <p class="text-xs text-gray-400">"Improving healthcare coordination and patient outcomes"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collapsible Filters Section (Show only when searching or filters are active) -->
+    {% if has_filters %}
+    <section class="px-6 pb-6 max-w-7xl mx-auto">
+        <!-- Filters Header -->
+        <div class="bg-softDark rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+            <button onclick="toggleFilters()" class="w-full p-4 text-left flex items-center justify-between hover:bg-gray-800 transition">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">🔽</span>
+                    <span class="text-sm font-semibold text-gray-300">Filter Results</span>
+                    {% if active_filters.category or active_filters.tech %}
+                    <span class="px-2 py-1 bg-accent text-white text-xs rounded-full">
+                        {{ active_filters.tech|length }}{% if active_filters.category %}+1{% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+                <span id="filter-arrow" class="text-gray-400 transition-transform">▼</span>
+            </button>
+
+            <!-- Collapsible Content -->
+            <div id="filters-content" class="px-4 pb-4 space-y-4" style="display: block;">
+                <!-- Category Filter -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                        <span class="text-lg">📂</span> Categories
+                    </h4>
+                    <div class="flex flex-wrap gap-2">
+                        <form method="GET" class="inline">
+                            <input type="hidden" name="q" value="{{ active_filters.search }}">
+                            {% for tech in active_filters.tech %}
+                            <input type="hidden" name="tech" value="{{ tech }}">
+                            {% endfor %}
+
+                            <button type="submit" name="category" value=""
+                                    class="px-4 py-2 rounded-full text-sm font-semibold transition {% if not active_filters.category %}bg-accent text-white shadow-lg{% else %}bg-gray-700 hover:bg-gray-600 text-gray-300{% endif %}">
+                                All Categories
+                            </button>
+                        </form>
+                        {% for category in categories %}
+                        <form method="GET" class="inline">
+                            <input type="hidden" name="q" value="{{ active_filters.search }}">
+                            {% for tech in active_filters.tech %}
+                            <input type="hidden" name="tech" value="{{ tech }}">
+                            {% endfor %}
+
+                            <button type="submit" name="category" value="{{ category }}"
+                                    class="px-4 py-2 rounded-full text-sm font-semibold transition {% if active_filters.category == category %}bg-accent text-white shadow-lg{% else %}bg-gray-700 hover:bg-gray-600 text-gray-300{% endif %}">
+                                {{ category }}
+                            </button>
+                        </form>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Technology Filter -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                        <span class="text-lg">⚙️</span> Technologies
+                    </h4>
+                    <form method="GET" class="flex flex-wrap gap-3">
+                        <input type="hidden" name="q" value="{{ active_filters.search }}">
+                        <input type="hidden" name="category" value="{{ active_filters.category }}">
+
+                        {% for tech in available_techs %}
+                        <label class="flex items-center gap-2 cursor-pointer bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg transition">
+                            <input type="checkbox" name="tech" value="{{ tech }}"
+                                   {% if tech in active_filters.tech %}checked{% endif %}
+                                   class="w-4 h-4 text-accent bg-gray-800 border-gray-600 rounded focus:ring-accent">
+                            <span class="text-sm text-gray-300">{{ tech }}</span>
+                        </label>
+                        {% endfor %}
+
+                        <button type="submit" class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg text-sm font-semibold transition shadow-lg">
+                            Apply Filters
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div class="pt-2 border-t border-gray-600">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm text-gray-400 flex items-center gap-2">
+                            <span class="text-lg">🎯</span> Active filters:
+                        </span>
+                        {% if active_filters.search %}
+                        <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium">Search: "{{ active_filters.search }}"</span>
+                        {% endif %}
+                        {% if active_filters.category %}
+                        <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium">Category: {{ active_filters.category }}</span>
+                        {% endif %}
+                        {% for tech in active_filters.tech %}
+                        <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium">Tech: {{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Recent Searches Management
+        function getRecentSearches() {
+            const searches = localStorage.getItem('unisync_recent_searches');
+            return searches ? JSON.parse(searches) : [];
+        }
+
+        function saveRecentSearches(searches) {
+            localStorage.setItem('unisync_recent_searches', JSON.stringify(searches.slice(0, 10))); // Keep only last 10
+        }
+
+        function addToRecentSearches(query) {
+            if (!query.trim()) return;
+            const searches = getRecentSearches();
+            // Remove if already exists, then add to beginning
+            const filtered = searches.filter(s => s !== query);
+            filtered.unshift(query);
+            saveRecentSearches(filtered);
+            displayRecentSearches();
+        }
+
+        function clearRecentSearches() {
+            localStorage.removeItem('unisync_recent_searches');
+            displayRecentSearches();
+        }
+
+        function displayRecentSearches() {
+            const searches = getRecentSearches();
+            const container = document.getElementById('recent-searches-list');
+            const recentSection = document.getElementById('recent-searches');
+
+            if (searches.length === 0) {
+                recentSection.style.display = 'none';
+                return;
+            }
+
+            recentSection.style.display = 'block';
+            container.innerHTML = searches.map(search => `
+                <a href="?q=${encodeURIComponent(search)}" onclick="addToRecentSearches('${search}')"
+                   class="flex items-center gap-3 p-3 hover:bg-gray-800 rounded-lg transition">
+                    <span class="text-accent">🕒</span>
+                    <span class="text-gray-300">${search}</span>
+                </a>
+            `).join('');
+        }
+
+        // Search Overlay Functionality
+        const searchInput = document.getElementById('search-input');
+        const overlay = document.getElementById('search-overlay');
+        const modal = document.getElementById('search-modal');
+        const overlayInput = document.getElementById('overlay-search-input');
+
+        function openSearch() {
+            overlay.classList.remove('hidden');
+            displayRecentSearches(); // Show recent searches when opening
+            setTimeout(() => {
+                overlay.classList.add('opacity-100');
+                modal.classList.add('scale-100');
+                modal.classList.remove('scale-95');
+                overlayInput.focus();
+                // Sync the overlay input with the main search input
+                overlayInput.value = searchInput.value;
+            }, 10);
+        }
+
+        function closeSearch() {
+            overlay.classList.remove('opacity-100');
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-95');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                searchInput.focus();
+            }, 300);
+        }
+
+        // Open search overlay when main search input is focused
+        searchInput.addEventListener('focus', openSearch);
+
+        // Close search overlay when clicking outside
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeSearch();
+            }
+        });
+
+        // Close search overlay on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+                closeSearch();
+            }
+        });
+
+        // Submit overlay search form when enter is pressed
+        overlayInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = overlayInput.value.trim();
+                if (query) {
+                    addToRecentSearches(query);
+                }
+                document.getElementById('overlay-search-form').submit();
+            }
+        });
+
+        // Sync inputs in real-time
+        searchInput.addEventListener('input', function() {
+            overlayInput.value = this.value;
+        });
+
+        overlayInput.addEventListener('input', function() {
+            searchInput.value = this.value;
+        });
+
+        // Submit main search form when enter is pressed
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query) {
+                    addToRecentSearches(query);
+                }
+                document.getElementById('search-form').submit();
+            }
+        });
+
+        // Clear all filters function
+        function clearAllFilters() {
+            // Redirect to the same page without any query parameters
+            window.location.href = window.location.pathname;
+        }
+
+        // Share functionality
+        let currentShareUrl = '';
+
+        function shareProject(projectId, projectTitle) {
+            // Generate share URL
+            const baseUrl = window.location.origin;
+            currentShareUrl = `${baseUrl}{% url 'project_detail' 0 %}`.replace('0', projectId);
+
+            // Update modal content
+            document.getElementById('share-project-title').textContent = projectTitle;
+
+            // Update social share URLs
+            document.getElementById('twitter-share-btn').href =
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(projectTitle)}&url=${encodeURIComponent(currentShareUrl)}&via=unisync`;
+
+            document.getElementById('linkedin-share-btn').href =
+                `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentShareUrl)}`;
+
+            document.getElementById('facebook-share-btn').href =
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentShareUrl)}`;
+
+            // Show modal
+            const modal = document.getElementById('share-modal');
+            const modalContent = document.getElementById('share-modal-content');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modalContent.classList.add('scale-100');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('share-modal');
+            const modalContent = document.getElementById('share-modal-content');
+
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        async function copyShareLink() {
+            try {
+                await navigator.clipboard.writeText(currentShareUrl);
+
+                // Show success message
+                const successMsg = document.getElementById('share-copy-success');
+                successMsg.classList.remove('hidden');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    successMsg.classList.add('hidden');
+                }, 3000);
+
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = currentShareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                // Show success message
+                const successMsg = document.getElementById('share-copy-success');
+                successMsg.classList.remove('hidden');
+
+                setTimeout(() => {
+                    successMsg.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // Filter Toggle Functionality
+        function toggleFilters() {
+            const content = document.getElementById('filters-content');
+            const arrow = document.getElementById('filter-arrow');
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.display = 'none';
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Like functionality
+        function toggleLike(projectId, buttonElement) {
+            const icon = buttonElement.querySelector('svg');
+            const isLiked = icon.classList.contains('text-red-400');
+
+            if (isLiked) {
+                icon.classList.remove('text-red-400');
+                icon.classList.add('text-gray-400');
+                // Here you would typically send a request to unlike the project
+                showNotification('Project unliked', 'info');
+            } else {
+                icon.classList.remove('text-gray-400');
+                icon.classList.add('text-red-400');
+                // Add heart animation
+                icon.style.animation = 'heartbeat 0.6s ease-in-out';
+                setTimeout(() => icon.style.animation = '', 600);
+                // Here you would typically send a request to like the project
+                showNotification('Project liked! ❤️', 'success');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification-toast');
+            existingNotifications.forEach(notification => notification.remove());
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification-toast fixed top-4 right-4 px-6 py-3 rounded-lg font-semibold shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+
+            // Set colors based on type
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500', 'text-white');
+            } else if (type === 'warning') {
+                notification.classList.add('bg-yellow-500', 'text-black');
+            } else {
+                notification.classList.add('bg-blue-500', 'text-white');
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Stats counter animation
+        function animateStats() {
+            const stats = [
+                { id: 'totalProjects', target: {{ homepage_stats.total_projects|default:1250 }} },
+                { id: 'activeUsers', target: {{ homepage_stats.active_users|default:890 }} },
+                { id: 'totalConnections', target: {{ homepage_stats.total_connections|default:2100 }} },
+                { id: 'successStories', target: {{ homepage_stats.success_stories|default:45 }} }
+            ];
+
+            stats.forEach(stat => {
+                const element = document.getElementById(stat.id);
+                if (element) {
+                    const currentValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
+                    animateCounter(element, currentValue, stat.target, 2000);
+                }
+            });
+        }
+
+        function animateCounter(element, start, end, duration) {
+            const startTime = performance.now();
+            const updateCounter = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Easing function for smooth animation
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const current = Math.floor(start + (end - start) * easeOutQuart);
+
+                element.textContent = current.toLocaleString();
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                }
+            };
+            requestAnimationFrame(updateCounter);
+        }
+
+        // FAQ toggle functionality
+        function toggleFAQ(buttonElement) {
+            const faqItem = buttonElement.parentElement;
+            const content = faqItem.querySelector('div:last-child');
+            const arrow = buttonElement.querySelector('span:last-child');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+                // Smooth expand animation
+                content.style.maxHeight = '0px';
+                setTimeout(() => {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }, 10);
+                setTimeout(() => {
+                    content.style.maxHeight = 'none';
+                }, 300);
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                setTimeout(() => {
+                    content.style.maxHeight = '0px';
+                }, 10);
+                setTimeout(() => {
+                    content.classList.add('hidden');
+                    arrow.style.transform = 'rotate(0deg)';
+                }, 300);
+            }
+        }
+
+        // Newsletter subscription
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('newsletter-email');
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                showNotification('Please enter your email address', 'warning');
+                return;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Here you would typically send the email to your backend
+            showNotification('Thank you for subscribing! 🎉', 'success');
+            emailInput.value = '';
+
+            // Add a fun animation to the newsletter section
+            const newsletterSection = event.target.closest('section');
+            newsletterSection.style.animation = 'bounce 0.6s ease-in-out';
+            setTimeout(() => newsletterSection.style.animation = '', 600);
+        }
+
+        // Like functionality
+        function toggleLike(postId, btn) {
+            // Send AJAX request to toggle like
+            fetch('/accounts/like-project/' + postId + '/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                const icon = btn.querySelector('svg');
+                if (data.liked) {
+                    icon.classList.remove('text-gray-400');
+                    icon.classList.add('text-red-400');
+                    showNotification('Project liked! ❤️', 'success');
+                } else {
+                    icon.classList.remove('text-red-400');
+                    icon.classList.add('text-gray-400');
+                    showNotification('Project unliked', 'info');
+                }
+            })
+            .catch(error => {
+                console.error('Like error:', error);
+                showNotification('Failed to toggle like', 'error');
+            });
+        }
+
+        // Initialize animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start stats animation after a delay
+            setTimeout(animateStats, 1000);
+
+            // Add magnetic hover effect to buttons
+            const magneticButtons = document.querySelectorAll('.magnetic-hover');
+            magneticButtons.forEach(button => {
+                button.addEventListener('mousemove', function(e) {
+                    const rect = button.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+
+                    button.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
+                });
+
+                button.addEventListener('mouseleave', function() {
+                    button.style.transform = 'translate(0px, 0px)';
+                });
+            });
+
+            // Add scroll-triggered animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections for scroll animations
+            document.querySelectorAll('section').forEach(section => {
+                observer.observe(section);
+            });
+
+            // Add parallax effect to hero section
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const heroSection = document.querySelector('section.relative.min-h-screen');
+                if (heroSection) {
+                    const rate = scrolled * -0.5;
+                    heroSection.style.transform = `translateY(${rate}px)`;
+                }
+            });
+        });
+    </script>
+    {% endif %}
+
+    <!-- Live Feed Section -->
+    <section class="px-6 py-12 max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+    <div>
+    <h3 class="text-3xl font-bold flex items-center gap-3">
+        <span class="text-4xl">🔥</span>
+        {% if has_filters %}Filtered Results{% else %}Live Feed{% endif %}
+        {% if feed_posts %}
+        <span class="text-lg text-gray-400">({{ feed_posts|length }} projects)</span>
+            {% endif %}
+        </h3>
+    <p class="text-gray-400 mt-2">Discover amazing projects and connect with creators</p>
+    </div>
+        <a href="{% url 'post_project' %}" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-semibold shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                <span>🚀</span> Post Project
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
+            <!-- Enhanced Project Cards -->
+            {% for post in feed_posts %}
+            <div class="bg-softDark p-6 rounded-2xl shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 border border-gray-700 relative group overflow-hidden card-hover">
+            <!-- Status Badge -->
+            <div class="absolute top-4 left-4 flex gap-2 z-10">
+            {% if post.status == 'active' %}
+            <span class="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs font-medium border border-green-500/30 flex items-center gap-1">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            Active
+            </span>
+            {% elif post.status == 'completed' %}
+            <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-medium border border-blue-500/30 flex items-center gap-1">
+            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+            Completed
+            </span>
+            {% else %}
+            <span class="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-medium border border-yellow-500/30 flex items-center gap-1">
+            <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+            Planning
+            </span>
+            {% endif %}
+            </div>
+
+            <!-- Share Button (top-right corner) - Always Visible -->
+            <button type="button" onclick="openShareModal({{ post.id }}, '{{ post.title|escapejs }}', '{{ post.description|escapejs }}')" class="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white rounded-lg transition-all duration-300 transform hover:scale-110 z-20 shadow-lg cursor-pointer" title="Share this project">
+            <svg class="w-5 h-5 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+            </svg>
+            </button>
+
+                <!-- User Info -->
+                <div class="flex items-center gap-3 mb-4 pt-8">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold shadow-lg">
+                        {{ post.user.username|first|upper }}
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-white">{{ post.user.username }}</p>
+                        <p class="text-xs text-gray-400">{{ post.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <!-- Like Button -->
+                    <button class="p-2 hover:bg-gray-700 rounded-lg transition-colors group/like" onclick="toggleLike({{ post.id }}, this)">
+                        <svg class="w-5 h-5 text-gray-400 group-hover/like:text-red-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Project Title -->
+                <h4 class="text-xl font-bold text-accent mb-3 group-hover:text-accent/80 transition-colors">{{ post.title }}</h4>
+
+                <!-- Project Description -->
+                <p class="text-sm text-gray-300 mb-4 line-clamp-3 leading-relaxed">{{ post.description }}</p>
+
+                <!-- Project Stage & Timeline -->
+                <div class="flex flex-wrap gap-2 mb-4 text-xs">
+                    {% if post.stage %}
+                    <span class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg font-medium">{{ post.stage|title }}</span>
+                    {% endif %}
+                    {% if post.timeline %}
+                    <span class="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg font-medium">{{ post.timeline }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Technologies -->
+                {% if post.tech_list %}
+                <div class="flex flex-wrap gap-2 mb-4">
+                    {% for tech in post.tech_list %}
+                    <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-semibold border border-blue-500/30 hover:bg-blue-500/30 transition-colors cursor-pointer">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Project Stats -->
+                <div class="flex items-center justify-between mb-4 text-xs text-gray-400">
+                <div class="flex items-center gap-4">
+                {% if post.team_size %}
+                <span class="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-300 rounded-lg">
+                <span>👥</span>
+                {{ post.team_size }} members
+                </span>
+                {% endif %}
+                {% if post.views %}
+                <span class="flex items-center gap-1 px-2 py-1 bg-gray-500/10 text-gray-300 rounded-lg">
+                <span>👁️</span>
+                {{ post.views }} views
+                </span>
+                {% endif %}
+                </div>
+                {% if post.looking_for %}
+                <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-lg font-medium text-xs">Looking for: {{ post.looking_for }}</span>
+                {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mt-4">
+                    <a href="{% url 'project_detail' post.id %}" class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white text-center transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        View Details
+                    </a>
+                    {% if post.user.id != user.id %}
+                    <button onclick="quickConnect({{ post.user.id }}, '{{ post.user.username }}', this)" class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        🤝 Connect
+                    </button>
+                    {% else %}
+                    <div class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg font-semibold text-center">
+                        Your Project
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Hover Effect Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-16 bg-gradient-to-br from-softDark to-gray-800/50 rounded-2xl border border-gray-700/50 relative overflow-hidden">
+            <!-- Background decoration -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/20 rounded-full blur-xl"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-24 h-24 bg-cyan-500/20 rounded-full blur-xl"></div>
+            </div>
+
+            <div class="relative z-10">
+            {% if has_filters %}
+            <div class="text-7xl mb-6 animate-bounce">🔍</div>
+            <h3 class="text-2xl font-bold mb-4 text-white">No projects match your filters</h3>
+            <p class="text-gray-400 mb-8 max-w-md mx-auto">Try broadening your search terms or clearing some filters to discover more amazing projects.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{% url 'main_home' %}" class="px-8 py-3 bg-gradient-to-r from-accent to-purple-600 hover:from-accent/80 hover:to-purple-600/80 text-white rounded-full font-semibold shadow-lg hover:scale-105 transition-all duration-300">
+                        ✨ Clear All Filters
+                    </a>
+                    <a href="{% url 'post_project' %}" class="px-8 py-3 bg-gray-600/50 hover:bg-gray-500/50 text-white rounded-full font-semibold border border-gray-500/30 hover:scale-105 transition-all duration-300">
+                    🚀 Post a Project
+                    </a>
+                </div>
+                    {% else %}
+                    <div class="text-7xl mb-6 animate-pulse">🚀</div>
+                    <h3 class="text-2xl font-bold mb-4 text-white">Ready to Launch Your First Project?</h3>
+                    <p class="text-gray-400 mb-8 max-w-md mx-auto">Join the community of innovators! Share your ideas, find collaborators, and bring your projects to life.</p>
+                    <a href="{% url 'post_project' %}" class="inline-block px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-bold text-lg shadow-2xl hover:scale-110 transition-all duration-300 animate-pulse">
+                        🎯 Start Your Journey
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="px-6 py-16 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-white mb-4">🚀 How UniSync Works</h2>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">Get started in minutes and turn your ideas into reality</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <!-- Step 1 -->
+            <div class="text-center group">
+                <div class="relative mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mx-auto shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                        1
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-sm font-bold animate-pulse">
+                        📝
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">Post Your Project</h3>
+                <p class="text-gray-300 leading-relaxed">Share your idea, describe what you're building, and specify the skills you need. Our AI helps match you with the perfect collaborators.</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="text-center group">
+                <div class="relative mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mx-auto shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                        2
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-sm font-bold animate-pulse">
+                        🤝
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">Find Collaborators</h3>
+                <p class="text-gray-300 leading-relaxed">Connect with talented students, developers, and entrepreneurs. Browse profiles, send connection requests, and build your dream team.</p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="text-center group">
+                <div class="relative mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-3xl font-bold text-white mx-auto shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                        3
+                    </div>
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-sm font-bold animate-pulse">
+                        🚀
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-4">Launch & Scale</h3>
+                <p class="text-gray-300 leading-relaxed">Build your MVP, attract investors, and scale your startup. Access funding opportunities and mentorship from our network.</p>
+            </div>
+        </div>
+
+        <!-- Connection Line -->
+        <div class="hidden md:block relative">
+            <div class="absolute top-10 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-0.5 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full"></div>
+            <div class="absolute top-6 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-accent rounded-full animate-ping"></div>
+        </div>
+    </section>
+
+
+
+    <!-- Professional Footer -->
+    {% include "components/footer.html" %}
+
+    <!-- Animations -->
+    <style>
+        @keyframes fade-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out both;
+        }
+
+        /* Enhanced Animations */
+        @keyframes fade-in-up-delayed {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fade-in-up-delayed 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Floating Particles */
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, rgba(168, 85, 247, 0.6), rgba(236, 72, 153, 0.6));
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Geometric Shapes */
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .geometric-shape {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            animation: geometric-float 8s ease-in-out infinite;
+        }
+
+        .geometric-shape:nth-child(1) {
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .geometric-shape:nth-child(2) {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+
+        .geometric-shape:nth-child(3) {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        @keyframes geometric-float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.6;
+            }
+        }
+
+        /* 3D Card Effects */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-8px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
+        }
+
+        /* Button 3D Effects */
+        .button-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease;
+        }
+
+        .button-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.3));
+            border-radius: inherit;
+            transform: translateZ(-1px);
+            z-index: -1;
+        }
+
+        .glow-3d {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .glow-3d:hover {
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+
+        /* Magnetic Hover Effect */
+        .magnetic-hover {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Line Clamp Utility */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Notification Animations */
+        .notification-toast {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive Design Improvements */
+        @media (max-width: 768px) {
+            .fade-in-up {
+                animation-duration: 0.6s;
+            }
+
+            .card-3d:hover {
+                transform: translateY(-4px) rotateX(2deg) rotateY(2deg);
+            }
+
+            .floating-particles .particle {
+                width: 2px;
+                height: 2px;
+            }
+        }
+
+        /* Performance Optimizations */
+        .will-change-transform {
+            will-change: transform;
+        }
+
+        .gpu-accelerated {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(45, 45, 68, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #3AB7BF, #A855F7);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #2D9C9F, #9333EA);
+        }
+
+        /* Enhanced Card Hover Effects */
+        .card-hover {
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px) rotateX(5deg) rotateY(5deg) scale(1.02);
+            box-shadow:
+                0 25px 50px -12px rgba(168, 85, 247, 0.25),
+                0 0 30px rgba(168, 85, 247, 0.1);
+        }
+
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                rgba(168, 85, 247, 0.05),
+                rgba(236, 72, 153, 0.05)
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+            z-index: -1;
+        }
+
+        .card-hover:hover::before {
+            opacity: 1;
+        }
+
+        /* Staggered animation for cards */
+        .animate-fade-in-up:nth-child(1) { animation-delay: 0.1s; }
+        .animate-fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+        .animate-fade-in-up:nth-child(3) { animation-delay: 0.3s; }
+        .animate-fade-in-up:nth-child(4) { animation-delay: 0.4s; }
+        .animate-fade-in-up:nth-child(5) { animation-delay: 0.5s; }
+        .animate-fade-in-up:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+
+    <!-- Global functions for HTML onclick handlers -->
+    <script>
+        // Notification function (global)
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification-toast');
+            existingNotifications.forEach(notification => notification.remove());
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification-toast fixed top-4 right-4 px-6 py-3 rounded-lg font-semibold shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+
+            // Set colors based on type
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500', 'text-white');
+            } else if (type === 'warning') {
+                notification.classList.add('bg-yellow-500', 'text-black');
+            } else {
+                notification.classList.add('bg-blue-500', 'text-white');
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Quick Connect function (needs to be globally accessible)
+        function quickConnect(userId, username, buttonElement) {
+            console.log('quickConnect called for user:', username, 'id:', userId);
+            const button = buttonElement || event.currentTarget || event.target;
+            if (!button) {
+                console.error('Button element not found');
+                return;
+            }
+            const originalContent = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="inline-flex items-center gap-2"><span class="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></span> Sending...</span>';
+            
+            // Send AJAX request to send connection request
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                showNotification('Security error: CSRF token missing', 'error');
+                button.innerHTML = originalContent;
+                button.disabled = false;
+                return;
+            }
+
+            console.log('Making fetch request to:', `/accounts/send-connection-request/${userId}/`);
+            console.log('Method: POST');
+            console.log('CSRF Token:', csrfToken.value);
+            
+            fetch(`/accounts/send-connection-request/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken.value,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showNotification(`Connection request sent to ${username}!`, 'success');
+                    // Update the button
+                    button.innerHTML = '✅ Request Sent';
+                    button.disabled = true;
+                    button.classList.add('opacity-70');
+                    button.classList.remove('hover:bg-accent/80');
+                } else {
+                    showNotification(data.message || 'Failed to send connection request', 'error');
+                    // Restore button
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Connection request error:', error);
+                showNotification('Error: ' + error.message, 'error');
+                // Restore button
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            });
+            }
+
+                    // =============================================
+                    // SHARE FUNCTIONS (Global - for onclick handlers)
+         // =============================================
+         
+         function openShareModal(projectId, projectTitle, projectDescription = '') {
+             console.log('openShareModal called:', projectId, projectTitle, projectDescription);
+             
+             // Update share modal content
+             const titleEl = document.getElementById('share-project-title');
+             if (titleEl) {
+                 titleEl.innerHTML = `<strong>${projectTitle}</strong>`;
+             }
+
+             // Generate share URLs
+             const baseUrl = window.location.origin;
+             const projectUrl = `${baseUrl}/accounts/project/${projectId}/`;
+
+             // Twitter share
+             const twitterText = projectDescription ? `${projectTitle} - ${projectDescription.substring(0, 50)}...` : `Check out this project: ${projectTitle}`;
+             const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(projectUrl)}`;
+             const twitterBtn = document.getElementById('twitter-share-btn');
+             if (twitterBtn) twitterBtn.href = twitterUrl;
+
+             // LinkedIn share
+             const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(projectUrl)}`;
+             const linkedinBtn = document.getElementById('linkedin-share-btn');
+             if (linkedinBtn) linkedinBtn.href = linkedinUrl;
+
+             // Facebook share
+             const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(projectUrl)}`;
+             const facebookBtn = document.getElementById('facebook-share-btn');
+             if (facebookBtn) facebookBtn.href = facebookUrl;
+
+             // Show modal with animation
+             const modal = document.getElementById('share-modal');
+             const modalContent = document.getElementById('share-modal-content');
+             
+             if (modal) {
+                 modal.classList.remove('hidden');
+                 // Force reflow to trigger animation
+                 void modal.offsetHeight;
+                 modal.classList.add('opacity-100');
+                 if (modalContent) modalContent.classList.add('scale-100');
+                 console.log('Modal displayed');
+             } else {
+                 console.error('Share modal not found');
+             }
+         }
+
+         // Close share modal
+         function closeShareModal() {
+             const modal = document.getElementById('share-modal');
+             const modalContent = document.getElementById('share-modal-content');
+             
+             if (modal) {
+                 modal.classList.remove('opacity-100');
+                 modal.classList.add('opacity-0');
+                 if (modalContent) {
+                     modalContent.classList.remove('scale-100');
+                     modalContent.classList.add('scale-95');
+                 }
+                 
+                 setTimeout(() => {
+                     modal.classList.add('hidden');
+                 }, 300);
+             }
+         }
+
+         // Copy share link
+         function copyShareLink() {
+             // Get the twitter URL to extract project URL
+             const twitterBtn = document.getElementById('twitter-share-btn');
+             let projectUrl = window.location.href;
+             
+             // Extract URL from Twitter share button href
+             if (twitterBtn && twitterBtn.href) {
+                 const urlMatch = twitterBtn.href.match(/url=([^&]*)/);
+                 if (urlMatch) {
+                     projectUrl = decodeURIComponent(urlMatch[1]);
+                 }
+             }
+             
+             navigator.clipboard.writeText(projectUrl).then(() => {
+                 const successMsg = document.getElementById('share-copy-success');
+                 if (successMsg) {
+                     successMsg.classList.remove('hidden');
+                     setTimeout(() => successMsg.classList.add('hidden'), 2000);
+                 }
+             }).catch(err => {
+                 console.error('Failed to copy: ', err);
+                 // Fallback for older browsers
+                 const textArea = document.createElement('textarea');
+                 textArea.value = projectUrl;
+                 document.body.appendChild(textArea);
+                 textArea.select();
+                 document.execCommand('copy');
+                 document.body.removeChild(textArea);
+                 
+                 const successMsg = document.getElementById('share-copy-success');
+                 if (successMsg) {
+                     successMsg.classList.remove('hidden');
+                     setTimeout(() => successMsg.classList.add('hidden'), 2000);
+                 }
+             });
+         }
+
+         // Alias for backward compatibility
+         function shareProject(projectId, projectTitle) {
+             openShareModal(projectId, projectTitle);
+         }
+     </script>
+ </body>
+ </html>

@@ -1,0 +1,1088 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🚀 UniSync | Create Amazing Projects</title>
+  <meta name="description" content="Post your innovative project and find the perfect collaborators to bring your ideas to life.">
+  <meta name="keywords" content="project collaboration, team building, innovation, startup, development">
+
+  <!-- Enhanced styling and fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+  <!-- Enhanced animations and effects -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent-1: #667eea;
+      --accent-2: #764ba2;
+      --glass-bg: rgba(255,255,255,0.04);
+      --muted: rgba(255,255,255,0.7);
+      --success: #10b981;
+    }
+    *{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;box-sizing:border-box}
+    html,body{height:100%;margin:0;color:#EAEAEA;background:#0b1020;overflow-y:auto}
+    /* Animated gradient mesh background */
+    .bg-mesh{
+      position:fixed;inset:0;z-index:-20;pointer-events:none;
+      background:
+        radial-gradient(600px 600px at 10% 20%, rgba(118,75,162,0.12), transparent 12%),
+        radial-gradient(500px 500px at 80% 80%, rgba(102,126,234,0.12), transparent 12%),
+        linear-gradient(180deg,#071027 0%, #0b1020 100%);
+      animation: meshShift 20s linear infinite;
+      filter:blur(36px);
+      transform: translateZ(0);
+    }
+    @keyframes meshShift {
+      0%{transform:translateY(0) scale(1)}
+      50%{transform:translateY(-10px) scale(1.02)}
+      100%{transform:translateY(0) scale(1)}
+    }
+
+    /* Page container */
+    .page {
+      max-width:1200px;
+      margin:48px auto;
+      padding:24px;
+    }
+
+    /* Glass navbar */
+    nav.glass {
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.04);
+      border-radius:12px;
+    }
+
+    /* Layout */
+    .grid-layout{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:24px;
+      align-items:start;
+    }
+    @media (max-width: 960px){
+      .grid-layout{grid-template-columns:1fr; padding-bottom:24px}
+      .lottie-wrap { display: none; }
+      .page { margin: 24px auto; }
+    }
+
+    /* Enhanced animations and effects */
+    @keyframes slideInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.6); }
+    }
+
+    .animate-slide-in { animation: slideInUp 0.6s ease-out; }
+    .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+    /* Better form interactions */
+    .form-input:focus + .input-icon,
+    .form-textarea:focus + .input-icon {
+      color: rgba(102, 126, 234, 0.8);
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.4);
+      transition: color 0.2s ease;
+      pointer-events: none;
+    }
+
+    /* Enhanced file upload area */
+    .file-upload-area.dragover {
+      background: linear-gradient(180deg, rgba(102, 126, 234, 0.1), rgba(102, 126, 234, 0.05));
+      border-color: rgba(102, 126, 234, 0.6);
+      transform: scale(1.02);
+    }
+
+    .file-upload-area::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .file-upload-area:hover::before {
+      opacity: 1;
+    }
+
+    /* Better step indicators */
+    .step-indicator {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-indicator::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: shine 2s infinite;
+    }
+
+    @keyframes shine {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Enhanced notification system */
+    .notification-enter {
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Loading states */
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Success celebration */
+    .success-burst {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Sidebar card */
+    .card {
+      background:var(--glass-bg);
+      border-radius:14px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    }
+
+    /* Steps (improved) */
+    .steps {
+      display:flex;gap:10px;justify-content:center;margin:12px 0;
+    }
+    .step {
+      width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,0.03);color:var(--muted);font-weight:700;transition:all 180ms ease;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .step.active{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;box-shadow:0 10px 30px rgba(118,75,162,0.18)}
+    .step.completed{background:var(--success);color:white}
+
+    /* Form panels */
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:28px;
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+      min-height:220px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* Step transition animations */
+    .panel { transition: transform 360ms cubic-bezier(.22,.9,.32,1), opacity 320ms ease; }
+    .panel.hidden { transform: translateX(40px) scale(0.995); opacity:0; pointer-events:none; height:0 !important; padding:0 28px; margin:0; border:0 }
+    .panel.visible { transform: translateX(0) scale(1); opacity:1; pointer-events:auto }
+
+    /* Inputs */
+    .form-input, .form-textarea, select.form-input, .tom-select {
+      width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+      background:transparent;color:#EAEAEA;outline:none;font-size:14px;
+      transition: box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    /* Specific styling for select dropdown options */
+    select.form-input option {
+      background:#1E1E2F;color:#EAEAEA;padding:8px;
+    }
+
+    /* Ensure TomSelect dropdown items are visible */
+    .ts-dropdown .ts-dropdown-content .option {
+      color:#EAEAEA !important;
+      background:#1E1E2F !important;
+    }
+
+    .ts-dropdown .ts-dropdown-content .option:hover,
+    .ts-dropdown .ts-dropdown-content .option.active {
+      background:#2D2D44 !important;
+      color:#EAEAEA !important;
+    }
+
+    .ts-dropdown {
+      background:#1E1E2F !important;
+      border:1px solid rgba(255,255,255,0.06) !important;
+    }
+
+    .ts-dropdown .ts-dropdown-content {
+      background:#1E1E2F !important;
+    }
+
+    /* TomSelect input styling */
+    .ts-control {
+      background:#1E1E2F !important;
+      border:1px solid rgba(255,255,255,0.06) !important;
+      color:#EAEAEA !important;
+    }
+
+    .ts-control input {
+      color:#EAEAEA !important;
+    }
+
+    /* TomSelect selected items */
+    .ts-control .item {
+      background:#667eea !important;
+      color:#EAEAEA !important;
+      border:1px solid rgba(102,126,234,0.3) !important;
+    }
+
+    /* TomSelect placeholder */
+    .ts-control .ts-input::placeholder {
+      color:#9aa3b2 !important;
+    }
+    .form-input:focus, .form-textarea:focus { box-shadow:0 6px 24px rgba(102,126,234,0.08); border-color: rgba(102,126,234,0.8) }
+
+    .form-textarea { min-height:110px; resize:vertical; padding-top:12px }
+
+    .muted { color: #9aa3b2; font-size:13px }
+
+    /* file upload */
+    .file-upload-area {
+      border:2px dashed rgba(255,255,255,0.04); padding:18px;border-radius:10px;text-align:center;
+      cursor:pointer;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+      transition:all 200ms ease;
+    }
+    .file-upload-area:hover{transform:translateY(-4px); box-shadow:0 12px 40px rgba(2,6,23,0.6)}
+
+    /* primary button */
+    .btn-primary {
+      background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      color:white;padding:10px 16px;border-radius:10px;border:none;font-weight:600;cursor:pointer;
+      box-shadow:0 8px 30px rgba(118,75,162,0.18);transition:transform 160ms ease, box-shadow 160ms ease;
+    }
+    .btn-primary:hover{transform:translateY(-3px)}
+
+    /* small utility */
+    .row { display:flex; gap:12px; align-items:center }
+    .col { display:flex; flex-direction:column; gap:8px }
+
+    /* AI suggestion pill */
+    .ai-suggestion {
+        display:inline-flex; gap:8px;align-items:center;padding:8px 10px;border-radius:999px;
+        background:linear-gradient(90deg, rgba(118,75,162,0.14), rgba(102,126,234,0.07));
+        border:1px solid rgba(255,255,255,0.025); cursor:pointer;
+      }
+
+     .logo-link {
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+     }
+     .logo-link:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+     }
+
+    /* floating Lottie container */
+    .lottie-wrap {
+      position:fixed; right:2.5rem; top:8rem; width:280px;height:280px;z-index:-5;pointer-events:none;
+      filter: drop-shadow(0 18px 60px rgba(118,75,162,0.12));
+      transform: translateZ(0);
+    }
+    @media (max-width: 980px){ .lottie-wrap { display:none } }
+
+    /* notification container placeholder (uses JS) */
+    .notification-container { position:fixed; right:20px; top:20px; z-index:1200; display:flex; flex-direction:column; gap:12px }
+
+    /* preview card styling inside modal */
+    .modal { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1500; background:rgba(2,6,23,0.6) }
+    .modal-card { background: linear-gradient(180deg, #0f1724, #071027); border-radius:12px; padding:20px; width:900px; max-width:95%; color:white; border:1px solid rgba(255,255,255,0.04) }
+    @media (max-width:640px){ .modal-card{padding:12px} }
+
+    /* small badges/tags */
+    .tag { padding:6px 10px; border-radius:999px; font-size:12px; background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:white; display:inline-block }
+    .tag-light{ background:rgba(255,255,255,0.03); color:var(--muted) }
+
+    /* accessibility outline fallback */
+    :focus{ outline: 2px dashed rgba(102,126,234,0.25); outline-offset:4px; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <!-- Floating Lottie 3D globe -->
+  <div class="lottie-wrap" aria-hidden="true">
+    <lottie-player
+      src="https://lottie.host/7dc65e7f-90e5-47ea-8af3-dae9345b69db/global-collaboration.json"
+      background="transparent" speed="0.9" loop autoplay style="width:100%;height:100%"></lottie-player>
+  </div>
+
+  <!-- Notification container -->
+  <div class="notification-container" id="notificationContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <nav class="glass sticky top-4 mx-6 p-3 page" role="navigation" aria-label="Main navigation">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="{% url 'main_home' %}" class="logo-link text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400" title="Back to Home">
+          <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
+          <span>UniSync</span>
+        </a>
+        <div class="text-sm muted">Create a project & find collaborators</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="btn-primary" onclick="showProjectPreview()" title="Preview project"><i data-lucide="eye" class="w-4 h-4 mr-2 inline"></i>Preview</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page" role="main" aria-labelledby="page-heading">
+    <h1 id="page-heading" class="sr-only">Create Project</h1>
+
+    <div class="grid-layout">
+
+      <!-- Sidebar -->
+      <aside class="card" aria-label="Progress & tips">
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto rounded-lg flex items-center justify-center bg-gradient-to-r from-purple-600 to-pink-500 mb-3 shadow-lg"><i data-lucide="rocket" class="w-6 h-6 text-white"></i></div>
+          <h3 class="text-lg font-semibold">Project Setup</h3>
+          <p class="muted text-sm">Follow steps to publish your project.</p>
+        </div>
+
+        <div class="steps mt-4" role="tablist" aria-label="Steps">
+          <div class="step active" id="step1-indicator">1</div>
+          <div class="step" id="step2-indicator">2</div>
+          <div class="step" id="step3-indicator">3</div>
+          <div class="step" id="step4-indicator">4</div>
+        </div>
+
+        <div class="mt-4">
+          <div class="flex justify-between text-xs muted"><span>Progress</span><span id="sidebarProgressText">25%</span></div>
+          <div class="progress-bar" style="margin-top:6px;height:8px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden">
+            <div id="sidebarProgressFill" style="width:25%;height:100%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width 300ms ease"></div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold">Pro Tips</h4>
+          <ul class="text-xs muted mt-2 space-y-1">
+            <li>• Use a clear title & short description</li>
+            <li>• Add technologies and roles you need</li>
+            <li>• Upload an image or demo link</li>
+            <li>• Preview before publishing</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Form -->
+      <section class="space-y-6">
+
+        <form id="projectForm" method="POST" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Step 1 -->
+          <div id="step1" class="panel visible" role="tabpanel" aria-labelledby="step1-indicator">
+            <div class="row" style="align-items:center;justify-content:space-between">
+              <div class="col" style="flex:1">
+                <div class="row" style="gap:12px;align-items:center">
+                  <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 inline-flex items-center justify-center">
+                    <strong>1</strong>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-semibold">Basic Information</h2>
+                    <p class="muted text-sm">Tell others what your project does</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI suggestion trigger -->
+              <div>
+                <button type="button" class="ai-suggestion" onclick="openAISuggestions()">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>
+                  AI Suggestions
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-4">
+              <div>
+                <label class="text-sm font-semibold">Project Title <span class="muted text-xs">(required)</span></label>
+                <div class="row" style="gap:8px">
+                  <div class="relative flex-1">
+                    <input id="projectTitle" name="title" class="form-input" type="text" placeholder="Enter an engaging project title" required aria-required="true" />
+                    <i data-lucide="type" class="input-icon w-4 h-4"></i>
+                  </div>
+                  <button type="button" class="btn-primary animate-pulse-glow" title="Get AI title suggestion" onclick="suggestTitle()"><i data-lucide="sparkles" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">Short Description <span class="muted text-xs">(max 200 chars)</span></label>
+                <div class="relative">
+                  <textarea id="shortDescription" name="short_description" class="form-textarea" maxlength="200" placeholder="Brief overview (e.g., Build an AI assistant to help students study...)" required aria-required="true"></textarea>
+                  <i data-lucide="file-text" class="input-icon w-4 h-4"></i>
+                </div>
+                <div class="muted text-xs flex justify-between items-center mt-1">
+                  <span id="charCount">0</span>
+                  <span class="flex items-center gap-1">
+                    <span>200 chars</span>
+                    <div class="w-16 h-1 bg-gray-600 rounded-full overflow-hidden">
+                      <div id="charProgress" class="h-full bg-gradient-to-r from-accent to-purple-400 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">Category</label>
+                <div class="relative">
+                  <select id="projectCategory" name="category" class="form-input" required>
+                    <option value="">Select a category</option>
+                    <option value="web-development">🌐 Web Development</option>
+                    <option value="mobile-app">📱 Mobile App</option>
+                    <option value="ai-ml">🤖 AI/ML</option>
+                    <option value="blockchain">⛓️ Blockchain</option>
+                    <option value="data-science">📊 Data Science</option>
+                    <option value="iot">🔗 IoT</option>
+                    <option value="game-dev">🎮 Game Development</option>
+                    <option value="other">❓ Other</option>
+                  </select>
+                  <i data-lucide="grid-3x-3" class="input-icon w-4 h-4"></i>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div id="step2" class="panel hidden" role="tabpanel" aria-labelledby="step2-indicator">
+            <div class="row" style="gap:12px;align-items:center">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 inline-flex items-center justify-center">2</div>
+              <div>
+                <h2 class="text-xl font-semibold">Project Details</h2>
+                <p class="muted text-sm">Describe the problem and how your project solves it</p>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-4">
+              <div>
+                <label class="text-sm font-semibold">Detailed Description</label>
+                <textarea id="projectDescription" name="description" class="form-textarea" placeholder="Explain: the problem, solution, how it works, and who benefits"></textarea>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">Technologies</label>
+                <select id="technologies" name="technologies" multiple></select>
+              </div>
+
+              <div class="row">
+                <div style="flex:1">
+                  <label class="text-sm font-semibold">Stage</label>
+                  <select id="projectStage" name="stage" class="form-input">
+                    <option value="idea">Idea</option>
+                    <option value="planning">Planning</option>
+                    <option value="development">In Development</option>
+                    <option value="mvp">MVP</option>
+                    <option value="launched">Launched</option>
+                  </select>
+                </div>
+                <div style="width:160px">
+                  <label class="text-sm font-semibold">Timeline</label>
+                  <select id="projectTimeline" name="timeline" class="form-input">
+                    <option value="1-month">1 month</option>
+                    <option value="3-months">3 months</option>
+                    <option value="6-months">6 months</option>
+                    <option value="1-year">1 year</option>
+                    <option value="ongoing">Ongoing</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div id="step3" class="panel hidden" role="tabpanel" aria-labelledby="step3-indicator">
+            <div class="row" style="gap:12px;align-items:center">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 inline-flex items-center justify-center">3</div>
+              <div>
+                <h2 class="text-xl font-semibold">Team & Collaboration</h2>
+                <p class="muted text-sm">Who will build this with you?</p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <div class="row" style="gap:18px">
+                <div style="flex:1">
+                  <label class="text-sm font-semibold">Team Size</label>
+                  <select id="teamSize" name="team_size" class="form-input">
+                    <option value="solo">Just me</option>
+                    <option value="2-5">2-5 people</option>
+                    <option value="6-15">6-15 people</option>
+                    <option value="16+">16+ people</option>
+                  </select>
+                </div>
+
+                <div style="width:200px">
+                  <label class="text-sm font-semibold">Commitment</label>
+                  <select id="commitmentLevel" name="commitment" class="form-input">
+                    <option value="part-time">Part-time</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="freelance">Freelance</option>
+                    <option value="volunteer">Volunteer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <label class="text-sm font-semibold">Roles you're looking for</label>
+                <select id="looking_for" name="looking_for" multiple></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div id="step4" class="panel hidden" role="tabpanel" aria-labelledby="step4-indicator">
+            <div class="row" style="gap:12px;align-items:center">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-400 to-red-500 inline-flex items-center justify-center">4</div>
+              <div>
+                <h2 class="text-xl font-semibold">Media & Links</h2>
+                <p class="muted text-sm">Add images, demos, and links</p>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-4">
+              <div>
+                <label class="text-sm font-semibold">Upload Images / Videos</label>
+                <div id="fileUploadArea" class="file-upload-area" tabindex="0" role="button" aria-label="Upload files">
+                  <div class="muted">Drop files here or click to upload — PNG, JPG, GIF, MP4 up to 10MB</div>
+                  <input id="projectFiles" name="files" type="file" accept="image/*,video/*" multiple style="display:none">
+                </div>
+                <div id="filePreview" class="mt-3"></div>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">Project Links</label>
+                <div id="linksContainer">
+                  <div class="link-input flex gap-2 mb-2">
+                    <select class="form-input" aria-label="Link type">
+                      <option value="github">GitHub</option>
+                      <option value="website">Website</option>
+                      <option value="demo">Live Demo</option>
+                      <option value="figma">Figma</option>
+                    </select>
+                    <input type="url" placeholder="https://" class="form-input" />
+                    <button type="button" onclick="removeLink(this)" class="text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <div class="mt-2"><button type="button" class="text-sm muted" onclick="addLink()"><i data-lucide="plus" class="w-4 h-4"></i> Add link</button></div>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">Collaboration Needs</label>
+                <textarea id="collaborationNeeds" name="collaboration_needs" class="form-textarea" placeholder="Describe the skills/roles you need from collaborators" rows="3"></textarea>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold">GitHub Repository (optional)</label>
+                <input id="githubLink" name="github_link" type="url" class="form-input" placeholder="https://github.com/your-repo" />
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Navigation (prev/next/submit) -->
+          <div class="row" style="justify-content:center;margin-top:12px;gap:12px">
+            <button type="button" id="prevBtn" class="form-input" style="max-width:160px;display:none" onclick="prevStep()">← Previous</button>
+            <button type="button" id="nextBtn" class="btn-primary" style="max-width:200px" onclick="nextStep()">Next step →</button>
+            <button type="submit" id="submitBtn" class="btn-primary" style="max-width:200px;display:none">Launch Project 🚀</button>
+          </div>
+
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Latest Projects Feed -->
+  <section class="page" aria-label="Latest Projects">
+    <h2 class="text-xl text-white font-semibold mb-4">Your Latest Projects</h2>
+    <div class="grid gap-4">
+      {% for project in projects %}
+      <div class="card">
+        <div class="flex items-center justify-between">
+          <div>
+            <a href="{% url 'project_detail' project.id %}" class="text-lg font-semibold text-white">{{ project.title }}</a>
+            <div class="muted text-sm">{{ project.category }} • {{ project.created_at|date:'M j, Y' }}</div>
+          </div>
+          <div class="text-sm muted">{{ project.technologies }}</div>
+        </div>
+        <p class="mt-2 muted text-sm">{{ project.description|truncatechars:200 }}</p>
+      </div>
+      {% empty %}
+      <div class="card muted">You have no projects yet. Post your first project!</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Modal placeholder (created dynamically) -->
+  <div id="modalRoot"></div>
+
+<script>
+  // Globals
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  // Initialize icons
+  document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    initTomSelects();
+    initFileUpload();
+    initCharCount();
+    setupAutoSave();
+    showWelcomeNotification();
+    updateUI();
+  });
+
+  // TomSelect initialization
+  function initTomSelects(){
+    if (document.getElementById('technologies')){
+      new TomSelect('#technologies', {
+        plugins: ['remove_button'],
+        placeholder: 'Choose technologies or type to add...',
+        persist:false, create:true, maxItems:8
+      });
+    }
+    if (document.getElementById('looking_for')){
+      new TomSelect('#looking_for', {
+        plugins: ['remove_button'],
+        placeholder: 'Select roles you need...',
+        persist:false, create:true, maxItems:6
+      });
+    }
+  }
+
+  // Show server-side Django messages on page load (using the showNotification helper)
+  document.addEventListener('DOMContentLoaded', function(){
+    {% if messages %}
+      {% for message in messages %}
+        showNotification("{{ message|escapejs }}", "{{ message.tags }}", 5000);
+        {% if 'Project posted successfully' in message %}
+          confetti({ particleCount: 80, spread: 100, origin: { y: 0.25 } });
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  });
+
+  // Step navigation
+  function updateUI(){
+    // panels
+    for(let i=1;i<=totalSteps;i++){
+      const panel = document.getElementById('step'+i);
+      if(!panel) continue;
+      if(i===currentStep){ panel.classList.remove('hidden'); panel.classList.add('visible') } else { panel.classList.remove('visible'); panel.classList.add('hidden') }
+    }
+    // sidebar indicators
+    for(let i=1;i<=totalSteps;i++){
+      const el = document.getElementById(`step${i}-indicator`);
+      el.className='step';
+      if(i<currentStep) el.classList.add('completed');
+      else if(i===currentStep) el.classList.add('active');
+      else el.classList.add('pending');
+    }
+    // buttons
+    document.getElementById('prevBtn').style.display = currentStep>1 ? 'inline-flex':'none';
+    document.getElementById('nextBtn').style.display = currentStep<totalSteps ? 'inline-flex':'none';
+    document.getElementById('submitBtn').style.display = currentStep===totalSteps ? 'inline-flex':'none';
+
+    // progress (sidebar)
+    const pct = Math.round(((currentStep-1)/(totalSteps-1))*100);
+    document.getElementById('sidebarProgressFill').style.width = pct+'%';
+    document.getElementById('sidebarProgressText').textContent = pct+'%';
+  }
+
+  function nextStep(){
+    if(!validateCurrentStep()) return;
+    if(currentStep<totalSteps){ currentStep++; updateUI(); showStepToast(); }
+  }
+  function prevStep(){ if(currentStep>1){ currentStep--; updateUI(); } }
+
+  // Simple validation for required fields on visible panel
+  function validateCurrentStep(){
+    const panel = document.getElementById('step'+currentStep);
+    if(!panel) return true;
+    const required = panel.querySelectorAll('[required]');
+    let ok = true;
+    for(const el of required){
+      if(!el.value || el.value.trim()===''){ el.style.borderColor = '#ef4444'; ok=false; setTimeout(()=>el.style.borderColor='',1500); }
+    }
+    if(!ok){ showNotification('Please fill required fields','error'); return false;}
+    return true;
+  }
+
+  // Character count for short description with progress bar
+  function initCharCount(){
+    const short = document.getElementById('shortDescription');
+    const charCount = document.getElementById('charCount');
+    const charProgress = document.getElementById('charProgress');
+    if(!short||!charCount) return;
+
+    function updateCharCount(){
+      const current = short.value.length;
+      const max = 200;
+      const percentage = (current / max) * 100;
+
+      charCount.textContent = current;
+      charProgress.style.width = Math.min(percentage, 100) + '%';
+
+      // Change color based on progress
+      if(percentage > 90){
+        charProgress.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+      } else if(percentage > 70){
+        charProgress.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+      } else {
+        charProgress.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+      }
+    }
+
+    short.addEventListener('input', updateCharCount);
+    updateCharCount(); // Initial call
+  }
+
+  // File upload setup
+  function initFileUpload(){
+    const area = document.getElementById('fileUploadArea');
+    const input = document.getElementById('projectFiles');
+    if(!area||!input) return;
+    area.addEventListener('click', ()=>input.click());
+    area.addEventListener('dragover', (e)=>{ e.preventDefault(); area.classList.add('dragover') });
+    area.addEventListener('dragleave', ()=>area.classList.remove('dragover'));
+    area.addEventListener('drop', (e)=>{ e.preventDefault(); area.classList.remove('dragover'); handleFiles(e.dataTransfer.files) });
+    input.addEventListener('change', ()=>handleFiles(input.files));
+  }
+
+  function handleFiles(files){
+    const preview = document.getElementById('filePreview');
+    preview.innerHTML = '';
+    const maxSize = 10*1024*1024;
+    Array.from(files).forEach(file=>{
+      if(file.size>maxSize){ showNotification(`${file.name} is too big (max 10MB).`,'warning'); return; }
+      const line = document.createElement('div'); line.className='flex items-center gap-3 p-3 bg-white/3 rounded-md';
+      const isImg = file.type.startsWith('image/');
+      line.innerHTML = `<div class="w-12 h-12 bg-white/5 rounded-md flex items-center justify-center">${isImg?'<i data-lucide="image" class="w-5 h-5"></i>':'<i data-lucide="film" class="w-5 h-5"></i>'}</div>
+                        <div style="flex:1"><div class="font-medium text-sm">${file.name}</div><div class="muted text-xs">${(file.size/1024/1024).toFixed(2)} MB</div></div>
+                        <button type="button" class="text-red-400" onclick="this.closest('div').remove()"><i data-lucide="x" class="w-4 h-4"></i></button>`;
+      preview.appendChild(line);
+    });
+    lucide.createIcons();
+  }
+
+  // Add/remove link helpers
+  function addLink(){
+    const container = document.getElementById('linksContainer');
+    const div = document.createElement('div'); div.className='link-input flex gap-2 mb-2';
+    div.innerHTML = `<select class="form-input"><option value="github">GitHub</option><option value="website">Website</option><option value="demo">Live Demo</option><option value="figma">Figma</option></select>
+      <input type="url" placeholder="https://" class="form-input" /><button type="button" onclick="removeLink(this)" class="text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>`;
+    container.appendChild(div);
+    lucide.createIcons();
+  }
+  function removeLink(btn){ btn.closest('.link-input').remove(); }
+
+  // Notifications (stacking)
+  function showNotification(message, type='info', duration=4200){
+    const container = document.getElementById('notificationContainer');
+    const el = document.createElement('div');
+    el.className = 'card'; el.style.minWidth='240px'; el.style.background='linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))';
+    el.innerHTML = `<div style="display:flex;gap:12px;align-items:center">
+      <div style="width:36px;height:36px;border-radius:8px;background:${type==='error'?'#ef4444':type==='success'? 'linear-gradient(90deg,#10b981,#059669)' : 'rgba(255,255,255,0.03)'};display:flex;align-items:center;justify-content:center">
+        <i data-lucide="${type==='error'?'x':type==='success'?'check-circle':'info'}" class="w-4 h-4"></i>
+      </div>
+      <div style="flex:1"><div style="font-weight:600">${message}</div></div>
+      <button aria-label="Dismiss" style="background:transparent;border:none;color:inherit;cursor:pointer" onclick="this.closest('.card').remove()"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>`;
+    container.prepend(el);
+    lucide.createIcons();
+    if(duration>0) setTimeout(()=>{ if(el.parentElement) el.parentElement.removeChild(el) }, duration);
+  }
+
+  // Welcome message
+  function showWelcomeNotification(){
+    setTimeout(()=> showNotification('Welcome! Start by filling out the basic information.','info',5000),900);
+  }
+
+  // Step toast on navigation
+  function showStepToast(){
+    const messages = {
+      2: 'Nice — now provide details and technologies.',
+      3: 'Good — who will help build this?',
+      4: 'Almost there — add media and links.'
+    };
+    if(messages[currentStep]) showNotification(messages[currentStep],'info',3000);
+  }
+
+  // Auto-save to localStorage (debounced)
+  let autosaveTimer;
+  function setupAutoSave(){
+    const form = document.getElementById('projectForm');
+    form.querySelectorAll('input,textarea,select').forEach(el=>{
+      el.addEventListener('input', debounce(()=>saveDraft(), 900));
+      el.addEventListener('change', debounce(()=>saveDraft(), 900));
+    });
+  }
+  function saveDraft(){
+    const fd = new FormData(document.getElementById('projectForm'));
+    const data = {
+      title: fd.get('title')||'',
+      short_description: fd.get('short_description')||'',
+      category: fd.get('category')||'',
+      description: fd.get('description')||'',
+      technologies: fd.getAll('technologies'),
+      looking_for: fd.getAll('looking_for'),
+      timestamp: new Date().toISOString(),
+      step: currentStep
+    };
+    localStorage.setItem('unisync_draft_v2', JSON.stringify(data));
+    showNotification('Draft saved locally','success',1200);
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem('unisync_draft_v2'); if(!raw) return;
+      const d = JSON.parse(raw);
+      if(d.title) document.getElementById('projectTitle').value = d.title;
+      if(d.short_description) document.getElementById('shortDescription').value = d.short_description;
+      if(d.category) document.getElementById('projectCategory').value = d.category;
+      if(d.description) document.getElementById('projectDescription').value = d.description;
+      if(d.technologies && d.technologies.length && document.querySelector('#technologies') && document.querySelector('#technologies').tomselect){
+        d.technologies.forEach(t => document.querySelector('#technologies').tomselect.addItem(t));
+      }
+      if(d.looking_for && d.looking_for.length && document.querySelector('#looking_for') && document.querySelector('#looking_for').tomselect){
+        d.looking_for.forEach(x => document.querySelector('#looking_for').tomselect.addItem(x));
+      }
+      if(d.step) { currentStep = d.step; updateUI(); }
+      showNotification('Loaded previous draft','info',2000);
+    }catch(e){ console.warn('draft load error',e) }
+  }
+  loadDraft();
+
+  // Debounce helper
+  function debounce(fn, ms=300){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms) } }
+
+  // AI suggestions (local client-side heuristics, no server calls)
+  function openAISuggestions(){
+    const modal = document.createElement('div'); modal.className='modal'; modal.setAttribute('role','dialog');
+    modal.innerHTML = `<div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><h3 style="font-size:18px;margin:0">AI Suggestions</h3><p class="muted" style="margin:0">Quick suggestions for title & description</p></div>
+        <div><button onclick="document.getElementById('modalRoot').innerHTML='';" class="text-sm muted">Close</button></div>
+      </div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.02)"><strong>Title Ideas</strong>
+          <ul id="aiTitleList" style="margin-top:8px" class="muted text-sm"></ul>
+        </div>
+        <div style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.02)"><strong>Short Descriptions</strong>
+          <ul id="aiDescList" style="margin-top:8px" class="muted text-sm"></ul>
+        </div>
+      </div>
+    </div>`;
+    document.getElementById('modalRoot').appendChild(modal);
+
+    // generate suggestions based on current inputs
+    const title = (document.getElementById('projectTitle')?.value||'').toLowerCase();
+    const cat = (document.getElementById('projectCategory')?.value||'').toLowerCase();
+
+    const titleSeeds = [
+      `${title||'Smart'} Assistant for ${cat||'users'}`,
+      `${title||'Collaborative'} ${cat || 'Platform'}`,
+      `${title||'Open'} Source ${cat || 'Tool'}`
+    ];
+
+    const descSeeds = [
+      `Build a ${cat||'web'} project that helps users ${title||'achieve X'} with real-time data and collaboration.`,
+      `A simple, scalable ${cat||'solution'} to streamline workflows and surface valuable insights.`,
+      `An accessible app that focuses on user-centred design and fast iteration cycles.`
+    ];
+
+    // Render and wire "use" action
+    const titleList = document.getElementById('aiTitleList');
+    titleList.innerHTML = '';
+    titleSeeds.forEach(t => {
+      const li = document.createElement('li');
+      li.innerHTML = `<div style="display:flex;justify-content:space-between;gap:8px"><span>${escapeHtml(capitalize(t))}</span><div><button class="ai-suggestion" onclick="applySuggestion('title','${escapeAttr(t)}')">Use</button></div></div>`;
+      titleList.appendChild(li);
+    });
+
+    const descList = document.getElementById('aiDescList');
+    descList.innerHTML = '';
+    descSeeds.forEach(d => {
+      const li = document.createElement('li');
+      li.innerHTML = `<div style="display:flex;justify-content:space-between;gap:8px"><span>${escapeHtml(d)}</span><div><button class="ai-suggestion" onclick="applySuggestion('description','${escapeAttr(d)}')">Use</button></div></div>`;
+      descList.appendChild(li);
+    });
+  }
+
+  function suggestTitle(){
+    const suggestions = ['Collaborative AI Assistant', 'Smart Classroom Dashboard', 'Open Source Collaboration Platform', 'AI Study Buddy', 'Community Project Hub'];
+    const pick = suggestions[Math.floor(Math.random()*suggestions.length)];
+    document.getElementById('projectTitle').value = pick;
+    showNotification('Title suggestion applied','success',1400);
+  }
+
+  function applySuggestion(field, val){
+    document.getElementById(field==='title'?'projectTitle':'shortDescription').value = val;
+    // close modal
+    document.getElementById('modalRoot').innerHTML = '';
+    showNotification('Suggestion applied','success',1200);
+  }
+
+  // small helpers
+  function capitalize(s){ return s.replace(/\b\w/g, c => c.toUpperCase()) }
+  function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escapeAttr(s){ return (s+'').replace(/"/g,'&quot;').replace(/'/g,'&#39;') }
+
+  // Preview modal (re-usable)
+  function showProjectPreview(){
+    const fd = new FormData(document.getElementById('projectForm'));
+    const preview = {
+      title: fd.get('title') || 'Untitled Project',
+      short: fd.get('short_description') || 'No short description provided',
+      category: fd.get('category') || 'Uncategorized',
+      techs: fd.getAll('technologies') || [],
+      roles: fd.getAll('looking_for') || []
+    };
+    const modal = document.createElement('div'); modal.className='modal';
+    modal.innerHTML = `<div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><h3 style="margin:0">${escapeHtml(preview.title)}</h3><div class="muted">${escapeHtml(preview.category)}</div></div>
+        <div><button onclick="document.getElementById('modalRoot').innerHTML='';" class="muted">Close</button></div>
+      </div>
+      <div style="margin-top:12px"><p class="muted">${escapeHtml(preview.short)}</p></div>
+      <div style="margin-top:12px"><strong>Technologies:</strong> ${preview.techs.length? preview.techs.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join(' '):'<span class="tag-light">None</span>'}</div>
+      <div style="margin-top:12px"><strong>Looking for:</strong> ${preview.roles.length? preview.roles.map(r=>`<span class="tag">${escapeHtml(r)}</span>`).join(' '):'<span class="tag-light">None</span>'}</div>
+      <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-primary" onclick="document.getElementById('modalRoot').innerHTML='';">Continue Editing</button>
+      </div>
+    </div>`;
+    document.getElementById('modalRoot').appendChild(modal);
+  }
+
+  // On submit: validate, confetti, show success notification
+  document.getElementById('projectForm').addEventListener('submit', function(e){
+    // Basic final validation
+    if(!document.getElementById('projectTitle').value.trim()){ showNotification('Title is required','error'); document.getElementById('projectTitle').focus(); return; }
+
+    // Show a quick publishing notification; allow the server to save the project via standard POST
+    showNotification('Publishing project...','info',2000);
+    setTimeout(()=> {
+      // confetti burst
+      confetti({
+        particleCount: 160,
+        spread: 130,
+        origin: { y: 0.2 }
+      });
+      showNotification('Project published! 🎉','success',5000);
+      // clear local draft
+      localStorage.removeItem('unisync_draft_v2');
+      // optional: redirect or reset form
+    }, 800);
+  });
+
+  // show step completion celebration as micro-feedback
+  function showStepCompletion(){
+    // small confetti shine
+    confetti({
+      particleCount: 40,
+      spread: 45,
+      origin: { y: 0.35 }
+    });
+    showNotification('Nice progress!','success',1800);
+  }
+
+  // small wrapper used when user completes a step successfully
+  // call showStepCompletion() at appropriate times (for brevity called inside validate)
+  // (already used in nextStep flow if needed)
+
+  // Call showStepCompletion when navigating to next step (if desired)
+  // we call it when user reaches step >1
+  const origNextStep = nextStep;
+  window.nextStep = function(){
+    origNextStep();
+    if(currentStep>1) showStepCompletion();
+  }
+
+  // Utility: small delayed initialization for TomSelect addOption suggestions
+  // Suggest technologies based on category
+  document.getElementById('projectCategory').addEventListener('change', function(){
+    const mapping = {
+      'web-development': ['React','Node.js','Django','PostgreSQL'],
+      'mobile-app': ['React Native','Flutter','Swift','Kotlin'],
+      'ai-ml': ['Python','TensorFlow','PyTorch','scikit-learn'],
+      'blockchain': ['Solidity','Web3.js','Smart Contracts'],
+      'data-science': ['Python','Pandas','Jupyter','SQL']
+    };
+    const sel = this.value;
+    const tom = document.querySelector('#technologies')?.tomselect;
+    if(tom && mapping[sel]){
+      mapping[sel].forEach(t => tom.addOption({value:t,text:t}));
+      showNotification('Technology suggestions added','info',1400);
+    }
+  });
+
+  // minor UI helpers to expose prevStep globally
+  window.prevStep = prevStep;
+  window.addLink = addLink;
+  window.removeLink = removeLink;
+  window.showProjectPreview = showProjectPreview;
+  window.openAISuggestions = openAISuggestions;
+  window.suggestTitle = suggestTitle;
+  window.applySuggestion = applySuggestion;
+
+</script>
+
+</body>
+</html>

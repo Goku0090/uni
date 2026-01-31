@@ -1,0 +1,1423 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile - UniSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+            color: #e2e8f0;
+            position: relative;
+        }
+
+        /* Animated background with code patterns */
+        .code-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+            animation: code-flow 20s ease-in-out infinite;
+        }
+
+        @keyframes code-flow {
+            0%, 100% { background-position: 0% 0%; }
+            25% { background-position: 100% 100%; }
+            50% { background-position: 50% 50%; }
+            75% { background-position: 25% 75%; }
+        }
+
+        /* Floating code snippets */
+        .floating-code {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: rgba(148, 163, 184, 0.1);
+            pointer-events: none;
+            animation: code-float 15s linear infinite;
+        }
+
+        .floating-code:nth-child(1) {
+            top: 10%; left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-code:nth-child(2) {
+            top: 20%; right: 15%;
+            animation-delay: -3s;
+        }
+
+        .floating-code:nth-child(3) {
+            bottom: 30%; left: 20%;
+            animation-delay: -6s;
+        }
+
+        @keyframes code-float {
+            0% { transform: translateY(0px) translateX(0px); opacity: 0.1; }
+            25% { transform: translateY(-20px) translateX(10px); opacity: 0.2; }
+            50% { transform: translateY(-40px) translateX(-10px); opacity: 0.1; }
+            75% { transform: translateY(-20px) translateX(20px); opacity: 0.15; }
+            100% { transform: translateY(0px) translateX(0px); opacity: 0.1; }
+        }
+
+        /* Collaboration-themed illustration */
+        .collaboration-illustration {
+            position: absolute;
+            top: 8%;
+            right: -120px;
+            width: 300px;
+            height: 300px;
+            z-index: 0;
+            opacity: 0.7;
+            animation: collaboration-pulse 10s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.3));
+            pointer-events: none;
+        }
+
+        @keyframes collaboration-pulse {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0;
+            padding: 40px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(25px);
+            box-shadow: 0 0 60px rgba(102,126,234,0.25);
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+            box-sizing: border-box;
+            animation: fadeInUp 1s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(102,126,234,0.08), transparent 70%);
+            animation: spin 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(102,126,234,0.3);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .progress-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #667eea, #764ba2);
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-text {
+            text-align: right;
+            color: #4b5563;
+            font-weight: 600;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        form {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-section {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(229,231,235,0.8);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            border-radius: 16px 16px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .form-section.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .form-section:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow:
+                0 12px 40px rgba(0,0,0,0.12),
+                0 0 0 1px rgba(102,126,234,0.1);
+        }
+
+        .form-section:hover::before {
+            opacity: 1;
+        }
+
+        .form-section.completed {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .form-section.completed::before {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            opacity: 1;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 18px;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fff;
+            transition: all 0.3s ease;
+            color: #1f2937;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .file-input-wrapper {
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 30px;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 20px rgba(102,126,234,0.1);
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.8s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .autosave-status {
+            text-align: right;
+            font-size: 13px;
+            color: #10b981;
+            font-weight: 500;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Responsive layout adjustments */
+        @media (max-width: 1024px) {
+            .hero-illustration {
+                right: -120px;
+                width: 240px;
+                height: 240px;
+                opacity: 0.4;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-illustration {
+                display: none;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 30px;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0;
+                padding: 20px;
+            }
+
+            .skills-grid, .interest-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+
+            .nlp-analysis {
+                margin-top: 10px !important;
+                padding: 10px !important;
+            }
+        }
+
+        /* Enhanced form styles for new fields */
+        .skills-grid, .interest-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .skill-category, .interest-category {
+            margin-bottom: 20px;
+        }
+
+        .skill-category h4, .interest-category h4 {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group, .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .checkbox-group label, .radio-group label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #4b5563;
+            cursor: pointer;
+            padding: 6px 0;
+            transition: color 0.2s ease;
+        }
+
+        .checkbox-group label:hover, .radio-group label:hover {
+            color: #667eea;
+        }
+
+        .checkbox-group input[type="checkbox"],
+        .radio-group input[type="radio"] {
+            margin-right: 8px;
+            accent-color: #667eea;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .links-grid input[type="url"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .links-grid input[type="url"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* NLP Analysis Styles */
+        .nlp-analysis {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            animation: fadeInAnalysis 0.5s ease-out;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @keyframes fadeInAnalysis {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nlp-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .nlp-results {
+            display: grid;
+            gap: 12px;
+        }
+
+        .nlp-skills, .nlp-interests, .nlp-sentiment {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .nlp-skills strong, .nlp-interests strong, .nlp-sentiment strong {
+            color: #1f2937;
+            margin-right: 8px;
+        }
+
+        .skills-tags, .interest-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .skill-tag, .interest-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        /* College Autocomplete Styles */
+        #collegeSuggestions.show {
+            display: block !important;
+        }
+
+        .suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-item:before {
+            content: '📍';
+            font-size: 14px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.suggestion-selected {
+            background-color: #f3f4f6;
+            color: #2563eb;
+            padding-left: 24px;
+        }
+
+        .suggestion-item.suggestion-selected:before {
+            opacity: 1;
+        }
+
+        .suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-no-result {
+            color: #999;
+            cursor: default;
+            pointer-events: none;
+            font-style: italic;
+            text-align: center;
+            padding: 16px !important;
+        }
+
+        .suggestion-error {
+            color: #ef4444;
+            cursor: default;
+            pointer-events: none;
+            text-align: center;
+            padding: 16px !important;
+            font-weight: 500;
+        }
+
+        .suggestion-loading {
+            color: #667eea;
+            cursor: default;
+            pointer-events: none;
+            text-align: center;
+            padding: 16px !important;
+            font-weight: 500;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            #collegeSuggestions {
+                max-height: 200px !important;
+            }
+
+            .suggestion {
+                padding: 16px !important;
+                font-size: 16px !important;
+            }
+
+            .suggestion-item:before {
+                font-size: 16px;
+            }
+            font-weight: 500;
+            animation: tagFadeIn 0.3s ease-out;
+        }
+
+        .interest-tag {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        @keyframes tagFadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .sentiment-positive {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .sentiment-negative {
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .sentiment-neutral {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Page wrapper for proper centering */
+        .page-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Content overflow prevention */
+        * {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .container * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .form-section * {
+            max-width: 100%;
+        }
+
+        .skills-grid, .interest-grid {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .checkbox-group, .radio-group {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .checkbox-group label, .radio-group label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .nlp-analysis {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .skills-tags, .interest-tags {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .skill-tag, .interest-tag {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .skills-grid, .interest-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .checkbox-group, .radio-group {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px;
+            }
+
+            .skill-tag, .interest-tag {
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .checkbox-group, .radio-group {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-group label, .radio-group label {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-wrapper">
+<div class="code-background">
+    <!-- Floating code snippets -->
+    <div class="floating-code">def build_future():</div>
+    <div class="floating-code">    collaborate()</div>
+    <div class="floating-code">    innovate()</div>
+</div>
+
+<!-- Particles container -->
+<div id="particles-js"></div>
+
+<!-- 👥 Collaboration-themed Illustration -->
+<div class="collaboration-illustration">
+  <lottie-player
+    src="https://lottie.host/7dc65e7f-90e5-47ea-8af3-dae9345b69db/global-collaboration.json"
+    background="transparent"
+    speed="0.8"
+    loop
+    autoplay>
+  </lottie-player>
+</div>
+
+<div class="container">
+    <div class="logo">
+        <i class="fas fa-users" style="font-size: 20px;"></i>
+    </div>
+    <h2>Build Your Developer Profile</h2>
+    <p class="subtitle">Showcase your skills and connect with fellow student innovators 🚀</p>
+
+    <div class="progress-container">
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+        <div class="progress-text" id="progressText">0% completed</div>
+    </div>
+
+    <div class="autosave-status" id="autosaveStatus">All changes saved ✅</div>
+
+    <form method="POST" enctype="multipart/form-data" id="profileForm">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-camera"></i>Profile Picture</div>
+            <div class="file-input-wrapper">
+                <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                <p>Upload a photo that represents your developer journey</p>
+                <input type="file" name="profile_photo" id="profile_photo" accept="image/*">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-user-graduate"></i>Student Identity</div>
+            <input type="text" name="full_name" id="full_name" placeholder="Your full name" required>
+            <br><br>
+            <input type="text" name="location" id="location" placeholder="City, Country (e.g., Mumbai, India)" required>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-university"></i>Your Institution</div>
+            <div style="position: relative;">
+                <input
+                    type="text"
+                    id="collegeInput"
+                    name="college"
+                    placeholder="College / University"
+                    autocomplete="off"
+                    aria-label="Search colleges"
+                    aria-autocomplete="list"
+                    aria-controls="collegeSuggestions"
+                    aria-expanded="false"
+                    role="combobox"
+                    required
+                />
+                <div
+                    id="collegeSuggestions"
+                    role="listbox"
+                    style="
+                        position: absolute;
+                        top: calc(100% + 8px);
+                        left: 0;
+                        right: 0;
+                        background: white;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 8px;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        z-index: 50;
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                        display: none;
+                    "
+                ></div>
+            </div>
+            <p style="margin-top: 8px; font-size: 13px; color: #6b7280;">
+                Start typing to search colleges (e.g., "IIT Bombay", "Delhi University")
+            </p>
+
+            <!-- Manual College Entry Field (Hidden by default) -->
+            <div id="manualCollegeContainer" class="manual-college-container" style="display: none; margin-top: 15px;">
+                <label for="manualCollegeInput" style="display: block; font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 8px;">
+                    <i class="fas fa-edit" style="margin-right: 8px; color: #10b981;"></i>
+                    Enter College Name Manually
+                </label>
+                <input
+                    type="text"
+                    id="manualCollegeInput"
+                    name="manual_college"
+                    placeholder="Type your college name here..."
+                    class="form-input"
+                    style="border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);"
+                />
+                <p style="margin-top: 6px; font-size: 12px; color: #6b7280;">
+                    This will override the search field above
+                </p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-code-branch"></i>Developer Toolkit</div>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h4>Programming Languages</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="skills[]" value="python"> Python</label>
+                        <label><input type="checkbox" name="skills[]" value="javascript"> JavaScript</label>
+                        <label><input type="checkbox" name="skills[]" value="java"> Java</label>
+                        <label><input type="checkbox" name="skills[]" value="cpp"> C++</label>
+                        <label><input type="checkbox" name="skills[]" value="react"> React</label>
+                        <label><input type="checkbox" name="skills[]" value="nodejs"> Node.js</label>
+                        <label><input type="checkbox" name="skills[]" value="php"> PHP</label>
+                        <label><input type="checkbox" name="skills[]" value="ruby"> Ruby</label>
+                        <label><input type="checkbox" name="skills[]" value="swift"> Swift</label>
+                        <label><input type="checkbox" name="skills[]" value="kotlin"> Kotlin</label>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h4>Technologies & Frameworks</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="skills[]" value="django"> Django</label>
+                        <label><input type="checkbox" name="skills[]" value="flask"> Flask</label>
+                        <label><input type="checkbox" name="skills[]" value="tensorflow"> TensorFlow</label>
+                        <label><input type="checkbox" name="skills[]" value="pytorch"> PyTorch</label>
+                        <label><input type="checkbox" name="skills[]" value="docker"> Docker</label>
+                        <label><input type="checkbox" name="skills[]" value="kubernetes"> Kubernetes</label>
+                        <label><input type="checkbox" name="skills[]" value="aws"> AWS</label>
+                        <label><input type="checkbox" name="skills[]" value="mongodb"> MongoDB</label>
+                        <label><input type="checkbox" name="skills[]" value="postgresql"> PostgreSQL</label>
+                        <label><input type="checkbox" name="skills[]" value="git"> Git</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-rocket"></i>Collaboration Goals</div>
+            <div class="interest-grid">
+                <div class="interest-category">
+                    <h4>I Want to Build Projects In</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="project_interests[]" value="web-apps"> Web Applications</label>
+                        <label><input type="checkbox" name="project_interests[]" value="mobile-apps"> Mobile Apps</label>
+                        <label><input type="checkbox" name="project_interests[]" value="ai-ml"> AI/ML Projects</label>
+                        <label><input type="checkbox" name="project_interests[]" value="data-science"> Data Science</label>
+                        <label><input type="checkbox" name="project_interests[]" value="blockchain"> Blockchain</label>
+                        <label><input type="checkbox" name="project_interests[]" value="iot"> IoT Projects</label>
+                        <label><input type="checkbox" name="project_interests[]" value="game-dev"> Game Development</label>
+                        <label><input type="checkbox" name="project_interests[]" value="ecommerce"> E-commerce</label>
+                        <label><input type="checkbox" name="project_interests[]" value="social-platform"> Social Platforms</label>
+                        <label><input type="checkbox" name="project_interests[]" value="productivity"> Productivity Tools</label>
+                    </div>
+                </div>
+
+                <div class="interest-category">
+                    <h4>My Preferred Role</h4>
+                    <div class="radio-group">
+                        <label><input type="radio" name="role_preference" value="leader"> Project Leader</label>
+                        <label><input type="radio" name="role_preference" value="developer"> Developer</label>
+                        <label><input type="radio" name="role_preference" value="designer"> Designer</label>
+                        <label><input type="radio" name="role_preference" value="researcher"> Researcher</label>
+                        <label><input type="radio" name="role_preference" value="flexible"> Flexible/Any Role</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-lightbulb"></i>Passionate About</div>
+            <textarea name="interests" id="interests" placeholder="What technologies, domains, or problems excite you? (e.g., AI, Web Development, Climate Tech, FinTech, Open Source)" rows="2"></textarea>
+        </div>
+
+
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-code"></i>Code Repositories</div>
+            <div class="links-grid">
+                <input type="url" name="github" id="github" placeholder="GitHub Profile URL (show your projects)">
+                <input type="url" name="linkedin" id="linkedin" placeholder="LinkedIn Profile URL">
+                <input type="url" name="portfolio" id="portfolio" placeholder="Personal Portfolio/Website URL">
+                <input type="url" name="behance" id="behance" placeholder="Behance/Dribbble URL (for designers)">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-title"><i class="fas fa-user-astronaut"></i>Your Developer Story</div>
+            <textarea name="bio" id="bio" placeholder="Share your coding journey, what inspires you to build, and what kind of collaborators you're looking for. What problems do you want to solve together?" maxlength="2000" rows="4"></textarea>
+            <div class="char-count">
+                <span id="charCount">0</span>/2000 characters
+            </div>
+
+            <!-- NLP Analysis Results -->
+            <div id="nlp-analysis" class="nlp-analysis" style="display: none; margin-top: 15px;">
+                <div class="nlp-header">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Analysis</span>
+                </div>
+                <div class="nlp-results">
+                    <div class="nlp-skills" id="extracted-skills">
+                        <strong>Detected Skills:</strong>
+                        <div id="skills-list" class="skills-tags"></div>
+                    </div>
+                    <div class="nlp-interests" id="interest-analysis">
+                        <strong>Interest Areas:</strong>
+                        <div id="interests-list" class="interest-tags"></div>
+                    </div>
+                    <div class="nlp-sentiment" id="sentiment-analysis">
+                        <strong>Tone:</strong>
+                        <span id="sentiment-text">Neutral</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Complete Profile</button>
+    </form>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<script>
+particlesJS('particles-js', {
+  particles: {
+    number: { value: 60 },
+    color: { value: ['#667eea', '#764ba2', '#10b981'] },
+    shape: { type: 'circle' },
+    opacity: { value: 0.2 },
+    size: { value: 3 },
+    line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.1 },
+    move: { enable: true, speed: 1.2 }
+  },
+  retina_detect: true
+});
+
+    // ===== COLLEGE AUTOCOMPLETE =====
+const collegeInput = document.getElementById('collegeInput');
+const collegeSuggestions = document.getElementById('collegeSuggestions');
+let collegeTimeout;
+let manualEntryMode = false;
+
+if (collegeInput) {
+    collegeInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+
+        // If in manual entry mode, don't show suggestions
+        if (manualEntryMode) {
+            return;
+        }
+
+        if (query.length < 1) {
+            collegeSuggestions.style.display = 'none';
+            return;
+        }
+
+        clearTimeout(collegeTimeout);
+        collegeTimeout = setTimeout(() => {
+            fetch(`/api/college-search/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    let suggestionsHTML = '';
+
+                    if (data.results && data.results.length > 0) {
+                        suggestionsHTML = data.results
+                            .map(college => `<div style="padding: 10px; border-bottom: 1px solid #e5e7eb; cursor: pointer;" onclick="selectCollege('${college}')">${college}</div>`)
+                            .join('');
+                    } else {
+                        suggestionsHTML = '<div style="padding: 10px; color: #6b7280; font-style: italic;">No colleges found</div>';
+                    }
+
+                    // Always add "Others" option
+                    suggestionsHTML += `<div style="padding: 10px; border-top: 1px solid #e5e7eb; cursor: pointer; background: rgba(102, 126, 234, 0.05);" onclick="selectOthers()">
+                        <strong>✏️ Others - Enter manually</strong><br>
+                        <small style="color: #6b7280;">Click here to type your college name</small>
+                    </div>`;
+
+                    collegeSuggestions.innerHTML = suggestionsHTML;
+                    collegeSuggestions.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('College search error:', error);
+                    collegeSuggestions.innerHTML = `
+                        <div style="padding: 10px; color: #ef4444;">Search error - try again</div>
+                        <div style="padding: 10px; border-top: 1px solid #e5e7eb; cursor: pointer; background: rgba(102, 126, 234, 0.05);" onclick="selectOthers()">
+                            <strong>✏️ Others - Enter manually</strong><br>
+                            <small style="color: #6b7280;">Click here to type your college name</small>
+                        </div>
+                    `;
+                    collegeSuggestions.style.display = 'block';
+                });
+        }, 300);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== collegeInput) {
+            collegeSuggestions.style.display = 'none';
+        }
+    });
+}
+
+function selectCollege(college) {
+    collegeInput.value = college;
+    collegeSuggestions.style.display = 'none';
+    updateProgress();
+}
+
+function selectOthers() {
+    // Clear suggestions
+    collegeSuggestions.style.display = 'none';
+
+    // Show manual college entry field
+    const manualContainer = document.getElementById('manualCollegeContainer');
+    const manualInput = document.getElementById('manualCollegeInput');
+
+    if (manualContainer) {
+        manualContainer.style.display = 'block';
+        manualInput.focus();
+
+        // Make manual field required when shown
+        manualInput.setAttribute('required', 'required');
+
+        // Update progress to include the new field
+        updateProgress();
+    }
+}
+
+// Animate progress bar and autosave
+const form = document.getElementById('profileForm');
+const fill = document.getElementById('progressFill');
+const text = document.getElementById('progressText');
+const autosave = document.getElementById('autosaveStatus');
+const fields = ['profile_photo', 'full_name', 'location', 'collegeInput', 'interests', 'bio'];
+const charCount = document.getElementById('charCount');
+const bioTextarea = document.getElementById('bio');
+
+// Character count for bio
+if (bioTextarea && charCount) {
+    bioTextarea.addEventListener('input', () => {
+        charCount.textContent = bioTextarea.value.length;
+
+        // Debounce NLP analysis
+        clearTimeout(window.nlpTimeout);
+        window.nlpTimeout = setTimeout(() => {
+            analyzeBio(bioTextarea.value);
+        }, 500);
+    });
+}
+
+// NLP Analysis function using server-side API
+function analyzeBio(text) {
+    const analysisDiv = document.getElementById('nlp-analysis');
+    const skillsList = document.getElementById('skills-list');
+    const interestsList = document.getElementById('interests-list');
+    const sentimentText = document.getElementById('sentiment-text');
+
+    if (!text || text.length < 10) {
+        analysisDiv.style.display = 'none';
+        return;
+    }
+
+    // Show loading state
+    skillsList.innerHTML = '<span style="color: #667eea;">Analyzing...</span>';
+    interestsList.innerHTML = '<span style="color: #667eea;">Analyzing...</span>';
+    sentimentText.textContent = 'Analyzing...';
+    sentimentText.className = 'sentiment-neutral';
+    analysisDiv.style.display = 'block';
+
+    // Send to server for analysis
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+    fetch('/accounts/nlp-analyze/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Display skills
+        if (data.skills && data.skills.length > 0) {
+            skillsList.innerHTML = data.skills.map(skill =>
+                `<span class="skill-tag">${skill.charAt(0).toUpperCase() + skill.slice(1)}</span>`
+            ).join('');
+        } else {
+            skillsList.innerHTML = '<span style="color: #6b7280; font-style: italic;">No technical skills detected</span>';
+        }
+
+        // Display interests
+        if (data.interests && Object.keys(data.interests).length > 0) {
+            const topInterests = Object.keys(data.interests).slice(0, 3);
+            interestsList.innerHTML = topInterests.map(interest =>
+                `<span class="interest-tag">${interest.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>`
+            ).join('');
+        } else {
+            interestsList.innerHTML = '<span style="color: #6b7280; font-style: italic;">No specific interests detected</span>';
+        }
+
+        // Display sentiment
+        const sentiment = data.sentiment || { polarity: 0 };
+        sentimentText.className = 'sentiment-neutral';
+        if (sentiment.polarity > 0.1) {
+            sentimentText.textContent = 'Positive';
+            sentimentText.className = 'sentiment-positive';
+        } else if (sentiment.polarity < -0.1) {
+            sentimentText.textContent = 'Negative';
+            sentimentText.className = 'sentiment-negative';
+        } else {
+            sentimentText.textContent = 'Neutral';
+            sentimentText.className = 'sentiment-neutral';
+        }
+    })
+    .catch(error => {
+        console.error('NLP analysis failed:', error);
+        skillsList.innerHTML = '<span style="color: #ef4444;">Analysis failed</span>';
+        interestsList.innerHTML = '<span style="color: #ef4444;">Analysis failed</span>';
+        sentimentText.textContent = 'Error';
+        sentimentText.className = 'sentiment-neutral';
+    });
+}
+
+form.addEventListener('input', () => {
+    const completed = fields.filter(id => document.getElementById(id)?.value.trim()).length;
+    const progress = Math.min((completed / fields.length) * 100, 100);
+    fill.style.width = progress + '%';
+    text.textContent = Math.round(progress) + '% completed';
+
+    autosave.style.display = 'block';
+    clearTimeout(window.autosaveTimer);
+    window.autosaveTimer = setTimeout(() => autosave.style.display = 'none', 2000);
+});
+
+// Enhanced form validation and visual feedback
+function validateField(field) {
+    const value = field.value.trim();
+    const section = field.closest('.form-section');
+    const errorMsg = section.querySelector('.field-error') || createErrorElement(section);
+
+    // Remove previous validation states
+    field.classList.remove('field-valid', 'field-invalid');
+    section.classList.remove('completed');
+
+    // Check if field is required and empty
+    if (field.hasAttribute('required') && !value) {
+        field.classList.add('field-invalid');
+        errorMsg.textContent = 'This field is required';
+        errorMsg.style.display = 'block';
+        return false;
+    }
+
+    // Specific validations
+    if (field.id === 'full_name' && value && value.length < 2) {
+        field.classList.add('field-invalid');
+        errorMsg.textContent = 'Full name must be at least 2 characters';
+        errorMsg.style.display = 'block';
+        return false;
+    }
+
+    if (field.id === 'location' && value && value.length < 2) {
+        field.classList.add('field-invalid');
+        errorMsg.textContent = 'Location must be at least 2 characters';
+        errorMsg.style.display = 'block';
+        return false;
+    }
+
+    if (field.id === 'collegeInput' && value && value.length < 3) {
+        field.classList.add('field-invalid');
+        errorMsg.textContent = 'Please enter at least 3 characters for college search';
+        errorMsg.style.display = 'block';
+        return false;
+    }
+
+    // Field is valid
+    if (value) {
+        field.classList.add('field-valid');
+        section.classList.add('completed');
+    }
+    errorMsg.style.display = 'none';
+    return true;
+}
+
+function createErrorElement(section) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.style.cssText = `
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 6px;
+        display: none;
+        font-weight: 500;
+    `;
+    section.appendChild(errorDiv);
+    return errorDiv;
+}
+
+// Add validation styles
+const style = document.createElement('style');
+style.textContent = `
+    .field-valid {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+    }
+
+    .field-invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .field-error {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .field-error::before {
+        content: '⚠️';
+        font-size: 14px;
+    }
+`;
+document.head.appendChild(style);
+
+// Real-time validation
+document.addEventListener('input', (e) => {
+    if (e.target.matches('input[type="text"], input[type="email"], textarea')) {
+        validateField(e.target);
+    }
+});
+
+document.addEventListener('blur', (e) => {
+    if (e.target.matches('input[type="text"], input[type="email"], textarea')) {
+        validateField(e.target);
+    }
+});
+
+// Enhanced form submission
+form.addEventListener('submit', (e) => {
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('input[required], textarea[required]');
+
+    requiredFields.forEach(field => {
+        if (!validateField(field)) {
+            isValid = false;
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        // Scroll to first error
+        const firstError = document.querySelector('.field-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+        return false;
+    }
+
+    // Show loading state
+    const submitBtn = document.querySelector('.btn-submit');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    // Re-enable after timeout (in case of slow response)
+    setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }, 10000);
+});
+
+// Scroll reveal for sections with enhanced animation
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+            setTimeout(() => {
+                entry.target.classList.add('visible');
+            }, index * 100);
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.form-section').forEach(section => {
+    observer.observe(section);
+});
+
+// Enhanced progress tracking with section completion
+function updateProgress() {
+    const sections = document.querySelectorAll('.form-section');
+    let completedSections = 0;
+
+    sections.forEach(section => {
+        const inputs = section.querySelectorAll('input[required], textarea[required]');
+        const hasValidInputs = Array.from(inputs).some(input => input.value.trim() && input.classList.contains('field-valid'));
+
+        if (hasValidInputs || section.classList.contains('completed')) {
+            completedSections++;
+        }
+    });
+
+    const progress = Math.min((completedSections / sections.length) * 100, 100);
+    fill.style.width = progress + '%';
+    text.textContent = Math.round(progress) + '% completed';
+
+    // Show autosave status
+    autosave.style.display = 'block';
+    clearTimeout(window.autosaveTimer);
+    window.autosaveTimer = setTimeout(() => autosave.style.display = 'none', 2000);
+}
+
+// Update progress on input
+document.addEventListener('input', updateProgress);
+
+// File upload preview enhancement
+document.getElementById('profile_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const section = this.closest('.form-section');
+
+    if (file) {
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let preview = section.querySelector('.image-preview');
+            if (!preview) {
+                preview = document.createElement('img');
+                preview.className = 'image-preview';
+                section.appendChild(preview);
+            }
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+
+        // Mark section as completed
+        section.classList.add('completed');
+        validateField(this);
+    }
+
+    updateProgress();
+});
+
+// Initialize progress on page load
+updateProgress();
+</script>
+
+</body>
+</html>

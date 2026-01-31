@@ -1,0 +1,129 @@
+================================================================================
+CONNECTION REQUEST ERROR - QUICK FIX
+================================================================================
+
+ERROR:
+  StringDataRightTruncation: value too long for type character varying(20)
+  
+CAUSE:
+  activity_type field limit is 20 characters
+  But code tries to store 'connection_request_sent' (23 characters)
+
+SOLUTION:
+  Increase field limit from 20 to 30 characters
+
+================================================================================
+STEPS TO FIX (Copy & Paste)
+================================================================================
+
+STEP 1: Navigate to Project
+cd e:/login/auth_project
+
+STEP 2: Create Migration
+python manage.py makemigrations accounts
+
+Expected output:
+  Migrations for 'accounts':
+    accounts/migrations/XXXX_alter_activity_activity_type.py
+      - Alter field activity_type on activity
+
+STEP 3: Apply Migration
+python manage.py migrate accounts
+
+Expected output:
+  Running migrations:
+    Applying accounts.XXXX_alter_activity_activity_type... OK
+
+STEP 4: Restart Server
+Ctrl+C (stop current server)
+python manage.py runserver
+
+STEP 5: Test Again
+Try to send a connection request
+Should work now! ✅
+
+================================================================================
+WHAT CHANGED
+================================================================================
+
+File: accounts/models.py
+Line: 491
+
+Before:
+  activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES)
+
+After:
+  activity_type = models.CharField(max_length=30, choices=ACTIVITY_TYPES)
+
+================================================================================
+WHY THIS WORKS
+================================================================================
+
+Activity Types and their lengths:
+
+  'profile_updated'           = 16 chars ✅
+  'project_created'           = 15 chars ✅
+  'project_liked'             = 13 chars ✅
+  'connection_made'           = 16 chars ✅
+  'message_sent'              = 12 chars ✅
+  'comment_added'             = 13 chars ✅
+  'user_followed'             = 12 chars ✅
+  'task_completed'            = 14 chars ✅
+  'milestone_completed'       = 19 chars ✅
+  'connection_request_sent'   = 23 chars ❌ Was failing!
+
+New limit of 30 chars accommodates all activity types ✅
+
+================================================================================
+VERIFICATION
+================================================================================
+
+After applying migration, test in Django shell:
+
+python manage.py shell
+
+Then:
+from accounts.models import Activity
+Activity.objects.create(
+    user_id=1,
+    activity_type='connection_request_sent',
+    title='Test activity',
+)
+print("✅ Success!")
+exit()
+
+If no error → Fix is successful!
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If makemigrations doesn't create a file:
+  - Check you're in the right directory
+  - Verify accounts/models.py is modified
+  - Try: python manage.py makemigrations accounts --verbosity 3
+
+If migrate says "No migrations to apply":
+  - Migration might already be applied
+  - Ignore and move to Step 4
+
+If you get a different error:
+  - Read the error message
+  - Check FIX_DATABASE_ERROR.md for details
+  - Different database fields might have similar issues
+
+================================================================================
+SUMMARY
+================================================================================
+
+1. ✅ Problem found: Field too small
+2. ✅ Fix applied: Model updated (max_length: 20 → 30)
+3. ⏳ Next: Run migrations (2 commands)
+4. ⏳ Test: Connection request should work
+
+Time to fix: 2 minutes
+Difficulty: Very Easy
+
+Just copy the commands and paste them!
+
+================================================================================

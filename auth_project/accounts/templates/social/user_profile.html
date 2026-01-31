@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ profile_user.username }} | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+
+        /* 3D Animation Styles */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(1deg);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+        }
+
+        .button-3d {
+            transform-style: preserve-3d;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .float-3d {
+            animation: float3D 3s ease-in-out infinite;
+        }
+
+        @keyframes float3D {
+            0%, 100% {
+                transform: translateY(0px) rotateZ(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotateZ(2deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="bg-primary shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:opacity-80 transition float-3d">🚀</a>
+                <h1 class="text-2xl font-bold">UniSync</h1>
+            </div>
+            <div class="flex gap-10">
+                <a href="{% url 'main_home' %}" class="hover:text-accent transition">Home</a>
+                <a href="{% url 'find_collaborators' %}" class="hover:text-accent transition">Find People</a>
+                <a href="{% url 'post_project' %}" class="hover:text-accent transition">Post Project</a>
+                <a href="{% url 'messages' %}" class="hover:text-accent transition">Messages</a>
+                <a href="{% url 'notifications' %}" class="hover:text-accent transition">Notifications</a>
+                <a href="{% url 'activity_feed' %}" class="hover:text-accent transition">Activity</a>
+                <a href="{% url 'logout' %}" class="hover:text-red-400 transition">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-6 py-12">
+        <!-- Profile Header -->
+        <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 mb-8 card-3d fade-in-up">
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-4xl font-bold">
+                    {{ profile_user.username|first|upper }}
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-4 mb-2">
+                        <h1 class="text-3xl font-bold">{{ profile_user.username }}</h1>
+                        {% if student_profile %}
+                            <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">Student</span>
+                        {% endif %}
+                    </div>
+
+                    {% if student_profile %}
+                        <div class="text-gray-300 mb-4">
+                            {% if student_profile.full_name %}
+                                <p class="text-lg">{{ student_profile.full_name }}</p>
+                            {% endif %}
+                            {% if student_profile.college %}
+                                <p class="text-sm">🎓 {{ student_profile.college }}</p>
+                            {% endif %}
+                            {% if student_profile.location %}
+                                <p class="text-sm">📍 {{ student_profile.location }}</p>
+                            {% endif %}
+                        </div>
+                        {% if student_profile.bio %}
+                            <p class="text-gray-400">{{ student_profile.bio }}</p>
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="flex items-center gap-6 mt-4 text-sm text-gray-400">
+                        <span>{{ connections_count }} connections</span>
+                        <span>{{ user_stats.followers_count }} followers</span>
+                        <span>{{ user_stats.following_count }} following</span>
+                    </div>
+                </div>
+
+                {% if not is_own_profile %}
+                    <div class="flex gap-3">
+                        {% if is_following %}
+                            <form method="post" action="{% url 'follow_user' profile_user.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-semibold transition button-3d">
+                                    ✓ Following
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'follow_user' profile_user.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="px-6 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold transition button-3d">
+                                    Follow
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'chat' profile_user.id %}" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition button-3d">
+                            💬 Message
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 text-center card-3d fade-in-up">
+                        <div class="text-3xl mb-2">📝</div>
+                        <div class="text-2xl font-bold text-accent">{{ user_stats.projects_created }}</div>
+                        <div class="text-sm text-gray-400">Projects</div>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 text-center card-3d fade-in-up" style="animation-delay: 100ms;">
+                        <div class="text-3xl mb-2">✅</div>
+                        <div class="text-2xl font-bold text-accent">{{ user_stats.tasks_completed }}</div>
+                        <div class="text-sm text-gray-400">Tasks Done</div>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 text-center card-3d fade-in-up" style="animation-delay: 200ms;">
+                        <div class="text-3xl mb-2">🤝</div>
+                        <div class="text-2xl font-bold text-accent">{{ user_stats.connections_made }}</div>
+                        <div class="text-sm text-gray-400">Connections</div>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-4 text-center card-3d fade-in-up" style="animation-delay: 300ms;">
+                        <div class="text-3xl mb-2">❤️</div>
+                        <div class="text-2xl font-bold text-accent">{{ user_stats.likes_received }}</div>
+                        <div class="text-sm text-gray-400">Likes</div>
+                    </div>
+                </div>
+
+                <!-- Recent Projects -->
+                {% if projects %}
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 card-3d fade-in-up">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-3xl">🚀</span>
+                        Recent Projects
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for project in projects %}
+                        <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-600 card-3d">
+                            <h3 class="font-semibold text-white mb-2">{{ project.title }}</h3>
+                            {% if project.description %}
+                                <p class="text-gray-400 text-sm mb-3">{{ project.description|truncatewords:15 }}</p>
+                            {% endif %}
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span>{{ project.created_at|date:"M d, Y" }}</span>
+                                <a href="{% url 'project_detail' project.id %}" class="text-accent hover:text-accent/80">View →</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Recent Activity -->
+                {% if activities %}
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 card-3d fade-in-up">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-3xl">📱</span>
+                        Recent Activity
+                    </h2>
+                    <div class="space-y-4">
+                        {% for activity in activities %}
+                        <div class="flex items-start gap-4 p-4 bg-gray-800/30 rounded-lg">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm">
+                                {{ activity.activity_icon }}
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-white font-semibold">{{ activity.title }}</p>
+                                <p class="text-gray-400 text-sm">{{ activity.created_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Actions -->
+                {% if not is_own_profile %}
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up">
+                    <h3 class="text-xl font-bold mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <a href="{% url 'chat' profile_user.id %}" class="block w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold text-center transition">
+                            💬 Send Message
+                        </a>
+                        {% if not is_following %}
+                            <form method="post" action="{% url 'follow_user' profile_user.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold transition">
+                                    Follow {{ profile_user.username }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Interests/Skills -->
+                {% if student_profile and student_profile.interests %}
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🎯</span>
+                        Interests
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for interest in student_profile.interests.split ',' %}
+                            <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">
+                                {{ interest|strip }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 backdrop-blur-lg py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-400">
+            <p>&copy; 2025 UniSync. Connecting innovators worldwide. 🚀</p>
+        </div>
+    </footer>
+</body>
+</html>

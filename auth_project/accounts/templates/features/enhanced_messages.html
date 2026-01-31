@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-primary: 0 25px 50px rgba(0, 0, 0, 0.25);
+            --shadow-hover: 0 35px 70px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 50%, #1e1e2f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced Message Components */
+        .message-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .message-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(139, 92, 246, 0.4);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .message-card:hover::before {
+            opacity: 1;
+        }
+
+        .message-card.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+
+        .unread-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            animation: pulseUnread 2s infinite;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        @keyframes pulseUnread {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 6px 16px rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        .floating-action {
+            animation: floatAction 3s ease-in-out infinite;
+        }
+
+        @keyframes floatAction {
+            0%, 100% { transform: translateY(0px) rotateZ(0deg); }
+            50% { transform: translateY(-8px) rotateZ(2deg); }
+        }
+
+        .gradient-border {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            padding: 2px;
+            border-radius: 16px;
+        }
+
+        .gradient-border > div {
+            background: #1E1E2F;
+            border-radius: 14px;
+        }
+
+        .avatar-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-glow:hover {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+            transform: scale(1.05);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message-preview {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(30, 174, 219, 0.1));
+            border-left: 3px solid #8a2be2;
+            transition: all 0.3s ease;
+        }
+
+        .message-preview:hover {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.15), rgba(30, 174, 219, 0.15));
+            border-left-color: #a855f7;
+        }
+
+        /* Chat Interface Styles */
+        .chat-messages {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(102, 126, 234, 0.3) rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+            position: relative;
+            animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-bubble.sent {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .message-bubble.received {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            color: white;
+            margin-right: auto;
+            border-radius: 18px 18px 18px 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 8px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typingBounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .message-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .online-indicator {
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            border: 2px solid #1e1e2f;
+            animation: onlinePulse 2s infinite;
+        }
+
+        @keyframes onlinePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+        }
+
+        .message-status {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        .message-status.sent { color: #10b981; }
+        .message-status.delivered { color: #f59e0b; }
+        .message-status.read { color: #3b82f6; }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(30, 30, 47, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            display: none;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+        }
+
+        .emoji-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+
+        .emoji-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* File Upload Preview */
+        .file-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-preview:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        /* Voice Message */
+        .voice-message {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 24px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-message:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .voice-wave {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+            animation: waveAnimation 1.5s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes waveAnimation {
+            0%, 100% { height: 8px; }
+            50% { height: 16px; }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .message-card:hover {
+                transform: translateY(-2px) scale(1.01);
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .emoji-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* Dark mode enhancements */
+        .dark-mode-toggle {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            padding: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        /* Search and Filter */
+        .search-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Notification badges */
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #1e1e2f;
+            animation: notificationBlink 2s infinite;
+        }
+
+        @keyframes notificationBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-background via-purple-900/20 to-background text-text min-h-screen relative overflow-hidden">
+
+    <!-- Background Effects -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-transparent via-purple-500/5 to-transparent rounded-full"></div>
+    </div>
+
+    <!-- Enhanced Responsive Navbar -->
+    <nav class="glass-effect shadow-xl sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <!-- Mobile Menu Button -->
+            <div class="flex items-center justify-between lg:hidden">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
+                        🚀
+                    </a>
+                    <div>
+                        <h1 class="text-lg font-bold text-white">Messages</h1>
+                        <p class="text-xs text-gray-400 hidden sm:block">Connect & Collaborate</p>
+                    </div>
+                </div>
+                <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden lg:flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'main_home' %}" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
+                        🚀
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">Messages</h1>
+                        <p class="text-xs text-gray-400">Connect & Collaborate</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Items -->
+                <div class="flex items-center gap-2 xl:gap-3">
+                    <!-- Search Bar -->
+                    <div class="relative hidden xl:block">
+                        <input type="text"
+                               id="globalSearch"
+                               placeholder="Search messages..."
+                               class="w-64 px-3 py-2 pl-9 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex items-center gap-1 xl:gap-2">
+                        <a href="{% url 'create_group_chat' %}"
+                           class="floating-action px-3 xl:px-4 py-2 xl:py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg xl:rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-1 xl:gap-2 text-sm xl:text-base">
+                            <i data-lucide="users" class="w-4 h-4 xl:w-5 xl:h-5"></i>
+                            <span class="hidden xl:inline">New Group</span>
+                            <span class="xl:hidden">+</span>
+                        </a>
+
+                        <button onclick="toggleSearch()" class="xl:hidden p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="Search">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                        </button>
+
+                        <a href="{% url 'main_home' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Home">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Home</span>
+                        </a>
+
+                        <a href="{% url 'find_collaborators' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Find People">
+                            <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Find People</span>
+                        </a>
+
+                        <a href="{% url 'post_project' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Post Project">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Post Project</span>
+                        </a>
+
+                        <a href="{% url 'activity_feed' %}"
+                           class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Activity Feed">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                            <span class="hidden xl:inline">Activity</span>
+                        </a>
+
+                        <!-- Settings Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleSettingsMenu()" class="p-2 xl:px-4 xl:py-3 text-gray-300 hover:text-white transition-colors rounded-lg xl:rounded-xl hover:bg-white/10 flex items-center gap-1 xl:gap-2 text-sm xl:text-base" title="Settings">
+                                <i data-lucide="settings" class="w-5 h-5"></i>
+                                <span class="hidden xl:inline">Settings</span>
+                            </button>
+
+                            <!-- Settings Dropdown Menu -->
+                            <div id="settingsMenu" class="hidden absolute right-0 top-12 w-56 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl z-50">
+                                <div class="p-2">
+                                    <div class="px-3 py-2 text-sm font-medium text-gray-300 border-b border-gray-600">Settings</div>
+                                    <button onclick="toggleDarkMode()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="moon" class="w-4 h-4"></i>
+                                        <span>Dark Mode</span>
+                                    </button>
+                                    <button onclick="toggleNotifications()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="bell" class="w-4 h-4"></i>
+                                        <span>Notifications</span>
+                                    </button>
+                                    <button onclick="showKeyboardShortcuts()" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition flex items-center gap-2">
+                                        <i data-lucide="keyboard" class="w-4 h-4"></i>
+                                        <span>Keyboard Shortcuts</span>
+                                    </button>
+                                    <div class="border-t border-gray-600 mt-2 pt-2">
+                                        <a href="{% url 'logout' %}" class="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-600/20 hover:text-red-300 rounded-lg transition flex items-center gap-2">
+                                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                                            <span>Logout</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Overlay -->
+            <div id="mobileMenu" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden">
+                <div class="fixed right-0 top-0 h-full w-80 bg-gray-900 border-l border-gray-700 shadow-2xl">
+                    <div class="p-6">
+                        <!-- Mobile Menu Header -->
+                        <div class="flex items-center justify-between mb-8">
+                            <h2 class="text-xl font-bold text-white">Menu</h2>
+                            <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+
+                        <!-- Mobile Search -->
+                        <div class="mb-6">
+                            <div class="relative">
+                                <input type="text"
+                                       id="mobileSearch"
+                                       placeholder="Search messages..."
+                                       class="w-full px-4 py-3 pl-11 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3.5 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Navigation -->
+                        <div class="space-y-2">
+                            <a href="{% url 'main_home' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="home" class="w-5 h-5"></i>
+                                <span>Home</span>
+                            </a>
+
+                            <a href="{% url 'find_collaborators' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                <span>Find People</span>
+                            </a>
+
+                            <a href="{% url 'post_project' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                                <span>Post Project</span>
+                            </a>
+
+                            <a href="{% url 'activity_feed' %}" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition">
+                                <i data-lucide="activity" class="w-5 h-5"></i>
+                                <span>Activity Feed</span>
+                            </a>
+
+                            <a href="{% url 'enhanced_messages' %}" class="flex items-center gap-3 px-4 py-3 bg-accent/20 text-accent border border-accent/30 rounded-xl transition">
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                <span>Messages</span>
+                            </a>
+
+                            <div class="border-t border-gray-700 pt-4 mt-4">
+                                <button onclick="toggleDarkMode()" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition w-full text-left">
+                                    <i data-lucide="moon" class="w-5 h-5"></i>
+                                    <span>Dark Mode</span>
+                                </button>
+
+                                <button onclick="toggleNotifications()" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition w-full text-left">
+                                    <i data-lucide="bell" class="w-5 h-5"></i>
+                                    <span>Notifications</span>
+                                </button>
+
+                                <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-600/20 rounded-xl transition mt-2">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Enhanced Conversations List -->
+            <div class="lg:col-span-1">
+                <div class="gradient-border">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                                <div class="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                                    <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                                </div>
+                                Conversations
+                            </h3>
+                            <div class="text-sm text-gray-400">
+                                {{ conversations|length }} chats
+                            </div>
+                        </div>
+
+                        {% if conversations %}
+                            <div class="space-y-3 max-h-[600px] overflow-y-auto">
+                                {% for conv in conversations %}
+                                    <a href="{% url 'enhanced_chat' conv.room.id %}"
+                                       class="block message-card rounded-xl p-4 transition-all duration-300 group">
+                                        <div class="flex items-start gap-3">
+                                            <!-- Avatar -->
+                                            <div class="relative">
+                                                {% if conv.room.chat_type == 'group' %}
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                                    </div>
+                                                {% elif conv.room.chat_type == 'project' %}
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                                        <i data-lucide="rocket" class="w-6 h-6 text-white"></i>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                                        {{ conv.other_user.username|first|upper }}
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Online indicator -->
+                                                {% if conv.room.chat_type != 'group' and conv.room.chat_type != 'project' %}
+                                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                <h4 class="font-bold text-white truncate group-hover:text-purple-300 transition-colors flex items-center gap-2">
+                                                {% if conv.room.chat_type == 'group' %}
+                                                        <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
+                                                    {% elif conv.room.chat_type == 'project' %}
+                                                    <i data-lucide="rocket" class="w-4 h-4 text-green-400"></i>
+                                                {% else %}
+                                                    <i data-lucide="message-circle" class="w-4 h-4 text-blue-400"></i>
+                                                    {% endif %}
+                                                        {{ conv.room.display_name }}
+                                </h4>
+                                {% if conv.unread_count > 0 %}
+                                    <span class="unread-badge text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                                        {{ conv.unread_count }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                                                {% if conv.last_message %}
+                                                    <div class="message-preview rounded-lg p-2 mt-2">
+                                                        <p class="text-sm text-gray-300 truncate">
+                                                            <span class="font-medium text-purple-300">{{ conv.last_message.sender.username }}:</span>
+                                                            {{ conv.last_message.content|truncatechars:45 }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                                            {{ conv.last_message.created_at|timesince }}
+                                                        </p>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-sm text-gray-500 italic mt-2 flex items-center gap-2">
+                                                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                                                        No messages yet
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Hover effect indicator -->
+                                        <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div class="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 h-0.5 rounded-full"></div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-16">
+                                <div class="relative mb-6">
+                                    <div class="text-8xl opacity-20">💬</div>
+                                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-full blur-xl"></div>
+                                </div>
+                                <h3 class="text-xl font-bold mb-3 text-white">No conversations yet</h3>
+                                <p class="text-gray-400 mb-8 max-w-sm mx-auto">
+                                    Start connecting with fellow innovators! Create group chats or reach out to collaborators.
+                                </p>
+                                <a href="{% url 'create_group_chat' %}"
+                                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-xl">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <span>Create Your First Group</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Chat Interface -->
+            <div class="lg:col-span-2">
+                <div class="glass-effect rounded-2xl shadow-2xl overflow-hidden h-[700px] flex flex-col">
+
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <!-- Chat Avatar -->
+                                <div class="relative">
+                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <div class="online-indicator absolute -bottom-1 -right-1"></div>
+                                </div>
+
+                                <!-- Chat Info -->
+                                <div>
+                                    <h3 class="font-bold text-white text-lg">Team Alpha</h3>
+                                    <p class="text-sm text-gray-400 flex items-center gap-2">
+                                        <span class="online-indicator w-2 h-2"></span>
+                                        3 members online
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Chat Actions -->
+                            <div class="flex items-center gap-2">
+                                <!-- Search in Chat -->
+                                <button onclick="toggleChatSearch()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="Search messages">
+                                    <i data-lucide="search" class="w-5 h-5"></i>
+                                </button>
+
+                                <!-- Voice Call -->
+                                <button onclick="startVoiceCall()" class="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition" title="Voice call">
+                                    <i data-lucide="phone" class="w-5 h-5"></i>
+                                </button>
+
+                                <!-- Video Call -->
+                                <button onclick="startVideoCall()" class="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Video call">
+                                    <i data-lucide="video" class="w-5 h-5"></i>
+                                </button>
+
+                                <!-- Chat Menu -->
+                                <button onclick="toggleChatMenu()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="More options">
+                                    <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Search Bar (Hidden by default) -->
+                        <div id="chatSearchBar" class="mt-3 hidden">
+                            <div class="relative">
+                                <input type="text"
+                                       id="chatSearchInput"
+                                       placeholder="Search messages..."
+                                       class="w-full px-3 py-2 pl-9 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"></i>
+                                <button onclick="clearChatSearch()" class="absolute right-3 top-2.5 text-gray-400 hover:text-white">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div class="flex-1 overflow-hidden">
+                        <div class="chat-messages p-4 space-y-4" id="messagesContainer">
+
+                            <!-- Sample Messages -->
+                            <div class="message-group">
+                                <div class="text-center mb-4">
+                                    <span class="px-3 py-1 bg-gray-700/50 text-gray-400 text-xs rounded-full">Today</span>
+                                </div>
+
+                                <!-- Received Message -->
+                                <div class="flex gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        A
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-semibold text-white text-sm">Alice Johnson</span>
+                                            <span class="text-xs text-gray-500">10:30 AM</span>
+                                        </div>
+                                        <div class="message-bubble received p-3">
+                                            <p class="text-sm">Hey team! I've finished the initial wireframes for the new dashboard. What do you think?</p>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <button onclick="addReaction(this, '👍')" class="text-xs text-gray-500 hover:text-yellow-400 transition">👍</button>
+                                            <button onclick="addReaction(this, '❤️')" class="text-xs text-gray-500 hover:text-red-400 transition">❤️</button>
+                                            <button onclick="showMessageMenu(this)" class="text-xs text-gray-500 hover:text-white transition">⋯</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sent Message -->
+                                <div class="flex gap-3 mb-4 flex-row-reverse">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        Y
+                                    </div>
+                                    <div class="flex-1 flex justify-end">
+                                        <div class="max-w-xs">
+                                            <div class="flex items-center gap-2 mb-1 justify-end">
+                                                <span class="text-xs text-gray-500">10:32 AM</span>
+                                                <span class="font-semibold text-white text-sm">You</span>
+                                            </div>
+                                            <div class="message-bubble sent p-3">
+                                                <p class="text-sm">Looks great Alice! The user flow is much clearer now. I love the new navigation design.</p>
+                                            </div>
+                                            <div class="message-status sent text-right mt-1">✓✓</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Message -->
+                                <div class="flex gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        B
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="font-semibold text-white text-sm">Bob Smith</span>
+                                            <span class="text-xs text-gray-500">10:35 AM</span>
+                                        </div>
+                                        <div class="message-bubble received p-3">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                                    <i data-lucide="file" class="w-5 h-5 text-blue-400"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-white text-sm">wireframes_v2.fig</p>
+                                                    <p class="text-xs text-gray-400">2.3 MB • Figma file</p>
+                                                </div>
+                                                <button onclick="downloadFile('wireframes_v2.fig')" class="p-2 text-blue-400 hover:text-blue-300 transition">
+                                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Voice Message -->
+                                <div class="flex gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        Y
+                                    </div>
+                                    <div class="flex-1 flex justify-end">
+                                        <div class="max-w-xs">
+                                            <div class="flex items-center gap-2 mb-1 justify-end">
+                                                <span class="text-xs text-gray-500">10:38 AM</span>
+                                                <span class="font-semibold text-white text-sm">You</span>
+                                            </div>
+                                            <div class="voice-message">
+                                                <button onclick="playVoiceMessage(this)" class="flex items-center gap-3 flex-1">
+                                                    <i data-lucide="play" class="w-5 h-5"></i>
+                                                    <div class="voice-wave">
+                                                        <div class="wave-bar"></div>
+                                                        <div class="wave-bar"></div>
+                                                        <div class="wave-bar"></div>
+                                                        <div class="wave-bar"></div>
+                                                    </div>
+                                                    <span class="text-sm">0:15</span>
+                                                </button>
+                                                <button onclick="downloadVoiceMessage()" class="p-2 hover:bg-white/20 rounded-lg transition">
+                                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Typing Indicator -->
+                                <div class="flex gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                                        A
+                                    </div>
+                                    <div class="typing-indicator">
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Message Input Area -->
+                    <div class="p-4 border-t border-white/10 bg-gradient-to-r from-gray-800/50 to-gray-900/50">
+                        <!-- File Preview Area (Hidden by default) -->
+                        <div id="filePreviewArea" class="hidden mb-3 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                        <i data-lucide="file" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-white">design_mockup.png</p>
+                                        <p class="text-xs text-gray-400">1.2 MB • Image</p>
+                                    </div>
+                                </div>
+                                <button onclick="removeFilePreview()" class="p-1 text-gray-400 hover:text-red-400 transition">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="flex items-end gap-3">
+                            <!-- Attachment Button -->
+                            <button onclick="toggleAttachmentMenu()" class="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition" title="Attach file">
+                                <i data-lucide="paperclip" class="w-5 h-5"></i>
+                            </button>
+
+                            <!-- Voice Message Button -->
+                            <button onclick="toggleVoiceRecording()" class="p-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition" title="Voice message">
+                                <i data-lucide="mic" class="w-5 h-5"></i>
+                            </button>
+
+                            <!-- Message Input -->
+                            <div class="flex-1 relative">
+                                <textarea id="messageInput"
+                                          placeholder="Type your message..."
+                                          class="message-input w-full px-4 py-3 pr-12 resize-none rounded-2xl text-white placeholder-gray-400 focus:outline-none"
+                                          rows="1"
+                                          maxlength="1000"></textarea>
+
+                                <!-- Emoji Button -->
+                                <button onclick="toggleEmojiPicker()" class="absolute right-3 bottom-3 p-1 text-gray-400 hover:text-yellow-400 transition" title="Add emoji">
+                                    <i data-lucide="smile" class="w-5 h-5"></i>
+                                </button>
+
+                                <!-- Emoji Picker -->
+                                <div id="emojiPicker" class="emoji-picker">
+                                    <div class="emoji-grid">
+                                        <button onclick="addEmoji('😀')" class="emoji-btn">😀</button>
+                                        <button onclick="addEmoji('👍')" class="emoji-btn">👍</button>
+                                        <button onclick="addEmoji('❤️')" class="emoji-btn">❤️</button>
+                                        <button onclick="addEmoji('🎉')" class="emoji-btn">🎉</button>
+                                        <button onclick="addEmoji('🚀')" class="emoji-btn">🚀</button>
+                                        <button onclick="addEmoji('💡')" class="emoji-btn">💡</button>
+                                        <button onclick="addEmoji('🔥')" class="emoji-btn">🔥</button>
+                                        <button onclick="addEmoji('✨')" class="emoji-btn">✨</button>
+                                        <button onclick="addEmoji('👏')" class="emoji-btn">👏</button>
+                                        <button onclick="addEmoji('🙌')" class="emoji-btn">🙌</button>
+                                        <button onclick="addEmoji('💯')" class="emoji-btn">💯</button>
+                                        <button onclick="addEmoji('🎯')" class="emoji-btn">🎯</button>
+                                        <button onclick="addEmoji('📈')" class="emoji-btn">📈</button>
+                                        <button onclick="addEmoji('💪')" class="emoji-btn">💪</button>
+                                        <button onclick="addEmoji('🤝')" class="emoji-btn">🤝</button>
+                                        <button onclick="addEmoji('🌟')" class="emoji-btn">🌟</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Send Button -->
+                            <button onclick="sendMessage()" id="sendButton" class="p-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" title="Send message">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Attachment Menu (Hidden by default) -->
+                        <div id="attachmentMenu" class="hidden mt-3 p-3 bg-gray-800/50 rounded-xl border border-gray-600">
+                            <div class="grid grid-cols-4 gap-3">
+                                <button onclick="attachFile('image')" class="flex flex-col items-center gap-2 p-3 hover:bg-gray-700/50 rounded-lg transition">
+                                    <i data-lucide="image" class="w-6 h-6 text-green-400"></i>
+                                    <span class="text-xs text-gray-300">Image</span>
+                                </button>
+                                <button onclick="attachFile('document')" class="flex flex-col items-center gap-2 p-3 hover:bg-gray-700/50 rounded-lg transition">
+                                    <i data-lucide="file" class="w-6 h-6 text-blue-400"></i>
+                                    <span class="text-xs text-gray-300">Document</span>
+                                </button>
+                                <button onclick="attachFile('video')" class="flex flex-col items-center gap-2 p-3 hover:bg-gray-700/50 rounded-lg transition">
+                                    <i data-lucide="video" class="w-6 h-6 text-red-400"></i>
+                                    <span class="text-xs text-gray-300">Video</span>
+                                </button>
+                                <button onclick="attachFile('location')" class="flex flex-col items-center gap-2 p-3 hover:bg-gray-700/50 rounded-lg transition">
+                                    <i data-lucide="map-pin" class="w-6 h-6 text-yellow-400"></i>
+                                    <span class="text-xs text-gray-300">Location</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Voice Recording UI (Hidden by default) -->
+                        <div id="voiceRecordingUI" class="hidden mt-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                    <span class="text-red-400 font-medium">Recording...</span>
+                                    <span id="recordingTime" class="text-white">00:00</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="cancelVoiceRecording()" class="px-3 py-1 text-gray-400 hover:text-white transition">Cancel</button>
+                                    <button onclick="sendVoiceMessage()" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript for Chat Functionality -->
+    <script>
+        // Global variables
+        let isRecording = false;
+        let recordingStartTime = null;
+        let recordingInterval = null;
+        let currentChatId = 'team-alpha'; // Demo chat ID
+        let isTyping = false;
+        let typingTimeout = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Initialize chat functionality
+            initializeChatSystem();
+
+            // Setup event listeners
+            setupChatEventListeners();
+
+            // Start real-time features
+            startRealTimeChatFeatures();
+
+            console.log('Enhanced chat system initialized');
+        });
+
+        // Initialize chat system
+        function initializeChatSystem() {
+            // Auto-resize message input
+            autoResizeMessageInput();
+
+            // Load chat history (simulated)
+            loadChatHistory();
+
+            // Setup message input handlers
+            setupMessageInputHandlers();
+
+            // Initialize emoji picker
+            initializeEmojiPicker();
+        }
+
+        // Setup chat event listeners
+        function setupChatEventListeners() {
+            // Conversation card hover effects
+            const cards = document.querySelectorAll('.message-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-6px) scale(1.03)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+
+                // Click ripple effect
+                card.addEventListener('click', function(e) {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'absolute inset-0 bg-white/20 rounded-xl animate-ping';
+                    ripple.style.left = (e.offsetX - 10) + 'px';
+                    ripple.style.top = (e.offsetY - 10) + 'px';
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+
+            // Keyboard navigation for conversations
+            document.addEventListener('keydown', function(e) {
+                if (e.key >= '1' && e.key <= '9') {
+                    const cards = document.querySelectorAll('.message-card');
+                    const index = parseInt(e.key) - 1;
+                    if (cards[index]) {
+                        cards[index].click();
+                    }
+                }
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                // Close emoji picker
+                if (!e.target.closest('#emojiPicker') && !e.target.closest('button[onclick*="toggleEmojiPicker"]')) {
+                    document.getElementById('emojiPicker').style.display = 'none';
+                }
+
+                // Close attachment menu
+                if (!e.target.closest('#attachmentMenu') && !e.target.closest('button[onclick*="toggleAttachmentMenu"]')) {
+                    document.getElementById('attachmentMenu').classList.add('hidden');
+                }
+            });
+        }
+
+        // Auto-resize message input
+        function autoResizeMessageInput() {
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+
+        // Setup message input handlers
+        function setupMessageInputHandlers() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+
+            // Handle Enter key (Shift+Enter for new line)
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Update send button state
+            messageInput.addEventListener('input', function() {
+                const hasContent = this.value.trim().length > 0;
+                sendButton.disabled = !hasContent;
+                sendButton.style.opacity = hasContent ? '1' : '0.5';
+
+                // Handle typing indicator
+                handleTypingIndicator();
+            });
+
+            // Focus/blur events
+            messageInput.addEventListener('focus', function() {
+                this.closest('.message-input').style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.1)';
+            });
+
+            messageInput.addEventListener('blur', function() {
+                this.closest('.message-input').style.boxShadow = 'none';
+            });
+        }
+
+        // Handle typing indicator
+        function handleTypingIndicator() {
+            if (!isTyping) {
+                isTyping = true;
+                // Send typing start event (simulated)
+                console.log('Started typing');
+            }
+
+            // Clear existing timeout
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+
+            // Set new timeout to stop typing
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+                console.log('Stopped typing');
+            }, 1000);
+        }
+
+        // Send message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (!message) return;
+
+            // Create message element
+            const messageElement = createMessageElement(message, 'sent');
+            appendMessageToChat(messageElement);
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            messageInput.focus();
+
+            // Update send button
+            document.getElementById('sendButton').disabled = true;
+            document.getElementById('sendButton').style.opacity = '0.5';
+
+            // Simulate message sending
+            simulateMessageSending(messageElement);
+
+            // Stop typing
+            isTyping = false;
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+        }
+
+        // Create message element
+        function createMessageElement(content, type = 'sent') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 mb-4 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
+
+            const avatar = type === 'sent' ? 'Y' : 'A';
+            const avatarClass = type === 'sent'
+                ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                : 'bg-gradient-to-br from-blue-500 to-purple-500';
+            const senderName = type === 'sent' ? 'You' : 'Alice Johnson';
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-lg ${avatarClass} flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                    ${avatar}
+                </div>
+                <div class="${type === 'sent' ? 'flex-1 flex justify-end' : 'flex-1'}">
+                    <div class="max-w-xs">
+                        <div class="flex items-center gap-2 mb-1 ${type === 'sent' ? 'justify-end' : ''}">
+                            <span class="text-xs text-gray-500">${timeString}</span>
+                            <span class="font-semibold text-white text-sm">${senderName}</span>
+                        </div>
+                        <div class="message-bubble ${type} p-3">
+                            <p class="text-sm">${content}</p>
+                        </div>
+                        ${type === 'sent' ? '<div class="message-status sent text-right mt-1">✓</div>' : `
+                            <div class="flex items-center gap-2 mt-1">
+                                <button onclick="addReaction(this, '👍')" class="text-xs text-gray-500 hover:text-yellow-400 transition">👍</button>
+                                <button onclick="addReaction(this, '❤️')" class="text-xs text-gray-500 hover:text-red-400 transition">❤️</button>
+                                <button onclick="showMessageMenu(this)" class="text-xs text-gray-500 hover:text-white transition">⋯</button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            return messageDiv;
+        }
+
+        // Append message to chat
+        function appendMessageToChat(messageElement) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.appendChild(messageElement);
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            // Re-initialize Lucide icons for new elements
+            lucide.createIcons();
+        }
+
+        // Simulate message sending (status updates)
+        function simulateMessageSending(messageElement) {
+            const statusElement = messageElement.querySelector('.message-status');
+            if (statusElement) {
+                setTimeout(() => {
+                    statusElement.textContent = '✓✓'; // Delivered
+                    statusElement.className = 'message-status delivered text-right mt-1';
+                }, 1000);
+
+                setTimeout(() => {
+                    statusElement.textContent = '✓✓'; // Read
+                    statusElement.className = 'message-status read text-right mt-1';
+                }, 2000);
+            }
+        }
+
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Load chat history (simulated)
+        function loadChatHistory() {
+            // Chat history is already rendered in template
+            // Scroll to bottom after loading
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }
+
+        // Emoji picker functionality
+        function initializeEmojiPicker() {
+            // Emoji picker is already in template
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addEmoji(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value += emoji;
+            messageInput.focus();
+
+            // Trigger input event to update send button
+            messageInput.dispatchEvent(new Event('input'));
+
+            // Close picker
+            document.getElementById('emojiPicker').style.display = 'none';
+        }
+
+        // Attachment functionality
+        function toggleAttachmentMenu() {
+            const menu = document.getElementById('attachmentMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function attachFile(type) {
+            // Simulate file selection
+            const fileNames = {
+                image: 'screenshot.png',
+                document: 'project_plan.pdf',
+                video: 'demo_video.mp4',
+                location: 'Current Location'
+            };
+
+            const fileName = fileNames[type];
+            showFilePreview(fileName, type);
+
+            // Close menu
+            document.getElementById('attachmentMenu').classList.add('hidden');
+        }
+
+        function showFilePreview(fileName, type) {
+            const previewArea = document.getElementById('filePreviewArea');
+            const fileIcon = getFileIcon(type);
+
+            previewArea.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <i data-lucide="${fileIcon}" class="w-4 h-4 text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">${fileName}</p>
+                            <p class="text-xs text-gray-400">${type === 'location' ? 'Location shared' : '1.2 MB • ' + type}</p>
+                        </div>
+                    </div>
+                    <button onclick="removeFilePreview()" class="p-1 text-gray-400 hover:text-red-400 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+
+            previewArea.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function getFileIcon(type) {
+            const icons = {
+                image: 'image',
+                document: 'file',
+                video: 'video',
+                location: 'map-pin'
+            };
+            return icons[type] || 'file';
+        }
+
+        function removeFilePreview() {
+            document.getElementById('filePreviewArea').classList.add('hidden');
+        }
+
+        // Voice message functionality
+        function toggleVoiceRecording() {
+            if (isRecording) {
+                stopVoiceRecording();
+            } else {
+                startVoiceRecording();
+            }
+        }
+
+        function startVoiceRecording() {
+            isRecording = true;
+            recordingStartTime = Date.now();
+
+            // Show recording UI
+            document.getElementById('voiceRecordingUI').classList.remove('hidden');
+
+            // Update recording time
+            recordingInterval = setInterval(updateRecordingTime, 1000);
+
+            // Change button appearance
+            const micButton = document.querySelector('button[onclick*="toggleVoiceRecording"]');
+            micButton.className = 'p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition animate-pulse';
+        }
+
+        function stopVoiceRecording() {
+            isRecording = false;
+            clearInterval(recordingInterval);
+
+            // Hide recording UI
+            document.getElementById('voiceRecordingUI').classList.add('hidden');
+
+            // Reset button
+            const micButton = document.querySelector('button[onclick*="toggleVoiceRecording"]');
+            micButton.className = 'p-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition';
+        }
+
+        function updateRecordingTime() {
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('recordingTime').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function cancelVoiceRecording() {
+            stopVoiceRecording();
+        }
+
+        function sendVoiceMessage() {
+            const duration = document.getElementById('recordingTime').textContent;
+
+            // Create voice message element
+            const voiceMessageElement = createVoiceMessageElement(duration, 'sent');
+            appendMessageToChat(voiceMessageElement);
+
+            stopVoiceRecording();
+        }
+
+        function createVoiceMessageElement(duration, type = 'sent') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 mb-4 ${type === 'sent' ? 'flex-row-reverse' : ''}`;
+
+            const avatar = type === 'sent' ? 'Y' : 'A';
+            const avatarClass = type === 'sent'
+                ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                : 'bg-gradient-to-br from-blue-500 to-purple-500';
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-lg ${avatarClass} flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                    ${avatar}
+                </div>
+                <div class="${type === 'sent' ? 'flex-1 flex justify-end' : 'flex-1'}">
+                    <div class="max-w-xs">
+                        <div class="flex items-center gap-2 mb-1 ${type === 'sent' ? 'justify-end' : ''}">
+                            <span class="text-xs text-gray-500">${timeString}</span>
+                            <span class="font-semibold text-white text-sm">${type === 'sent' ? 'You' : 'Alice Johnson'}</span>
+                        </div>
+                        <div class="voice-message">
+                            <button onclick="playVoiceMessage(this)" class="flex items-center gap-3 flex-1">
+                                <i data-lucide="play" class="w-5 h-5"></i>
+                                <div class="voice-wave">
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar"></div>
+                                </div>
+                                <span class="text-sm">${duration}</span>
+                            </button>
+                            <button onclick="downloadVoiceMessage()" class="p-2 hover:bg-white/20 rounded-lg transition">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return messageDiv;
+        }
+
+        function playVoiceMessage(button) {
+            const icon = button.querySelector('i');
+            const isPlaying = icon.getAttribute('data-lucide') === 'pause';
+
+            if (isPlaying) {
+                icon.setAttribute('data-lucide', 'play');
+                // Pause audio (simulated)
+            } else {
+                icon.setAttribute('data-lucide', 'pause');
+                // Play audio (simulated)
+                setTimeout(() => {
+                    icon.setAttribute('data-lucide', 'play');
+                    lucide.createIcons();
+                }, 3000); // Simulate 3 second audio
+            }
+
+            lucide.createIcons();
+        }
+
+        function downloadVoiceMessage() {
+            // Simulate download
+            showNotification('Voice message downloaded', 'success');
+        }
+
+        // Message reactions
+        function addReaction(button, emoji) {
+            // Add reaction to message (simulated)
+            button.textContent = emoji;
+            button.classList.add('text-yellow-400');
+            button.disabled = true;
+
+            // Show feedback
+            showNotification(`Reacted with ${emoji}`, 'success');
+        }
+
+        function showMessageMenu(button) {
+            // Create context menu (simulated)
+            const menu = document.createElement('div');
+            menu.className = 'absolute bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-2 z-50';
+            menu.innerHTML = `
+                <button class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">Reply</button>
+                <button class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">Forward</button>
+                <button class="block w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded">Copy</button>
+                <button class="block w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-600 rounded">Delete</button>
+            `;
+
+            button.parentElement.appendChild(menu);
+
+            // Position menu
+            menu.style.right = '0';
+            menu.style.top = '100%';
+            menu.style.marginTop = '4px';
+
+            // Close on click outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!menu.contains(e.target)) {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 10);
+        }
+
+        // Chat search functionality
+        function toggleChatSearch() {
+            const searchBar = document.getElementById('chatSearchBar');
+            searchBar.classList.toggle('hidden');
+
+            if (!searchBar.classList.contains('hidden')) {
+                document.getElementById('chatSearchInput').focus();
+            }
+        }
+
+        function clearChatSearch() {
+            document.getElementById('chatSearchInput').value = '';
+            // Clear search highlights (simulated)
+        }
+
+        // Voice/Video call functionality (simulated)
+        function startVoiceCall() {
+            showNotification('Starting voice call...', 'info');
+            setTimeout(() => {
+                showNotification('Voice call connected! 📞', 'success');
+            }, 2000);
+        }
+
+        function startVideoCall() {
+            showNotification('Starting video call...', 'info');
+            setTimeout(() => {
+                showNotification('Video call connected! 📹', 'success');
+            }, 2000);
+        }
+
+        function toggleChatMenu() {
+            // Show chat options menu (simulated)
+            showNotification('Chat menu opened', 'info');
+        }
+
+        // File download functionality
+        function downloadFile(filename) {
+            // Simulate download
+            showNotification(`${filename} downloaded successfully`, 'success');
+        }
+
+        // Real-time chat features
+        function startRealTimeChatFeatures() {
+            // Simulate incoming messages
+            setInterval(() => {
+                if (Math.random() < 0.1) { // 10% chance every 30 seconds
+                    simulateIncomingMessage();
+                }
+            }, 30000);
+
+            // Simulate typing indicators
+            setInterval(() => {
+                if (Math.random() < 0.05) { // 5% chance every 20 seconds
+                    showTypingIndicator();
+                    setTimeout(hideTypingIndicator, 3000);
+                }
+            }, 20000);
+        }
+
+        // Simulate incoming message
+        function simulateIncomingMessage() {
+            const messages = [
+                'Thanks for the update! The new features look amazing.',
+                'I\'ll review the code and get back to you soon.',
+                'Great work on the UI improvements! 🎉',
+                'Can we schedule a call to discuss the next steps?',
+                'The documentation is really helpful, thanks!'
+            ];
+
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            const messageElement = createMessageElement(randomMessage, 'received');
+            appendMessageToChat(messageElement);
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const existingIndicator = document.querySelector('.typing-indicator');
+            if (existingIndicator) return;
+
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'flex gap-3 mb-4';
+            indicatorDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                    A
+                </div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+
+            document.getElementById('messagesContainer').appendChild(indicatorDiv);
+            scrollToBottom();
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const indicator = document.querySelector('.typing-indicator');
+            if (indicator && indicator.parentElement) {
+                indicator.parentElement.remove();
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-500 ${
+                type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' :
+                type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white' :
+                'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+            }`;
+
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">${icon}</span>
+                    <span class="font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-1 transition">
+                        <span class="text-sm">✕</span>
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.parentElement.removeChild(notification);
+                    }
+                }, 500);
+            }, 4000);
+        }
+
+        // Navbar and UI Functions
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        function toggleSettingsMenu() {
+            const settingsMenu = document.getElementById('settingsMenu');
+            settingsMenu.classList.toggle('hidden');
+        }
+
+        function toggleSearch() {
+            // Show mobile search overlay
+            const searchOverlay = document.createElement('div');
+            searchOverlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+            searchOverlay.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        <input type="text"
+                               placeholder="Search messages..."
+                               class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg"
+                               id="overlaySearchInput" autocomplete="off">
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="text-sm text-gray-400 mb-3">Recent searches:</div>
+                        <div class="space-y-2" id="mobileRecentSearches">
+                            <!-- Recent searches will be populated -->
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(searchOverlay);
+            lucide.createIcons();
+
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('overlaySearchInput').focus();
+            }, 100);
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark');
+
+            if (isDark) {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                showNotification('Switched to light mode', 'info');
+            } else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                showNotification('Switched to dark mode', 'info');
+            }
+
+            // Close settings menu
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        function toggleNotifications() {
+            showNotification('Notification preferences updated', 'success');
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        function showKeyboardShortcuts() {
+            const shortcutsModal = document.createElement('div');
+            shortcutsModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            shortcutsModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Keyboard Shortcuts</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">Send message</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Enter</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">New line</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Shift + Enter</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">Search</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Ctrl + K</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                            <span class="text-gray-300">Navigate conversations</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">1-9</kbd>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-gray-300">Close modals</span>
+                            <kbd class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">Escape</kbd>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(shortcutsModal);
+            lucide.createIcons();
+            document.getElementById('settingsMenu').classList.add('hidden');
+        }
+
+        // Enhanced message features
+        function createMessageThread(messageId) {
+            // Create a thread/reply system (simulated)
+            showNotification('Thread view opened', 'info');
+        }
+
+        function pinMessage(messageId) {
+            // Pin/unpin messages (simulated)
+            showNotification('Message pinned', 'success');
+        }
+
+        function translateMessage(messageId) {
+            // Translate message to user's language (simulated)
+            showNotification('Message translated', 'info');
+        }
+
+        function scheduleMessage() {
+            // Schedule message to be sent later (simulated)
+            const scheduleModal = document.createElement('div');
+            scheduleModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            scheduleModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Schedule Message</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Date & Time</label>
+                            <input type="datetime-local" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Recipient</label>
+                            <select class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent">
+                                <option>Team Alpha</option>
+                                <option>Project Beta</option>
+                                <option>John Doe</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Message</label>
+                            <textarea placeholder="Your scheduled message..." rows="3" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent resize-none"></textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="this.closest('.fixed').remove()" class="flex-1 px-4 py-2 text-gray-300 hover:text-white transition">Cancel</button>
+                            <button onclick="confirmScheduleMessage(); this.closest('.fixed').remove()" class="flex-1 px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg transition">Schedule</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(scheduleModal);
+            lucide.createIcons();
+        }
+
+        function confirmScheduleMessage() {
+            showNotification('Message scheduled successfully!', 'success');
+        }
+
+        function createMessageTemplate() {
+            // Create reusable message templates (simulated)
+            const templates = [
+                { name: 'Meeting Reminder', content: 'Hi team! Just a reminder about our meeting at [time]. See you there! 📅' },
+                { name: 'Project Update', content: 'Project update: [status]. Next milestone: [milestone]. Any questions? 🤔' },
+                { name: 'Welcome Message', content: 'Welcome to the team! Excited to work with you on [project]. Let me know if you need anything! 🚀' }
+            ];
+
+            const templateModal = document.createElement('div');
+            templateModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            templateModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Message Templates</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${templates.map(template => `
+                            <button onclick="useTemplate('${template.content}'); this.closest('.fixed').remove()" class="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+                                <div class="font-medium text-white">${template.name}</div>
+                                <div class="text-sm text-gray-400 truncate">${template.content}</div>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(templateModal);
+            lucide.createIcons();
+        }
+
+        function useTemplate(content) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = content;
+            messageInput.focus();
+            messageInput.dispatchEvent(new Event('input'));
+            showNotification('Template applied', 'success');
+        }
+
+        function showChatThemes() {
+            // Chat theme selector (simulated)
+            const themes = [
+                { name: 'Default', colors: ['purple', 'pink'] },
+                { name: 'Ocean', colors: ['blue', 'cyan'] },
+                { name: 'Sunset', colors: ['orange', 'red'] },
+                { name: 'Forest', colors: ['green', 'emerald'] }
+            ];
+
+            const themeModal = document.createElement('div');
+            themeModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+            themeModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Chat Themes</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${themes.map(theme => `
+                            <button onclick="applyTheme('${theme.colors[0]}', '${theme.colors[1]}'); this.closest('.fixed').remove()" class="p-4 bg-gradient-to-r from-${theme.colors[0]}-500 to-${theme.colors[1]}-500 rounded-lg text-white font-medium hover:scale-105 transition">
+                                ${theme.name}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(themeModal);
+            lucide.createIcons();
+        }
+
+        function applyTheme(primary, secondary) {
+            // Apply theme colors (simulated)
+            document.documentElement.style.setProperty('--primary-gradient', `linear-gradient(135deg, #${primary === 'purple' ? '667eea' : primary === 'blue' ? '3b82f6' : primary === 'orange' ? 'f59e0b' : '10b981'} 0%, #${secondary === 'pink' ? '764ba2' : secondary === 'cyan' ? '06b6d4' : secondary === 'red' ? 'ef4444' : '059669'} 100%)`);
+            showNotification(`Theme changed to ${primary}/${secondary}`, 'success');
+        }
+
+        function showAIBot() {
+            // AI assistant chat bot (simulated)
+            const aiModal = document.createElement('div');
+            aiModal.className = 'fixed bottom-20 right-4 w-80 h-96 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 z-50 flex flex-col';
+            aiModal.innerHTML = `
+                <div class="p-4 border-b border-gray-600 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">UniSync AI</div>
+                            <div class="text-xs text-gray-400">Always here to help</div>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="flex-1 p-4 space-y-3 overflow-y-auto" id="aiChatMessages">
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-sm text-white">Hi! I'm your AI assistant. How can I help you today?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-600">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="Ask me anything..." class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent text-sm" id="aiInput">
+                        <button onclick="sendAIMessage()" class="p-2 bg-accent hover:bg-accent/80 text-white rounded-lg transition">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(aiModal);
+            lucide.createIcons();
+
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('aiInput').focus();
+            }, 100);
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            const messagesContainer = document.getElementById('aiChatMessages');
+            messagesContainer.innerHTML += `
+                <div class="flex gap-3 justify-end">
+                    <div class="bg-accent rounded-lg p-3">
+                        <p class="text-sm text-white">${message}</p>
+                    </div>
+                    <div class="w-6 h-6 bg-accent rounded flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user" class="w-3 h-3 text-white"></i>
+                    </div>
+                </div>
+            `;
+
+            input.value = '';
+
+            // Simulate AI response
+            setTimeout(() => {
+                const responses = [
+                    "That's a great question! Let me help you with that.",
+                    "I can assist you with project management, team collaboration, and finding the right tools.",
+                    "Would you like me to suggest some collaborators for your project?",
+                    "I can help you schedule meetings or set up project milestones.",
+                    "Feel free to ask me anything about UniSync features!"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+                messagesContainer.innerHTML += `
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-3 h-3 text-white"></i>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-3">
+                            <p class="text-sm text-white">${randomResponse}</p>
+                        </div>
+                    </div>
+                `;
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                lucide.createIcons();
+            }, 1000);
+        }
+
+        function startScreenShare() {
+            // Screen sharing functionality (simulated)
+            showNotification('Screen sharing started', 'success');
+        }
+
+        function showCallInterface() {
+            // Full call interface (simulated)
+            const callInterface = document.createElement('div');
+            callInterface.className = 'fixed inset-0 bg-black z-50 flex items-center justify-center';
+            callInterface.innerHTML = `
+                <div class="text-center">
+                    <div class="w-32 h-32 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <i data-lucide="video" class="w-16 h-16 text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-4">Call in Progress</h2>
+                    <p class="text-gray-400 mb-8">Connected with Team Alpha</p>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="toggleMute()" class="p-4 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition">
+                            <i data-lucide="mic" class="w-6 h-6"></i>
+                        </button>
+                        <button onclick="toggleVideo()" class="p-4 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition">
+                            <i data-lucide="video" class="w-6 h-6"></i>
+                        </button>
+                        <button onclick="this.closest('.fixed').remove()" class="p-4 bg-red-600 hover:bg-red-700 text-white rounded-full transition">
+                            <i data-lucide="phone-off" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(callInterface);
+            lucide.createIcons();
+        }
+
+        function toggleMute() {
+            showNotification('Microphone toggled', 'info');
+        }
+
+        function toggleVideo() {
+            showNotification('Camera toggled', 'info');
+        }
+
+        // Enhanced search functionality
+        function performGlobalSearch(query) {
+            if (!query.trim()) return;
+
+            // Simulate search results
+            const results = [
+                { type: 'message', content: 'Found message in Team Alpha', link: '#' },
+                { type: 'user', content: 'John Doe - Developer', link: '#' },
+                { type: 'project', content: 'AI Chatbot Project', link: '#' }
+            ];
+
+            showSearchResults(results, query);
+        }
+
+        function showSearchResults(results, query) {
+            const resultsModal = document.createElement('div');
+            resultsModal.className = 'fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4';
+            resultsModal.innerHTML = `
+                <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 w-full max-w-2xl max-h-[70vh] overflow-y-auto">
+                    <div class="flex items-center gap-3 mb-6">
+                        <i data-lucide="search" class="w-6 h-6 text-gray-400"></i>
+                        <div class="flex-1">
+                            <div class="text-lg font-semibold text-white">Search Results</div>
+                            <div class="text-sm text-gray-400">"${query}"</div>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="p-2 text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${results.map(result => `
+                            <a href="${result.link}" class="flex items-center gap-3 p-3 hover:bg-gray-700 rounded-lg transition">
+                                <div class="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="${result.type === 'message' ? 'message-circle' : result.type === 'user' ? 'user' : 'folder'}" class="w-4 h-4 text-accent"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-white">${result.content}</div>
+                                    <div class="text-sm text-gray-400">${result.type}</div>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(resultsModal);
+            lucide.createIcons();
+        }
+
+        // Initialize enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add global search functionality
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        performGlobalSearch(this.value);
+                    }
+                });
+            }
+
+            const mobileSearch = document.getElementById('mobileSearch');
+            if (mobileSearch) {
+                mobileSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        performGlobalSearch(this.value);
+                        toggleMobileMenu();
+                    }
+                });
+            }
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#settingsMenu') && !e.target.closest('button[onclick*="toggleSettingsMenu"]')) {
+                    document.getElementById('settingsMenu').classList.add('hidden');
+                }
+            });
+        });
+
+        // Export functions for global access
+        window.sendMessage = sendMessage;
+        window.toggleEmojiPicker = toggleEmojiPicker;
+        window.addEmoji = addEmoji;
+        window.toggleAttachmentMenu = toggleAttachmentMenu;
+        window.attachFile = attachFile;
+        window.removeFilePreview = removeFilePreview;
+        window.toggleVoiceRecording = toggleVoiceRecording;
+        window.cancelVoiceRecording = cancelVoiceRecording;
+        window.sendVoiceMessage = sendVoiceMessage;
+        window.playVoiceMessage = playVoiceMessage;
+        window.downloadVoiceMessage = downloadVoiceMessage;
+        window.addReaction = addReaction;
+        window.showMessageMenu = showMessageMenu;
+        window.toggleChatSearch = toggleChatSearch;
+        window.clearChatSearch = clearChatSearch;
+        window.startVoiceCall = startVoiceCall;
+        window.startVideoCall = startVideoCall;
+        window.toggleChatMenu = toggleChatMenu;
+        window.downloadFile = downloadFile;
+        window.showNotification = showNotification;
+
+        // New enhanced functions
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.toggleSettingsMenu = toggleSettingsMenu;
+        window.toggleSearch = toggleSearch;
+        window.toggleDarkMode = toggleDarkMode;
+        window.showKeyboardShortcuts = showKeyboardShortcuts;
+        window.createMessageThread = createMessageThread;
+        window.pinMessage = pinMessage;
+        window.translateMessage = translateMessage;
+        window.scheduleMessage = scheduleMessage;
+        window.createMessageTemplate = createMessageTemplate;
+        window.showChatThemes = showChatThemes;
+        window.showAIBot = showAIBot;
+        window.startScreenShare = startScreenShare;
+        window.showCallInterface = showCallInterface;
+        window.performGlobalSearch = performGlobalSearch;
+    </script>
+
+</body>
+</html>

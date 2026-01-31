@@ -1,0 +1,773 @@
+{% extends "base_with_footer.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - UniSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --github-dark: #0d1117;
+        --github-darker: #161b22;
+        --github-darkest: #21262d;
+        --github-light: #f6f8fa;
+        --github-lighter: #ffffff;
+        --github-accent: #58a6ff;
+        --github-success: #238636;
+        --github-text: #c9d1d9;
+        --github-text-secondary: #8b949e;
+        --github-border: #30363d;
+        --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+        --border-radius: 6px;
+        --border-radius-large: 12px;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, var(--github-dark) 0%, var(--github-darker) 100%);
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2358a6ff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        z-index: 0;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--github-lighter);
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--github-text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .search-section {
+        padding: 60px 0;
+        background: var(--github-dark);
+        border-bottom: 1px solid var(--github-border);
+    }
+
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 16px 24px;
+        background: var(--github-darker);
+        border: 2px solid var(--github-border);
+        border-radius: var(--border-radius-large);
+        color: var(--github-text);
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--github-accent);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+
+    .search-input::placeholder {
+        color: var(--github-text-secondary);
+    }
+
+    .faq-section {
+        padding: 80px 0;
+        background: var(--github-dark);
+    }
+
+    .faq-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .faq-item {
+        background: var(--github-darker);
+        border: 1px solid var(--github-border);
+        border-radius: var(--border-radius-large);
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        border-color: var(--github-accent);
+        transform: translateY(-2px);
+    }
+
+    .faq-question {
+        width: 100%;
+        padding: 24px;
+        background: none;
+        border: none;
+        color: var(--github-text);
+        text-align: left;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .faq-question:hover {
+        color: var(--github-accent);
+    }
+
+    .faq-question:focus {
+        outline: none;
+        color: var(--github-accent);
+    }
+
+    .faq-icon {
+        font-size: 20px;
+        color: var(--github-text-secondary);
+        transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: var(--github-darkest);
+        border-top: 1px solid var(--github-border);
+    }
+
+    .faq-item.active .faq-answer {
+        max-height: 500px;
+    }
+
+    .faq-content {
+        padding: 24px;
+        color: var(--github-text-secondary);
+        line-height: 1.6;
+    }
+
+    .categories-section {
+        padding: 80px 0;
+        background: var(--github-darker);
+        border-top: 1px solid var(--github-border);
+        border-bottom: 1px solid var(--github-border);
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .category-card {
+        background: var(--github-dark);
+        border: 1px solid var(--github-border);
+        border-radius: var(--border-radius-large);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .category-card:hover {
+        border-color: var(--github-accent);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .category-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .category-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--github-lighter);
+        margin-bottom: 1rem;
+    }
+
+    .category-description {
+        color: var(--github-text-secondary);
+        line-height: 1.6;
+    }
+
+    .contact-section {
+        padding: 80px 0;
+        background: var(--github-dark);
+    }
+
+    .contact-container {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .contact-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--github-lighter);
+        margin-bottom: 1rem;
+    }
+
+    .contact-subtitle {
+        font-size: 1.2rem;
+        color: var(--github-text-secondary);
+        margin-bottom: 3rem;
+        line-height: 1.6;
+    }
+
+    .contact-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .contact-option {
+        background: var(--github-darker);
+        border: 1px solid var(--github-border);
+        border-radius: var(--border-radius-large);
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .contact-option:hover {
+        border-color: var(--github-accent);
+        transform: translateY(-5px);
+    }
+
+    .contact-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .contact-option-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--github-lighter);
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-option-desc {
+        color: var(--github-text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .response-time {
+        color: var(--github-accent);
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+
+    .video-tutorials {
+        padding: 80px 0;
+        background: var(--github-darker);
+        border-top: 1px solid var(--github-border);
+    }
+
+    .tutorials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .tutorial-card {
+        background: var(--github-dark);
+        border: 1px solid var(--github-border);
+        border-radius: var(--border-radius-large);
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .tutorial-card:hover {
+        border-color: var(--github-accent);
+        transform: translateY(-5px);
+    }
+
+    .tutorial-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--github-lighter);
+        margin-bottom: 1rem;
+    }
+
+    .tutorial-description {
+        color: var(--github-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .tutorial-duration {
+        color: var(--github-accent);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .categories-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-options {
+            grid-template-columns: 1fr;
+        }
+
+        .tutorials-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .faq-question {
+            font-size: 16px;
+            padding: 20px;
+        }
+
+        .faq-content {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container mx-auto px-6">
+            <div class="hero-content">
+                <h1 class="hero-title">Help Center</h1>
+                <p class="hero-subtitle">
+                    Find answers to your questions and get the help you need to make the most of UniSync.
+                    We're here to support your collaborative journey.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container mx-auto px-6">
+            <div class="search-container">
+                <h2 class="text-2xl font-bold text-white mb-4">Search Help Articles</h2>
+                <input type="text"
+                       class="search-input"
+                       placeholder="Search for help articles, FAQs, or tutorials..."
+                       id="help-search">
+                <p class="text-gray-400 text-sm mt-3">Popular searches: getting started, finding collaborators, project management</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                    Quick answers to common questions about UniSync.
+                </p>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How do I create my student profile?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>To create your student profile:</p>
+                            <ol class="list-decimal list-inside mt-2 space-y-1">
+                                <li>Sign up for an account</li>
+                                <li>Complete your profile setup with your college, interests, and skills</li>
+                                <li>Add your professional links (GitHub, LinkedIn, etc.)</li>
+                                <li>Upload a profile photo</li>
+                            </ol>
+                            <p class="mt-3">A complete profile helps you get better collaborator recommendations and increases your visibility in the community.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How do I find collaborators for my project?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>Finding collaborators is easy:</p>
+                            <ol class="list-decimal list-inside mt-2 space-y-1">
+                                <li>Go to the "Find Collaborators" page</li>
+                                <li>Use filters to search by skills, college, or location</li>
+                                <li>Browse suggested collaborators based on your interests</li>
+                                <li>Send connection requests to potential collaborators</li>
+                                <li>Once connected, you can discuss projects via direct messages</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How do I post a project?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>To post a project:</p>
+                            <ol class="list-decimal list-inside mt-2 space-y-1">
+                                <li>Click "Post Project" from your dashboard</li>
+                                <li>Fill in project details: title, description, technologies, category</li>
+                                <li>Specify what type of collaborators you're looking for</li>
+                                <li>Add a timeline and collaboration requirements</li>
+                                <li>Include your GitHub repository link if available</li>
+                            </ol>
+                            <p class="mt-3">Well-written project posts attract more qualified collaborators.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How does the matching system work?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>Our AI-powered matching system considers:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li><strong>Skills Match (40%)</strong>: How well your skills align with project requirements</li>
+                                <li><strong>Interests Match (25%)</strong>: Shared interests and project preferences</li>
+                                <li><strong>Availability (15%)</strong>: Time commitment compatibility</li>
+                                <li><strong>Role Match (10%)</strong>: Preferred roles and project needs</li>
+                                <li><strong>Location (10%)</strong>: Geographical preferences</li>
+                            </ul>
+                            <p class="mt-3">Higher match scores indicate better compatibility for collaboration.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How do I manage project teams?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>Project team management features:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>Create teams for your projects</li>
+                                <li>Invite collaborators via team invitations</li>
+                                <li>Assign roles (Owner, Contributor, Viewer)</li>
+                                <li>Create and assign tasks with deadlines</li>
+                                <li>Set project milestones and track progress</li>
+                                <li>Use team chat for communication</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Is UniSync free to use?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>Yes! UniSync is completely free for students. We believe in democratizing access to collaboration tools and building a supportive community for student innovation.</p>
+                            <p class="mt-3">All core features including project posting, collaborator matching, messaging, and team management are available at no cost.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How do I contact support?
+                        <span class="faq-icon">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-content">
+                            <p>You can reach our support team through:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li><strong>Contact Form</strong>: Use the contact form for detailed inquiries</li>
+                                <li><strong>Email</strong>: support@unisync.com</li>
+                                <li><strong>Response Time</strong>: We typically respond within 24 hours</li>
+                            </ul>
+                            <p class="mt-3">For urgent technical issues, please include screenshots and detailed information about the problem.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-section">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Browse Help Topics</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                    Explore our comprehensive help resources organized by topic.
+                </p>
+            </div>
+
+            <div class="categories-grid">
+                <div class="category-card" onclick="scrollToFAQ()">
+                    <span class="category-icon">❓</span>
+                    <h3 class="category-title">Getting Started</h3>
+                    <p class="category-description">
+                        New to UniSync? Learn the basics of creating your profile,
+                        posting projects, and finding collaborators.
+                    </p>
+                </div>
+
+                <div class="category-card" onclick="scrollToFAQ()">
+                    <span class="category-icon">🤝</span>
+                    <h3 class="category-title">Collaboration</h3>
+                    <p class="category-description">
+                        Master the art of collaboration with our guides on
+                        team management, communication, and project workflows.
+                    </p>
+                </div>
+
+                <div class="category-card" onclick="scrollToFAQ()">
+                    <span class="category-icon">💬</span>
+                    <h3 class="category-title">Messaging</h3>
+                    <p class="category-description">
+                        Learn about direct messaging, group chats, file sharing,
+                        and all communication features.
+                    </p>
+                </div>
+
+                <div class="category-card" onclick="scrollToFAQ()">
+                    <span class="category-icon">🔧</span>
+                    <h3 class="category-title">Account & Settings</h3>
+                    <p class="category-description">
+                        Manage your account settings, privacy preferences,
+                        and notification preferences.
+                    </p>
+                </div>
+
+                <div class="category-card" onclick="scrollToFAQ()">
+                    <span class="category-icon">🚀</span>
+                    <h3 class="category-title">Advanced Features</h3>
+                    <p class="category-description">
+                        Explore advanced features like AI matching, task management,
+                        milestone tracking, and analytics.
+                    </p>
+                </div>
+
+                <div class="category-card" onclick="window.location.href='/contact/'">
+                    <span class="category-icon">📞</span>
+                    <h3 class="category-title">Contact Support</h3>
+                    <p class="category-description">
+                        Can't find what you're looking for? Our support team
+                        is here to help you personally.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container mx-auto px-6">
+            <div class="contact-container">
+                <h2 class="contact-title">Still Need Help?</h2>
+                <p class="contact-subtitle">
+                    Our support team is ready to assist you with any questions or issues you may have.
+                </p>
+
+                <div class="contact-options">
+                    <div class="contact-option">
+                        <span class="contact-icon">📧</span>
+                        <h3 class="contact-option-title">Email Support</h3>
+                        <p class="contact-option-desc">Send us a detailed message about your issue</p>
+                        <div class="response-time">Response within 24 hours</div>
+                    </div>
+
+                    <div class="contact-option">
+                        <span class="contact-icon">💬</span>
+                        <h3 class="contact-option-title">Live Chat</h3>
+                        <p class="contact-option-desc">Chat with our support team in real-time</p>
+                        <div class="response-time">Available 9 AM - 6 PM IST</div>
+                    </div>
+
+                    <div class="contact-option">
+                        <span class="contact-icon">📚</span>
+                        <h3 class="contact-option-title">Documentation</h3>
+                        <p class="contact-option-desc">Browse our comprehensive help articles</p>
+                        <div class="response-time">Available 24/7</div>
+                    </div>
+
+                    <div class="contact-option">
+                        <span class="contact-icon">👥</span>
+                        <h3 class="contact-option-title">Community</h3>
+                        <p class="contact-option-desc">Connect with other users for peer support</p>
+                        <div class="response-time">Community driven</div>
+                    </div>
+                </div>
+
+                <a href="/contact/" class="btn-primary" style="background: var(--github-accent); color: var(--github-dark); border-color: var(--github-accent);">
+                    Contact Support Team
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Tutorials Section -->
+    <section class="video-tutorials">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Video Tutorials</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                    Watch our step-by-step video guides to master UniSync features.
+                </p>
+            </div>
+
+            <div class="tutorials-grid">
+                <div class="tutorial-card">
+                    <h3 class="tutorial-title">Getting Started with UniSync</h3>
+                    <p class="tutorial-description">
+                        A complete walkthrough of setting up your profile, exploring the platform,
+                        and making your first connections.
+                    </p>
+                    <div class="tutorial-duration">⏱️ 8 minutes</div>
+                </div>
+
+                <div class="tutorial-card">
+                    <h3 class="tutorial-title">Finding the Perfect Collaborator</h3>
+                    <p class="tutorial-description">
+                        Learn how to use our advanced filtering and matching system to find
+                        collaborators that match your project needs.
+                    </p>
+                    <div class="tutorial-duration">⏱️ 6 minutes</div>
+                </div>
+
+                <div class="tutorial-card">
+                    <h3 class="tutorial-title">Project Management Made Easy</h3>
+                    <p class="tutorial-description">
+                        Master team creation, task assignment, milestone tracking, and
+                        collaborative project workflows.
+                    </p>
+                    <div class="tutorial-duration">⏱️ 12 minutes</div>
+                </div>
+
+                <div class="tutorial-card">
+                    <h3 class="tutorial-title">Communication Best Practices</h3>
+                    <p class="tutorial-description">
+                        Tips for effective communication, using group chats, file sharing,
+                        and maintaining productive collaborations.
+                    </p>
+                    <div class="tutorial-duration">⏱️ 7 minutes</div>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <p class="text-gray-400 mb-4">More tutorials coming soon! Stay tuned for advanced features and tips.</p>
+                <a href="/contact/" class="text-blue-400 hover:text-blue-300 transition-colors">
+                    Suggest a tutorial topic →
+                </a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // FAQ Accordion functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                // Close other items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('help-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const faqItems = document.querySelectorAll('.faq-item');
+
+                faqItems.forEach(item => {
+                    const question = item.querySelector('.faq-question').textContent.toLowerCase();
+                    const answer = item.querySelector('.faq-content').textContent.toLowerCase();
+
+                    if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+
+    // Smooth scroll to FAQ section
+    function scrollToFAQ() {
+        document.querySelector('.faq-section').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    // Add keyboard navigation for FAQ
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            document.getElementById('help-search').focus();
+        }
+    });
+</script>
+{% endblock %}

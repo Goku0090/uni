@@ -1,0 +1,290 @@
+{% extends "base_with_footer.html" %}
+{% load static %}
+
+{% block title %}Terms of Service - UniSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --github-dark: #0d1117;
+        --github-darker: #161b22;
+        --github-darkest: #21262d;
+        --github-light: #f6f8fa;
+        --github-lighter: #ffffff;
+        --github-accent: #58a6ff;
+        --github-text: #c9d1d9;
+        --github-text-secondary: #8b949e;
+        --github-border: #30363d;
+    }
+
+    .terms-hero {
+        background: linear-gradient(135deg, var(--github-dark) 0%, var(--github-darker) 100%);
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .terms-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+        background: var(--github-darker);
+        border-radius: 12px;
+        margin-top: -40px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .terms-content h1 {
+        color: var(--github-lighter);
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .terms-content h2 {
+        color: var(--github-accent);
+        font-size: 1.5rem;
+        margin: 2rem 0 1rem 0;
+        border-bottom: 1px solid var(--github-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .terms-content h3 {
+        color: var(--github-text);
+        font-size: 1.2rem;
+        margin: 1.5rem 0 0.5rem 0;
+    }
+
+    .terms-content p {
+        color: var(--github-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .terms-content ul, .terms-content ol {
+        color: var(--github-text-secondary);
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+
+    .terms-content li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .last-updated {
+        background: var(--github-dark);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--github-accent);
+    }
+
+    @media (max-width: 768px) {
+        .terms-hero {
+            padding: 60px 20px;
+        }
+
+        .terms-content {
+            padding: 40px 20px;
+            margin-top: -20px;
+        }
+
+        .terms-content h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="terms-hero">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl font-bold text-white mb-4">Terms of Service</h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                Please read these terms carefully before using UniSync. By using our platform, you agree to these terms.
+            </p>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="terms-content">
+                <div class="last-updated">
+                    <strong>Last Updated:</strong> December 16, 2025
+                </div>
+
+                <h1>UniSync Terms of Service</h1>
+
+                <p>Welcome to UniSync! These Terms of Service ("Terms") govern your use of the UniSync platform, a student collaboration platform designed to connect students worldwide for innovative project work.</p>
+
+                <h2>1. Acceptance of Terms</h2>
+
+                <p>By accessing or using UniSync, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our platform.</p>
+
+                <p>These Terms apply to all users of UniSync, including students, educators, and any other individuals who access our services.</p>
+
+                <h2>2. Description of Service</h2>
+
+                <p>UniSync provides a platform where students can:</p>
+                <ul>
+                    <li>Create and manage student profiles</li>
+                    <li>Post projects and collaboration opportunities</li>
+                    <li>Find and connect with potential collaborators</li>
+                    <li>Communicate through direct messaging and group chats</li>
+                    <li>Manage project teams and tasks</li>
+                    <li>Share files and resources</li>
+                </ul>
+
+                <h2>3. User Eligibility</h2>
+
+                <h3>3.1 Age Requirements</h3>
+                <p>To use UniSync, you must be:</p>
+                <ul>
+                    <li>At least 13 years old</li>
+                    <li>Currently enrolled as a student or recently graduated (within 1 year)</li>
+                    <li>Able to form legally binding agreements</li>
+                </ul>
+
+                <h3>3.2 Educational Verification</h3>
+                <p>Users are expected to provide accurate educational information. UniSync reserves the right to verify student status and may suspend or terminate accounts found to be in violation of this requirement.</p>
+
+                <h2>4. User Accounts and Registration</h2>
+
+                <h3>4.1 Account Creation</h3>
+                <p>To access certain features of UniSync, you must create an account by providing:</p>
+                <ul>
+                    <li>A valid email address</li>
+                    <li>Accurate personal and educational information</li>
+                    <li>A secure password</li>
+                </ul>
+
+                <h3>4.2 Account Responsibility</h3>
+                <p>You are responsible for:</p>
+                <ul>
+                    <li>Maintaining the confidentiality of your account credentials</li>
+                    <li>All activities that occur under your account</li>
+                    <li>Notifying us immediately of any unauthorized use</li>
+                    <li>Ensuring your account information remains accurate and current</li>
+                </ul>
+
+                <h2>5. Acceptable Use Policy</h2>
+
+                <h3>5.1 Permitted Use</h3>
+                <p>You may use UniSync for legitimate educational and collaborative purposes, including:</p>
+                <ul>
+                    <li>Academic project collaboration</li>
+                    <li>Skill development and learning</li>
+                    <li>Professional networking within the academic community</li>
+                    <li>Sharing knowledge and resources</li>
+                </ul>
+
+                <h3>5.2 Prohibited Activities</h3>
+                <p>You may not:</p>
+                <ul>
+                    <li>Use the platform for commercial purposes without authorization</li>
+                    <li>Post false, misleading, or harmful content</li>
+                    <li>Harass, intimidate, or discriminate against other users</li>
+                    <li>Share copyrighted material without permission</li>
+                    <li>Attempt to hack, disrupt, or compromise the platform</li>
+                    <li>Impersonate other individuals or organizations</li>
+                    <li>Send spam or unsolicited communications</li>
+                </ul>
+
+                <h2>6. Content and Intellectual Property</h2>
+
+                <h3>6.1 User Content</h3>
+                <p>You retain ownership of content you create and share on UniSync. By posting content, you grant us a license to use, display, and distribute your content on the platform.</p>
+
+                <h3>6.2 Platform Content</h3>
+                <p>All UniSync branding, software, and platform features are protected by intellectual property laws and remain our exclusive property.</p>
+
+                <h3>6.3 Content Moderation</h3>
+                <p>We reserve the right to review, moderate, and remove content that violates these Terms or our community guidelines.</p>
+
+                <h2>7. Privacy and Data Protection</h2>
+
+                <p>Your privacy is important to us. Our collection and use of personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference.</p>
+
+                <p>By using UniSync, you consent to the collection, use, and sharing of your information as described in our Privacy Policy.</p>
+
+                <h2>8. Communication and Collaboration</h2>
+
+                <h3>8.1 Project Collaboration</h3>
+                <p>When collaborating on projects:</p>
+                <ul>
+                    <li>Respect intellectual property rights</li>
+                    <li>Communicate clearly about project expectations</li>
+                    <li>Honor commitments and deadlines</li>
+                    <li>Maintain professional conduct</li>
+                </ul>
+
+                <h3>8.2 Dispute Resolution</h3>
+                <p>In case of collaboration disputes, users are encouraged to resolve issues directly first. UniSync may mediate disputes at our discretion but is not obligated to do so.</p>
+
+                <h2>9. Termination and Suspension</h2>
+
+                <h3>9.1 Termination by User</h3>
+                <p>You may terminate your account at any time by contacting support or using the account deletion feature.</p>
+
+                <h3>9.2 Termination by UniSync</h3>
+                <p>We reserve the right to suspend or terminate your account if:</p>
+                <ul>
+                    <li>You violate these Terms</li>
+                    <li>Your conduct harms other users or the platform</li>
+                    <li>We are required to do so by law</li>
+                    <li>Your account has been inactive for an extended period</li>
+                </ul>
+
+                <h2>10. Disclaimers and Limitations</h2>
+
+                <h3>10.1 Service Availability</h3>
+                <p>UniSync is provided "as is" and "as available." We do not guarantee uninterrupted service and may perform maintenance that temporarily disrupts access.</p>
+
+                <h3>10.2 No Warranty</h3>
+                <p>We make no warranties about the accuracy, reliability, or suitability of our platform for any particular purpose.</p>
+
+                <h3>10.3 Limitation of Liability</h3>
+                <p>UniSync's liability is limited to the maximum extent permitted by law. We are not liable for indirect, incidental, or consequential damages.</p>
+
+                <h2>11. Indemnification</h2>
+
+                <p>You agree to indemnify and hold UniSync harmless from any claims, damages, or expenses arising from your use of the platform or violation of these Terms.</p>
+
+                <h2>12. Governing Law</h2>
+
+                <p>These Terms are governed by the laws of India. Any disputes will be resolved through binding arbitration in accordance with Indian law.</p>
+
+                <h2>13. Changes to Terms</h2>
+
+                <p>We may update these Terms periodically. Significant changes will be communicated through:</p>
+                <ul>
+                    <li>Email notifications</li>
+                    <li>Platform announcements</li>
+                    <li>Updated Terms with new effective date</li>
+                </ul>
+
+                <p>Continued use of UniSync after changes constitutes acceptance of the updated Terms.</p>
+
+                <h2>14. Severability</h2>
+
+                <p>If any provision of these Terms is found to be unenforceable, the remaining provisions will remain in full force and effect.</p>
+
+                <h2>15. Contact Information</h2>
+
+                <p>If you have questions about these Terms:</p>
+                <ul>
+                    <li><strong>Email:</strong> legal@unisync.com</li>
+                    <li><strong>Support:</strong> Visit our <a href="/accounts/help/" class="text-blue-400 hover:text-blue-300">Help Center</a></li>
+                    <li><strong>Contact Form:</strong> Use our <a href="/accounts/contact/" class="text-blue-400 hover:text-blue-300">contact form</a></li>
+                </ul>
+
+                <p><strong>Effective Date:</strong> December 16, 2025</p>
+
+                <p>Thank you for being part of the UniSync community and contributing to student innovation worldwide!</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

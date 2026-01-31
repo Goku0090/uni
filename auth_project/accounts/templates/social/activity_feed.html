@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Activity Feed | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-primary: 0 25px 50px rgba(0, 0, 0, 0.25);
+            --shadow-hover: 0 35px 70px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 50%, #1e1e2f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced 3D Animation Styles */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-8px) rotateX(3deg) rotateY(2deg) scale(1.02);
+            box-shadow: 0 25px 50px rgba(139, 92, 246, 0.4),
+                        0 15px 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .card-3d:hover::before {
+            opacity: 1;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .bounce-in {
+            animation: bounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(58, 183, 191, 0.4);
+                filter: brightness(1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(58, 183, 191, 0.8), 0 0 45px rgba(58, 183, 191, 0.6);
+                filter: brightness(1.1);
+            }
+        }
+
+        .float-3d {
+            animation: float3D 4s ease-in-out infinite;
+        }
+
+        @keyframes float3D {
+            0%, 100% {
+                transform: translateY(0px) rotateZ(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotateZ(1deg);
+            }
+        }
+
+        /* Activity Type Colors */
+        .activity-project { border-left: 4px solid #3b82f6; }
+        .activity-connection { border-left: 4px solid #10b981; }
+        .activity-message { border-left: 4px solid #f59e0b; }
+        .activity-follow { border-left: 4px solid #ef4444; }
+        .activity-like { border-left: 4px solid #ec4899; }
+        .activity-comment { border-left: 4px solid #8b5cf6; }
+
+        /* Interactive Elements */
+        .like-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .like-button:hover {
+            transform: scale(1.1);
+        }
+
+        .like-button.liked {
+            color: #ec4899;
+            animation: heartPulse 0.6s ease-out;
+        }
+
+        @keyframes heartPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .comment-button:hover {
+            color: #3b82f6;
+            transform: scale(1.05);
+        }
+
+        .share-button:hover {
+            color: #10b981;
+            transform: scale(1.05);
+        }
+
+        /* Loading States */
+        .loading-skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200px 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: rotate 2s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification-badge:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced Stats Cards */
+        .stats-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Filter Pills */
+        .filter-pill {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .filter-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-pill.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .card-3d:hover {
+                transform: translateY(-3px) rotateX(1deg) rotateY(1deg) scale(1.01);
+            }
+
+            .stats-card:hover {
+                transform: translateY(-2px) scale(1.01);
+            }
+        }
+
+        /* Custom Scrollbar */
+        .activity-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .activity-feed::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .activity-feed::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-feed::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="bg-primary shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:opacity-80 transition float-3d pulse-glow">🚀</a>
+                <h1 class="text-2xl font-bold">UniSync</h1>
+            </div>
+            <div class="flex gap-10">
+                <a href="{% url 'main_home' %}" class="hover:text-accent transition">Home</a>
+                <a href="{% url 'find_collaborators' %}" class="hover:text-accent transition">Find People</a>
+                <a href="{% url 'post_project' %}" class="hover:text-accent transition">Post Project</a>
+                <a href="{% url 'messages' %}" class="hover:text-accent transition">Messages</a>
+                <a href="{% url 'notifications' %}" class="hover:text-accent transition">Notifications</a>
+                <a href="{% url 'activity_feed' %}" class="text-accent">Activity</a>
+                <a href="{% url 'logout' %}" class="hover:text-red-400 transition">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Background Effects -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-transparent via-purple-500/3 to-transparent rounded-full"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold mb-6 bounce-in flex items-center justify-center gap-4">
+                <div class="relative">
+                    <span class="text-8xl float-3d pulse-glow">📱</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                </div>
+                <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Activity Feed
+                </span>
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                Stay connected with the latest happenings in your network. Discover new projects, connect with collaborators, and track your community's progress.
+            </p>
+        </div>
+
+        <!-- Activity Filters -->
+        <div class="flex flex-wrap justify-center gap-3 mb-8 slide-in-left">
+            <button class="filter-pill active px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/20" data-filter="all">
+                <i data-lucide="activity" class="w-4 h-4 inline mr-2"></i>
+                All Activities
+            </button>
+            <button class="filter-pill px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/20" data-filter="projects">
+                <i data-lucide="folder-plus" class="w-4 h-4 inline mr-2"></i>
+                Projects
+            </button>
+            <button class="filter-pill px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/20" data-filter="connections">
+                <i data-lucide="users" class="w-4 h-4 inline mr-2"></i>
+                Connections
+            </button>
+            <button class="filter-pill px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/20" data-filter="messages">
+                <i data-lucide="message-circle" class="w-4 h-4 inline mr-2"></i>
+                Messages
+            </button>
+            <button class="filter-pill px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/20" data-filter="following">
+                <i data-lucide="user-plus" class="w-4 h-4 inline mr-2"></i>
+                Following
+            </button>
+        </div>
+
+        <!-- Enhanced Live Feed Controls -->
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+            <!-- Live Status with better visual feedback -->
+            <div class="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-xl border border-green-500/40 rounded-full text-green-300 text-sm font-medium shadow-lg shadow-green-500/10 hover:shadow-green-500/20 transition-all duration-300">
+                <div class="relative w-2 h-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <div class="absolute inset-0 w-2 h-2 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                    <span id="liveStatus" class="flex items-center gap-2">
+                        <span class="text-green-400 font-bold">●</span>
+                        <span>Live Feed Active</span>
+                    </span>
+                </div>
+                <span class="text-xs text-green-400/70 ml-2" id="lastUpdate">(updated just now)</span>
+            </div>
+
+            <!-- Enhanced Live Controls -->
+            <div class="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
+                <button id="pauseLiveBtn" class="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 rounded-lg text-yellow-300 text-xs font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-yellow-500/20 flex items-center gap-2" onclick="toggleLiveUpdates()" title="Pause live updates">
+                    <i data-lucide="pause" class="w-3.5 h-3.5"></i>
+                    <span>Pause</span>
+                </button>
+                <button id="refreshBtn" class="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 rounded-lg text-blue-300 text-xs font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/20 flex items-center gap-2" onclick="manualRefresh()" title="Refresh feed">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>Refresh</span>
+                </button>
+                
+                <!-- Divider -->
+                <div class="w-px h-6 bg-white/10"></div>
+                
+                <!-- Online count with improved styling -->
+                <div class="flex items-center gap-2 px-2">
+                    <div class="flex items-center -space-x-1">
+                        <div class="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border border-white/20 flex items-center justify-center text-xs text-white font-bold">1</div>
+                        <div class="w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 to-red-500 border border-white/20 flex items-center justify-center text-xs text-white font-bold">2</div>
+                        <div class="w-5 h-5 rounded-full bg-gradient-to-br from-green-400 to-blue-500 border border-white/20 flex items-center justify-center text-xs text-white font-bold">+</div>
+                    </div>
+                    <div class="flex flex-col gap-0">
+                        <span id="onlineCount" class="text-xs font-bold text-white">12</span>
+                        <span class="text-xs text-gray-400">online now</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Live Activity Stream -->
+        <div id="liveActivityStream" class="hidden fixed top-20 right-4 z-40 w-80 max-h-[600px] overflow-hidden bg-gradient-to-br from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-xl border border-gradient-to-b from-gray-700/50 to-gray-800/30 rounded-2xl shadow-2xl shadow-purple-500/20 animate-slide-in-right">
+            <!-- Header with improved styling -->
+            <div class="p-5 border-b border-gray-700/50 bg-gradient-to-r from-purple-600/15 via-pink-600/10 to-purple-600/15">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="relative">
+                            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                            <div class="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-white font-bold text-sm">Live Stream</h3>
+                            <p class="text-gray-400 text-xs truncate">Real-time updates</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="clearLiveStream()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-red-500/10" title="Clear stream">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="toggleActivityStream()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200" title="Close stream">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Tabs/Filters -->
+            <div class="flex items-center gap-2 px-4 py-2 border-b border-gray-700/30 bg-gray-800/30">
+                <button class="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white hover:bg-white/20 transition-colors" data-filter="all" onclick="filterLiveActivities('all')">All</button>
+                <button class="px-3 py-1 rounded-full text-xs font-medium text-gray-400 hover:bg-white/10 transition-colors" data-filter="projects" onclick="filterLiveActivities('projects')">Projects</button>
+                <button class="px-3 py-1 rounded-full text-xs font-medium text-gray-400 hover:bg-white/10 transition-colors" data-filter="people" onclick="filterLiveActivities('people')">People</button>
+            </div>
+
+            <!-- Activity List with improved styling -->
+            <div id="liveActivityList" class="p-4 space-y-2 max-h-[420px] overflow-y-auto custom-scrollbar">
+                <!-- Empty state -->
+                <div id="emptyStreamState" class="text-center py-12 text-gray-400">
+                    <div class="text-5xl mb-4 opacity-50">📡</div>
+                    <p class="text-sm font-medium mb-1">Waiting for live activities...</p>
+                    <p class="text-xs text-gray-500">Activities will appear here in real-time</p>
+                </div>
+            </div>
+
+            <!-- Footer with stats -->
+            <div class="p-4 border-t border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-gray-800/30 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="flex items-center gap-2 text-gray-300">
+                        <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i>
+                        <span id="streamOnlineCount" class="font-semibold">0</span>
+                        <span class="text-gray-500">online</span>
+                    </span>
+                    <span class="flex items-center gap-2 text-gray-300">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 text-yellow-400"></i>
+                        <span id="activityRate" class="font-semibold">0</span>
+                        <span class="text-gray-500">per min</span>
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Last update:</span>
+                    <span id="streamLastUpdate" class="text-gray-300 font-medium">just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced New Activity Banner -->
+        <div id="newActivityBanner" class="hidden fixed top-16 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
+            <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white px-6 py-4 rounded-2xl shadow-2xl cursor-pointer hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105 border border-white/20 backdrop-blur-sm" onclick="scrollToTop()">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-3 h-3 bg-white rounded-full animate-bounce"></div>
+                        <div class="absolute inset-0 w-3 h-3 bg-white rounded-full animate-ping opacity-50"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg" id="newActivityCount">0</span>
+                        <span class="font-medium">new activities</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <i data-lucide="arrow-up" class="w-4 h-4 animate-bounce"></i>
+                        <span class="text-sm opacity-90">View</span>
+                    </div>
+                    <button onclick="dismissNewActivityBanner(); event.stopPropagation()" class="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="mt-3 bg-white/20 rounded-full h-1 overflow-hidden">
+                    <div id="bannerProgressBar" class="h-full bg-white rounded-full transition-all duration-1000 ease-linear" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Stream Toggle Button with improved animations -->
+        <button id="liveStreamToggle" class="fixed bottom-6 right-6 z-30 w-16 h-16 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white rounded-full shadow-2xl hover:shadow-purple-500/60 transition-all duration-300 hover:scale-110 hover:-translate-y-1 group" onclick="toggleActivityStream()" title="Toggle Live Stream">
+            <div class="relative w-full h-full flex items-center justify-center overflow-hidden rounded-full">
+                <!-- Background glow effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-lg group-hover:blur-xl transition-all"></div>
+                
+                <!-- Icon -->
+                <i data-lucide="radio" class="w-7 h-7 relative z-10 group-hover:scale-110 transition-transform"></i>
+                
+                <!-- Live indicator -->
+                <div class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full border-2 border-gray-900 shadow-lg shadow-green-400/50 animate-pulse group-hover:animate-bounce">
+                    <div class="w-full h-full bg-green-400 rounded-full animate-ping opacity-75"></div>
+                </div>
+                
+                <!-- Outer ring animation -->
+                <div class="absolute inset-0 rounded-full border-2 border-transparent border-t-white/50 border-r-white/30 animate-spin opacity-0 group-hover:opacity-100 transition-opacity" style="animation-duration: 3s;"></div>
+            </div>
+        </button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Main Activity Feed -->
+            <div class="lg:col-span-3">
+                <div class="activity-feed space-y-6 max-h-[800px] overflow-y-auto pr-4" id="activityContainer">
+                    {% if activities %}
+                        {% for activity in activities %}
+                        <div class="activity-card bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up activity-{{ activity.activity_type|default:'general' }}"
+                             style="animation-delay: {{ forloop.counter }}00ms;"
+                             data-activity-id="{{ activity.id }}"
+                             data-activity-type="{{ activity.activity_type|default:'general' }}">
+
+                            <!-- Activity Header -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-start gap-4">
+                                    <div class="relative">
+                                        {% if activity.user.profile.profile_photo %}
+                                            <img src="{{ activity.user.profile.profile_photo.url }}?v={{ activity.user.profile.updated_at|date:'U' }}"
+                                                 alt="{{ activity.user.username }}"
+                                                 class="w-12 h-12 rounded-full object-cover border-2 border-white/20">
+                                        {% else %}
+                                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold text-white">
+                                                {{ activity.user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-gray-900 flex items-center justify-center">
+                                            <span class="text-xs">{{ activity.activity_icon|default:'📱' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            {% if activity.user == user %}
+                                                <span class="font-bold text-white">You</span>
+                                            {% else %}
+                                                <a href="{% url 'user_profile' activity.user.username %}"
+                                                   class="font-bold text-accent hover:text-accent/80 transition-colors">
+                                                    {{ activity.user.username }}
+                                                </a>
+                                            {% endif %}
+                                            <span class="text-gray-400">•</span>
+                                            <span class="text-xs text-gray-400 relative" title="{{ activity.created_at|date:'M d, Y H:i' }}">
+                                                {{ activity.created_at|timesince }} ago
+                                            </span>
+                                        </div>
+                                        <h3 class="font-semibold text-white text-lg mb-2">{{ activity.title }}</h3>
+                                        {% if activity.description %}
+                                            <p class="text-gray-300 text-sm leading-relaxed">{{ activity.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Activity Type Badge -->
+                                <div class="flex-shrink-0">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                        {% if activity.activity_type == 'project' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% elif activity.activity_type == 'connection' %}bg-green-500/20 text-green-300 border border-green-500/30{% elif activity.activity_type == 'message' %}bg-yellow-500/20 text-yellow-300 border border-yellow-500/30{% elif activity.activity_type == 'follow' %}bg-red-500/20 text-red-300 border border-red-500/30{% elif activity.activity_type == 'like' %}bg-pink-500/20 text-pink-300 border border-pink-500/30{% else %}bg-purple-500/20 text-purple-300 border border-purple-500/30{% endif %}">
+                                        {% if activity.activity_type == 'project' %}🚀 Project{% elif activity.activity_type == 'connection' %}🤝 Connection{% elif activity.activity_type == 'message' %}💬 Message{% elif activity.activity_type == 'follow' %}👥 Follow{% elif activity.activity_type == 'like' %}❤️ Like{% else %}📱 Activity{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Activity Content -->
+                            {% if activity.project %}
+                                <div class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-4 border border-blue-500/20 mb-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                            <i data-lucide="folder" class="w-5 h-5 text-blue-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <a href="{% url 'project_detail' activity.project.id %}"
+                                               class="font-semibold text-blue-300 hover:text-blue-200 transition-colors text-lg">
+                                                {{ activity.project.title }}
+                                            </a>
+                                            {% if activity.project.description %}
+                                                <p class="text-gray-400 text-sm mt-1">{{ activity.project.description|truncatewords:15 }}</p>
+                                            {% endif %}
+                                            <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                                <span class="flex items-center gap-1">
+                                                    <i data-lucide="users" class="w-3 h-3"></i>
+                                                    {{ activity.project.team_members.count }} members
+                                                </span>
+                                                <span class="flex items-center gap-1">
+                                                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                                                    {{ activity.project.created_at|date:"M d, Y" }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif activity.target_user %}
+                                <div class="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl p-4 border border-green-500/20 mb-4">
+                                    <div class="flex items-center gap-3">
+                                        {% if activity.target_user.profile.profile_photo %}
+                                            <img src="{{ activity.target_user.profile.profile_photo.url }}?v={{ activity.target_user.profile.updated_at|date:'U' }}"
+                                                 alt="{{ activity.target_user.username }}"
+                                                 class="w-10 h-10 rounded-full object-cover">
+                                        {% else %}
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-sm font-bold text-white">
+                                                {{ activity.target_user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <a href="{% url 'user_profile' activity.target_user.username %}"
+                                               class="font-semibold text-green-300 hover:text-green-200 transition-colors">
+                                                {{ activity.target_user.username }}
+                                            </a>
+                                            <p class="text-gray-400 text-sm">{{ activity.target_user.profile.college|default:"Student" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Activity Actions -->
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                                <div class="flex items-center gap-4 flex-wrap">
+                                    <button class="like-button flex items-center gap-2 text-gray-400 hover:text-pink-400 transition-colors"
+                                            onclick="toggleLike({{ activity.id }}, this)">
+                                        <i data-lucide="heart" class="w-5 h-5"></i>
+                                        <span class="text-sm">{{ activity.likes_count|default:0 }}</span>
+                                    </button>
+
+                                    <button class="comment-button flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
+                                            onclick="toggleComments({{ activity.id }})">
+                                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                        <span class="text-sm">{{ activity.comments_count|default:0 }}</span>
+                                    </button>
+
+                                    <button class="share-button flex items-center gap-2 text-gray-400 hover:text-green-400 transition-colors"
+                                            onclick="shareActivity({{ activity.id }}, '{{ activity.title|escapejs }}')">
+                                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                                        <span class="text-sm">Share</span>
+                                    </button>
+
+                                    <!-- Connect Button (for other users) -->
+                                    {% if activity.user != user %}
+                                    {% if activity.user.connection_status == 'pending' %}
+                                        <button class="flex items-center gap-2 px-3 py-1 bg-yellow-600/20 text-yellow-400 border border-yellow-500/30 rounded-lg text-sm font-medium cursor-not-allowed opacity-75"
+                                                disabled
+                                            data-user-id="{{ activity.user.id }}"
+                                                data-connection-status="pending">
+                                    <i data-lucide="clock" class="w-4 h-4"></i>
+                                    <span>Pending</span>
+                                    </button>
+                                    {% elif activity.user.connection_status == 'connected' %}
+                                    <button class="flex items-center gap-2 px-3 py-1 bg-green-600/20 text-green-400 border border-green-500/30 rounded-lg text-sm font-medium cursor-not-allowed opacity-75"
+                                           disabled
+                                       data-user-id="{{ activity.user.id }}"
+                                       data-connection-status="connected">
+                                       <i data-lucide="check" class="w-4 h-4"></i>
+                                           <span>Connected</span>
+                                       </button>
+                                     {% else %}
+                                     <button class="activity-connect-btn connect-button flex items-center gap-2 px-3 py-1 bg-green-600/20 text-green-400 hover:bg-green-600/40 border border-green-500/30 rounded-lg transition-all text-sm font-medium"
+                                     data-user-id="{{ activity.user.id }}"
+                                     data-connection-status="none"
+                                     type="button">
+                                     <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                     <span>Connect</span>
+                                     </button>
+                                     {% endif %}
+                                     {% endif %}
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <button class="text-gray-400 hover:text-yellow-400 transition-colors"
+                                            onclick="bookmarkActivity({{ activity.id }}, this)">
+                                        <i data-lucide="bookmark" class="w-5 h-5"></i>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-gray-300 transition-colors"
+                                            onclick="showActivityMenu({{ activity.id }}, this)">
+                                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section (Hidden by default) -->
+                            <div class="comments-section hidden mt-4 pt-4 border-t border-white/10" id="comments-{{ activity.id }}">
+                                <div class="space-y-3">
+                                    <!-- Sample comments - replace with real data -->
+                                    <div class="flex gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-xs font-bold text-white">
+                                            U
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-gray-800/50 rounded-lg p-3">
+                                                <p class="text-sm text-gray-300">This looks amazing! Great work! 🚀</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Add Comment Form -->
+                                <div class="mt-4 flex gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <form class="flex gap-2" onsubmit="addComment(event, {{ activity.id }})">
+                                            <input type="text"
+                                                   placeholder="Write a comment..."
+                                                   class="flex-1 px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-accent">
+                                            <button type="submit"
+                                                    class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg text-sm font-semibold transition">
+                                                Post
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Load More Button -->
+                        <div class="text-center py-8">
+                            <button class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-purple-500/50 button-3d glow-3d"
+                                    onclick="loadMoreActivities()">
+                                <span class="flex items-center gap-2">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    Load More Activities
+                                </span>
+                            </button>
+                        </div>
+                    {% else %}
+                        <!-- Enhanced Empty State -->
+                        <div class="text-center py-20 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-lg rounded-3xl border border-white/20">
+                            <div class="relative mb-8">
+                                <div class="text-9xl opacity-20 animate-bounce">📱</div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+                            </div>
+                            <h3 class="text-3xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                                Your Activity Feed is Empty
+                            </h3>
+                            <p class="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                                Start building connections to see activities from people you follow. Discover amazing projects and collaborate with talented creators!
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                <a href="{% url 'find_collaborators' %}"
+                                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 button-3d glow-3d">
+                                    <i data-lucide="users" class="w-6 h-6"></i>
+                                    Find People to Follow
+                                </a>
+                                <a href="{% url 'post_project' %}"
+                                   class="inline-flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 rounded-full font-bold text-lg transition-all duration-300">
+                                    <i data-lucide="plus" class="w-6 h-6"></i>
+                                    Create Your First Project
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar Stats -->
+            <div class="space-y-6">
+                <!-- User Stats Card -->
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">📊</span>
+                        Your Stats
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Projects Created</span>
+                            <span class="font-semibold text-accent">{{ user_stats.projects_created }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Projects Joined</span>
+                            <span class="font-semibold text-accent">{{ user_stats.projects_joined }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Tasks Completed</span>
+                            <span class="font-semibold text-accent">{{ user_stats.tasks_completed }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Connections</span>
+                            <span class="font-semibold text-accent">{{ user_stats.connections_made }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Following</span>
+                            <span class="font-semibold text-accent">{{ user_stats.following_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Followers</span>
+                            <span class="font-semibold text-accent">{{ user_stats.followers_count }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up" style="animation-delay: 200ms;">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">⚡</span>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <a href="{% url 'post_project' %}" class="block w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-center transition">
+                            📝 Post New Project
+                        </a>
+                        <a href="{% url 'find_collaborators' %}" class="block w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold text-center transition">
+                            👥 Find Collaborators
+                        </a>
+                        <a href="{% url 'messages' %}" class="block w-full px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold text-center transition">
+                            💬 Send Messages
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Trending Activities -->
+                {% if following_count > 0 %}
+                <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 card-3d fade-in-up" style="animation-delay: 400ms;">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🔥</span>
+                        Following {{ following_count }} people
+                    </h3>
+                    <p class="text-gray-400 text-sm">
+                        Stay updated with activities from people you follow. The more you follow, the more active your feed becomes!
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 backdrop-blur-lg py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-gray-400">
+            <p>&copy; 2025 UniSync. Stay connected, stay inspired. 🚀</p>
+        </div>
+    </footer>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        // Global state for live features
+        let liveUpdatesEnabled = true;
+        let webSocketConnection = null;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 5;
+        let lastActivityTimestamp = Date.now();
+        let newActivitiesCount = 0;
+        let userPresence = new Map();
+        let typingUsers = new Set();
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeActivityFeed();
+            setupEventListeners();
+            initializeWebSocket();
+            startRealTimeUpdates();
+            setupPresenceTracking();
+        });
+
+        // Initialize activity feed
+        function initializeActivityFeed() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Add stagger animations to activity cards
+            const activityCards = document.querySelectorAll('.activity-card');
+            activityCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 100}ms`;
+            });
+
+            // Update last update time
+            updateLastUpdateTime();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+        // Connect buttons in activity feed
+        document.querySelectorAll('.activity-connect-btn').forEach(button => {
+           button.addEventListener('click', function(e) {
+           e.preventDefault();
+               e.stopPropagation();
+                    const userId = this.getAttribute('data-user-id');
+               console.log('Connect button clicked for user:', userId);
+               sendConnectionRequest(userId, this);
+                });
+            });
+            
+            // Filter buttons
+            const filterButtons = document.querySelectorAll('.filter-pill');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', handleFilterClick);
+            });
+
+            // Activity actions
+            setupActivityActions();
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        // Handle filter button clicks
+        function handleFilterClick(event) {
+            const filterType = event.currentTarget.dataset.filter;
+
+            // Update active filter button
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Filter activities
+            filterActivities(filterType);
+
+            // Show loading state
+            showFilterLoading();
+        }
+
+        // Filter activities based on type
+        function filterActivities(filterType) {
+            const activityCards = document.querySelectorAll('.activity-card');
+
+            activityCards.forEach(card => {
+                const activityType = card.dataset.activityType;
+
+                if (filterType === 'all' || activityType === filterType) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeInUp 0.5s ease-out forwards';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Show loading state during filtering
+        function showFilterLoading() {
+            const activityContainer = document.getElementById('activityContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'text-center py-8';
+            loadingDiv.innerHTML = `
+                <div class="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full">
+                    <div class="animate-spin rounded-full h-5 w-5 border-2 border-accent border-t-transparent"></div>
+                    <span class="text-accent font-medium">Filtering activities...</span>
+                </div>
+            `;
+
+            activityContainer.insertBefore(loadingDiv, activityContainer.firstChild);
+
+            setTimeout(() => {
+                loadingDiv.remove();
+            }, 800);
+        }
+
+        // Setup activity action handlers
+        function setupActivityActions() {
+            // Like buttons
+            document.querySelectorAll('.like-button').forEach(button => {
+                button.addEventListener('click', handleLikeClick);
+            });
+
+            // Comment buttons
+            document.querySelectorAll('.comment-button').forEach(button => {
+                button.addEventListener('click', handleCommentClick);
+            });
+
+            // Share buttons
+            document.querySelectorAll('.share-button').forEach(button => {
+                button.addEventListener('click', handleShareClick);
+            });
+
+            // Bookmark buttons
+            document.querySelectorAll('button[onclick*="bookmarkActivity"]').forEach(button => {
+                button.addEventListener('click', handleBookmarkClick);
+            });
+        }
+
+        // Handle like button clicks
+        function handleLikeClick(event) {
+            const button = event.currentTarget;
+            const activityId = button.closest('.activity-card').dataset.activityId;
+            const likeCount = button.querySelector('span');
+
+            // Toggle liked state
+            const isLiked = button.classList.contains('liked');
+            button.classList.toggle('liked');
+
+            // Update count
+            let count = parseInt(likeCount.textContent);
+            likeCount.textContent = isLiked ? count - 1 : count + 1;
+
+            // Send to server (simulated)
+            updateActivityEngagement(activityId, 'like', !isLiked);
+
+            // Show feedback
+            showActionFeedback(button, isLiked ? 'unliked' : 'liked', '❤️');
+        }
+
+        // Handle comment button clicks
+        function handleCommentClick(event) {
+            const button = event.currentTarget;
+            const activityId = button.closest('.activity-card').dataset.activityId;
+            const commentsSection = document.getElementById(`comments-${activityId}`);
+
+            // Toggle comments visibility
+            commentsSection.classList.toggle('hidden');
+
+            // Focus on comment input if opening
+            if (!commentsSection.classList.contains('hidden')) {
+                const commentInput = commentsSection.querySelector('input[type="text"]');
+                if (commentInput) {
+                    setTimeout(() => commentInput.focus(), 300);
+                }
+            }
+        }
+
+        // Handle share button clicks
+        function handleShareClick(event) {
+            const button = event.currentTarget;
+            const activityId = button.closest('.activity-card').dataset.activityId;
+            const activityCard = button.closest('.activity-card');
+            const activityTitle = activityCard.querySelector('h3').textContent;
+
+            // Create share menu
+            showShareMenu(activityId, activityTitle, button);
+        }
+
+        // Show share menu
+        function showShareMenu(activityId, activityTitle, triggerButton) {
+            // Remove existing share menus
+            document.querySelectorAll('.share-menu').forEach(menu => menu.remove());
+
+            const menu = document.createElement('div');
+            menu.className = 'share-menu absolute top-12 right-0 bg-gray-800 border border-gray-600 rounded-xl shadow-2xl p-4 z-50 min-w-[280px]';
+            menu.innerHTML = `
+                <h3 class="text-white font-semibold mb-3 text-center">Share Activity</h3>
+                <div class="space-y-3">
+                    <button onclick="shareToPlatform('twitter', '${activityTitle}')" class="flex items-center gap-3 px-4 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-white w-full">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        Twitter
+                    </button>
+                    <button onclick="shareToPlatform('linkedin', '${activityTitle}')" class="flex items-center gap-3 px-4 py-3 bg-blue-700 hover:bg-blue-800 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-white w-full">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                        LinkedIn
+                    </button>
+                    <button onclick="copyActivityLink(${activityId})" class="flex items-center gap-3 px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-white w-full">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                        </svg>
+                        Copy Link
+                    </button>
+                </div>
+            `;
+
+            triggerButton.parentElement.appendChild(menu);
+
+            // Close menu when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!menu.contains(e.target) && e.target !== triggerButton) {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 10);
+        }
+
+        // Share to social platforms
+        function shareToPlatform(platform, title) {
+            const url = window.location.href;
+            let shareUrl = '';
+
+            switch (platform) {
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+                    break;
+                case 'linkedin':
+                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                    break;
+            }
+
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+
+            // Close share menu
+            document.querySelectorAll('.share-menu').forEach(menu => menu.remove());
+        }
+
+        // Copy activity link
+        async function copyActivityLink(activityId) {
+            const url = `${window.location.origin}/activity/${activityId}`;
+
+            try {
+                await navigator.clipboard.writeText(url);
+                showActionFeedback(document.querySelector('.share-menu'), 'copied', '📋');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showActionFeedback(document.querySelector('.share-menu'), 'copied', '📋');
+            }
+
+            setTimeout(() => {
+                document.querySelectorAll('.share-menu').forEach(menu => menu.remove());
+            }, 1000);
+        }
+
+        // Handle bookmark clicks
+        function handleBookmarkClick(event) {
+            const button = event.currentTarget;
+            const activityId = button.closest('.activity-card').dataset.activityId;
+
+            // Toggle bookmark state
+            const isBookmarked = button.classList.contains('text-yellow-400');
+            button.classList.toggle('text-yellow-400', !isBookmarked);
+            button.classList.toggle('text-gray-400', isBookmarked);
+
+            // Send to server (simulated)
+            updateActivityEngagement(activityId, 'bookmark', !isBookmarked);
+
+            // Show feedback
+            showActionFeedback(button, isBookmarked ? 'removed from bookmarks' : 'bookmarked', '🔖');
+        }
+
+        // Add comment functionality
+        function addComment(event, activityId) {
+            event.preventDefault();
+
+            const form = event.target;
+            const input = form.querySelector('input[type="text"]');
+            const commentText = input.value.trim();
+
+            if (!commentText) return;
+
+            // Add comment to UI (simulated)
+            const commentsSection = document.getElementById(`comments-${activityId}`);
+            const commentsContainer = commentsSection.querySelector('.space-y-3');
+
+            const newComment = document.createElement('div');
+            newComment.className = 'flex gap-3 animate-fade-in-up';
+            newComment.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">
+                    ${document.querySelector('.bg-gradient-to-br.from-purple-500.to-pink-500').textContent || 'U'}
+                </div>
+                <div class="flex-1">
+                    <div class="bg-accent/20 rounded-lg p-3">
+                        <p class="text-sm text-white">${commentText}</p>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">just now</p>
+                </div>
+            `;
+
+            commentsContainer.appendChild(newComment);
+
+            // Update comment count
+            const commentButton = document.querySelector(`[onclick="toggleComments(${activityId})"]`);
+            if (commentButton) {
+                const countSpan = commentButton.querySelector('span');
+                countSpan.textContent = parseInt(countSpan.textContent) + 1;
+            }
+
+            // Clear input
+            input.value = '';
+
+            // Send to server (simulated)
+            updateActivityEngagement(activityId, 'comment', commentText);
+        }
+
+        // Update activity engagement on server (simulated)
+        function updateActivityEngagement(activityId, action, value) {
+            // This would send an AJAX request to update the server
+            console.log(`Activity ${activityId}: ${action} = ${value}`);
+
+            // Simulate server response
+            setTimeout(() => {
+                // Could update UI based on server response
+            }, 500);
+        }
+
+         // Get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Show action feedback
+        function showActionFeedback(message, type = 'info') {
+            const feedback = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+            feedback.className = `fixed z-50 px-4 py-3 ${bgColor} text-white text-sm rounded-lg shadow-lg pointer-events-none top-4 right-4`;
+            feedback.innerHTML = `<span class="flex items-center gap-2">${message}</span>`;
+
+            document.body.appendChild(feedback);
+
+            // Animate in
+            feedback.style.animation = 'slideInRight 0.3s ease-out';
+
+            // Remove after delay
+            setTimeout(() => {
+                feedback.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => {
+                    if (feedback.parentElement) {
+                        feedback.parentElement.removeChild(feedback);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Load more activities
+        function loadMoreActivities() {
+            const loadButton = event.target.closest('button');
+            const originalText = loadButton.innerHTML;
+
+            // Show loading state
+            loadButton.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    Loading...
+                </span>
+            `;
+            loadButton.disabled = true;
+
+            // Simulate loading more activities
+            setTimeout(() => {
+                // In a real app, this would fetch more activities from the server
+                // For now, we'll just show a message
+                showActionFeedback(loadButton, 'No more activities to load', '📭');
+
+                // Reset button
+                loadButton.innerHTML = originalText;
+                loadButton.disabled = false;
+            }, 2000);
+        }
+
+        // Initialize WebSocket connection (simulated)
+        function initializeWebSocket() {
+            updateLiveStatus('🟡 Connecting...', 'connecting...');
+
+            // Simulate WebSocket connection
+            setTimeout(() => {
+                if (Math.random() > 0.1) { // 90% success rate
+                    webSocketConnection = { connected: true };
+                    updateLiveStatus('🟢 Live Feed Active', 'just now');
+                    startLiveActivityPolling();
+                } else {
+                    updateLiveStatus('🔴 Connection Failed', 'retrying...');
+                    attemptReconnect();
+                }
+            }, 2000);
+        }
+
+        // Setup presence tracking
+        function setupPresenceTracking() {
+            // Simulate user presence updates
+            setInterval(() => {
+                if (liveUpdatesEnabled && webSocketConnection) {
+                    updateOnlineCount();
+                }
+            }, 10000);
+
+            // Track user activity
+            let activityTimeout;
+            const resetActivityTimeout = () => {
+                clearTimeout(activityTimeout);
+                activityTimeout = setTimeout(() => {
+                    updateUserPresence('away');
+                }, 300000); // 5 minutes
+                updateUserPresence('active');
+            };
+
+            // Track various user activities
+            document.addEventListener('mousemove', resetActivityTimeout);
+            document.addEventListener('keydown', resetActivityTimeout);
+            document.addEventListener('click', resetActivityTimeout);
+            document.addEventListener('scroll', resetActivityTimeout);
+
+            resetActivityTimeout();
+        }
+
+        // Update live status indicator
+        function updateLiveStatus(status, timestamp) {
+            const statusElement = document.getElementById('liveStatus');
+            const indicator = document.getElementById('liveIndicator');
+            const lastUpdate = document.getElementById('lastUpdate');
+
+            if (statusElement) statusElement.textContent = status;
+            if (lastUpdate) lastUpdate.textContent = timestamp;
+
+            // Update indicator color
+            if (status.includes('🟢')) {
+                indicator.className = 'w-2 h-2 bg-green-400 rounded-full animate-pulse';
+            } else if (status.includes('🟡')) {
+                indicator.className = 'w-2 h-2 bg-yellow-400 rounded-full animate-pulse';
+            } else {
+                indicator.className = 'w-2 h-2 bg-red-400 rounded-full animate-pulse';
+            }
+        }
+
+        // Toggle live updates
+        function toggleLiveUpdates() {
+            liveUpdatesEnabled = !liveUpdatesEnabled;
+            const pauseBtn = document.getElementById('pauseLiveBtn');
+
+            if (liveUpdatesEnabled) {
+                pauseBtn.innerHTML = '<i data-lucide="pause" class="w-3 h-3 inline mr-1"></i>Pause';
+                pauseBtn.className = 'px-3 py-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 rounded-lg text-yellow-300 text-xs font-medium transition';
+                updateLiveStatus('🟢 Live Feed Active', 'resumed');
+                startLiveActivityPolling();
+            } else {
+                pauseBtn.innerHTML = '<i data-lucide="play" class="w-3 h-3 inline mr-1"></i>Resume';
+                pauseBtn.className = 'px-3 py-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-300 text-xs font-medium transition';
+                updateLiveStatus('⏸️ Live Feed Paused', 'paused');
+            }
+        }
+
+        // Manual refresh
+        function manualRefresh() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const originalHTML = refreshBtn.innerHTML;
+
+            refreshBtn.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3 inline mr-1 animate-spin"></i>Refreshing...';
+            refreshBtn.disabled = true;
+
+            // Simulate refresh
+            setTimeout(() => {
+                updateLiveStatus('🟢 Live Feed Active', 'refreshed');
+                showActionFeedback(refreshBtn, 'Feed refreshed!', '🔄');
+                refreshBtn.innerHTML = originalHTML;
+                refreshBtn.disabled = false;
+                newActivitiesCount = 0;
+                hideNewActivityBanner();
+            }, 1500);
+        }
+
+        // Start live activity polling
+        function startLiveActivityPolling() {
+            if (!liveUpdatesEnabled || !webSocketConnection) return;
+
+            // Poll for new activities every 15 seconds
+            setTimeout(() => {
+                if (liveUpdatesEnabled && webSocketConnection) {
+                    checkForNewActivities();
+                    startLiveActivityPolling();
+                }
+            }, 15000);
+        }
+
+        // Check for new activities
+        function checkForNewActivities() {
+            if (!liveUpdatesEnabled) return;
+
+            // Simulate checking for new activities
+            const activities = [
+                { type: 'project', user: 'Alice Johnson', action: 'created a new project', title: 'AI Chatbot Platform' },
+                { type: 'connection', user: 'Bob Smith', action: 'connected with', title: 'Sarah Wilson' },
+                { type: 'comment', user: 'Charlie Brown', action: 'commented on', title: 'Web Development Project' },
+                { type: 'like', user: 'Diana Prince', action: 'liked', title: 'Mobile App Design' }
+            ];
+
+            if (Math.random() < 0.3) { // 30% chance of new activity
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                addLiveActivity(activity);
+                newActivitiesCount++;
+                showNewActivityBanner();
+            }
+        }
+
+        // Add live activity to stream
+        function addLiveActivity(activity) {
+            const liveList = document.getElementById('liveActivityList');
+            if (!liveList) return;
+
+            const activityElement = document.createElement('div');
+            activityElement.className = 'p-3 bg-gray-800/50 rounded-lg border-l-4 border-green-400 animate-slide-in-right';
+            activityElement.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                    <span class="text-sm text-gray-300">
+                        <strong class="text-white">${activity.user}</strong> ${activity.action}
+                        <strong class="text-accent">${activity.title}</strong>
+                    </span>
+                    <span class="text-xs text-gray-500 ml-auto">now</span>
+                </div>
+            `;
+
+            liveList.insertBefore(activityElement, liveList.firstChild);
+
+            // Limit to 10 activities
+            while (liveList.children.length > 10) {
+                liveList.removeChild(liveList.lastChild);
+            }
+
+            // Auto-remove after 30 seconds
+            setTimeout(() => {
+                if (activityElement.parentElement) {
+                    activityElement.style.animation = 'slide-out-right 0.5s ease-out forwards';
+                    setTimeout(() => {
+                        if (activityElement.parentElement) {
+                            activityElement.parentElement.removeChild(activityElement);
+                        }
+                    }, 500);
+                }
+            }, 30000);
+        }
+
+        // Toggle activity stream
+        function toggleActivityStream() {
+            const stream = document.getElementById('liveActivityStream');
+            stream.classList.toggle('hidden');
+        }
+
+        // Show new activity banner
+        function showNewActivityBanner() {
+            const banner = document.getElementById('newActivityBanner');
+            const countElement = document.getElementById('newActivityCount');
+
+            if (banner && countElement) {
+                countElement.textContent = newActivitiesCount;
+                banner.classList.remove('hidden');
+            }
+        }
+
+        // Hide new activity banner
+        function hideNewActivityBanner() {
+            const banner = document.getElementById('newActivityBanner');
+            if (banner) {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // Scroll to top
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            hideNewActivityBanner();
+            newActivitiesCount = 0;
+        }
+
+        // Update online count
+        function updateOnlineCount() {
+            const countElement = document.getElementById('onlineCount');
+            if (countElement) {
+                // Simulate online count between 5-25
+                const count = Math.floor(Math.random() * 20) + 5;
+                countElement.textContent = count;
+            }
+        }
+
+        // Update user presence
+        function updateUserPresence(status) {
+            // This would send presence updates to the server
+            console.log('User presence:', status);
+        }
+
+        // Attempt to reconnect WebSocket
+        function attemptReconnect() {
+            if (reconnectAttempts >= maxReconnectAttempts) {
+                updateLiveStatus('🔴 Connection Failed', 'max retries reached');
+                return;
+            }
+
+            reconnectAttempts++;
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff
+
+            setTimeout(() => {
+                updateLiveStatus('🟡 Reconnecting...', `attempt ${reconnectAttempts}`);
+                initializeWebSocket();
+            }, delay);
+        }
+
+        // Enhanced typing indicators for comments
+        function setupTypingIndicators() {
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                let typingTimeout;
+
+                input.addEventListener('input', () => {
+                    clearTimeout(typingTimeout);
+
+                    // Show typing indicator
+                    showTypingIndicator(input.closest('.activity-card').dataset.activityId);
+
+                    // Clear typing indicator after 2 seconds of no typing
+                    typingTimeout = setTimeout(() => {
+                        hideTypingIndicator(input.closest('.activity-card').dataset.activityId);
+                    }, 2000);
+                });
+
+                input.addEventListener('blur', () => {
+                    hideTypingIndicator(input.closest('.activity-card').dataset.activityId);
+                });
+            });
+        }
+
+        // Show typing indicator
+        function showTypingIndicator(activityId) {
+            const commentsSection = document.getElementById(`comments-${activityId}`);
+            if (!commentsSection) return;
+
+            let typingIndicator = commentsSection.querySelector('.typing-indicator');
+            if (!typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator flex items-center gap-2 p-2 text-xs text-gray-400';
+                typingIndicator.innerHTML = `
+                    <div class="flex gap-1">
+                        <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                    <span>Someone is typing...</span>
+                `;
+                commentsSection.insertBefore(typingIndicator, commentsSection.lastElementChild);
+            }
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator(activityId) {
+            const commentsSection = document.getElementById(`comments-${activityId}`);
+            if (!commentsSection) return;
+
+            const typingIndicator = commentsSection.querySelector('.typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Real-time engagement updates
+        function setupRealTimeEngagement() {
+            // Simulate real-time like/comment updates
+            setInterval(() => {
+                if (liveUpdatesEnabled && webSocketConnection) {
+                    // Randomly update engagement counts
+                    document.querySelectorAll('.like-button span, .comment-button span').forEach(span => {
+                        if (Math.random() < 0.05) { // 5% chance
+                            const currentCount = parseInt(span.textContent);
+                            const change = Math.random() < 0.7 ? 1 : -1; // 70% increase, 30% decrease
+                            const newCount = Math.max(0, currentCount + change);
+                            span.textContent = newCount;
+
+                            // Add visual feedback
+                            span.style.animation = 'pulse 0.5s ease-out';
+                            setTimeout(() => {
+                                span.style.animation = '';
+                            }, 500);
+                        }
+                    });
+                }
+            }, 5000);
+        }
+
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            // Update "last updated" time every minute
+            setInterval(updateLastUpdateTime, 60000);
+
+            // Setup enhanced features
+            setupTypingIndicators();
+            setupRealTimeEngagement();
+
+            // Simulate real-time updates (in a real app, this would use WebSockets or Server-Sent Events)
+            setInterval(() => {
+                // Randomly show new activity indicator
+                if (Math.random() < 0.1) { // 10% chance every 30 seconds
+                    showNewActivityNotification();
+                }
+            }, 30000);
+        }
+
+        // Update last update time
+        function updateLastUpdateTime() {
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            if (lastUpdateElement) {
+                lastUpdateElement.textContent = 'just now';
+            }
+        }
+
+        // Show new activity notification
+        function showNewActivityNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 z-50 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl shadow-2xl transform translate-x-full transition-transform duration-500';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                    <span class="font-medium">New activity available!</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 hover:bg-white/20 rounded-full p-1">
+                        <span class="text-sm">×</span>
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 10);
+
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.parentElement.removeChild(notification);
+                    }
+                }, 500);
+            }, 5000);
+        }
+
+        // Keyboard shortcuts
+        function handleKeyboardShortcuts(event) {
+            // Ctrl/Cmd + R to refresh feed
+            if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+                event.preventDefault();
+                location.reload();
+            }
+
+            // Escape to close any open menus
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.share-menu').forEach(menu => menu.remove());
+            }
+        }
+
+        // Global functions for onclick handlers
+        function toggleLike(activityId, button) {
+            handleLikeClick({ currentTarget: button });
+        }
+
+        function toggleComments(activityId) {
+            const button = document.querySelector(`[onclick="toggleComments(${activityId})"]`);
+            if (button) {
+                handleCommentClick({ currentTarget: button });
+            }
+        }
+
+        function shareActivity(activityId, activityTitle) {
+            const button = document.querySelector(`[onclick*="shareActivity(${activityId}"]`);
+            if (button) {
+                handleShareClick({ currentTarget: button });
+            }
+        }
+
+        function bookmarkActivity(activityId, button) {
+            handleBookmarkClick({ currentTarget: button });
+        }
+
+        function showActivityMenu(activityId, button) {
+            // Could implement a context menu here
+            console.log(`Activity menu for ${activityId}`);
+        }
+
+        // Clear live stream with confirmation feedback
+        function clearLiveStream() {
+            const liveList = document.getElementById('liveActivityList');
+            if (liveList) {
+                // Clear all activities with animation
+                const activities = liveList.querySelectorAll('[data-activity-filter]');
+                activities.forEach((activity, index) => {
+                    setTimeout(() => {
+                        activity.style.animation = 'slide-out-right 0.3s ease-out forwards';
+                        setTimeout(() => {
+                            activity.remove();
+                            updateActivityRate();
+                        }, 300);
+                    }, index * 30);
+                });
+
+                // Show empty state after clearing
+                setTimeout(() => {
+                    const emptyState = document.getElementById('emptyStreamState');
+                    if (emptyState && liveList.querySelectorAll('[data-activity-filter]').length === 0) {
+                        emptyState.style.display = 'block';
+                    }
+                }, activities.length * 30 + 400);
+
+                // Show feedback
+                const button = event?.target || document.querySelector('[onclick="clearLiveStream()"]');
+                if (button) {
+                    button.classList.add('animate-pulse');
+                    setTimeout(() => button.classList.remove('animate-pulse'), 600);
+                }
+            }
+        }
+
+        // Dismiss new activity banner
+        function dismissNewActivityBanner() {
+            hideNewActivityBanner();
+            newActivitiesCount = 0;
+        }
+
+        // Enhanced animations and styles
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes slide-in-right {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            @keyframes slide-out-right {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+
+            @keyframes slide-down {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
+
+            .animate-slide-in-right {
+                animation: slide-in-right 0.5s ease-out;
+            }
+
+            .animate-slide-out-right {
+                animation: slide-out-right 0.5s ease-out;
+            }
+
+            .animate-slide-down {
+                animation: slide-down 0.4s ease-out;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-radius: 10px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #5a67d8, #6b46c1);
+            }
+
+            .glow-3d {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .glow-3d::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+                border-radius: inherit;
+                z-index: -1;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .glow-3d:hover::before {
+                opacity: 0.3;
+            }
+
+            .button-3d {
+                transform-style: preserve-3d;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .button-3d:hover {
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Enhanced banner with auto-dismiss
+        let bannerTimeout;
+        function showNewActivityBanner() {
+            const banner = document.getElementById('newActivityBanner');
+            const countElement = document.getElementById('newActivityCount');
+            const progressBar = document.getElementById('bannerProgressBar');
+
+            if (banner && countElement) {
+                countElement.textContent = newActivitiesCount;
+                banner.classList.remove('hidden');
+
+                // Auto-dismiss after 10 seconds
+                clearTimeout(bannerTimeout);
+                bannerTimeout = setTimeout(() => {
+                    dismissNewActivityBanner();
+                }, 10000);
+
+                // Animate progress bar
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                    setTimeout(() => {
+                        progressBar.style.transition = 'width 10s linear';
+                        progressBar.style.width = '0%';
+                    }, 100);
+                }
+            }
+        }
+
+        // Enhanced live activity display with better styling and filtering
+        function addLiveActivity(activity) {
+            const liveList = document.getElementById('liveActivityList');
+            if (!liveList) return;
+
+            // Hide empty state
+            const emptyState = document.getElementById('emptyStreamState');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+
+            // Determine activity type and styling
+            const activityIcons = {
+                project: { icon: '🚀', color: 'from-blue-400 to-blue-600', borderColor: 'border-blue-400', filterType: 'projects' },
+                connection: { icon: '🤝', color: 'from-green-400 to-green-600', borderColor: 'border-green-400', filterType: 'people' },
+                comment: { icon: '💬', color: 'from-yellow-400 to-yellow-600', borderColor: 'border-yellow-400', filterType: 'projects' },
+                like: { icon: '❤️', color: 'from-red-400 to-red-600', borderColor: 'border-red-400', filterType: 'projects' },
+                follow: { icon: '👤', color: 'from-purple-400 to-purple-600', borderColor: 'border-purple-400', filterType: 'people' }
+            };
+
+            const activityData = activityIcons[activity.type] || { icon: '📱', color: 'from-gray-400 to-gray-600', borderColor: 'border-gray-400', filterType: 'all' };
+
+            const activityElement = document.createElement('div');
+            activityElement.className = `p-3 bg-gradient-to-r ${activityData.color}/10 rounded-lg border-l-4 ${activityData.borderColor} animate-slide-in-right hover:bg-white/5 transition-all duration-200 cursor-pointer group data-activity-filter="${activityData.filterType}"`;
+            activityElement.setAttribute('data-activity-filter', activityData.filterType);
+
+            activityElement.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 relative">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br ${activityData.color} flex items-center justify-center text-sm shadow-lg shadow-${activityData.color}/50">
+                            ${activityData.icon}
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border border-gray-900 animate-pulse"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-bold tracking-wider text-green-400 bg-green-400/20 px-2 py-0.5 rounded-full">LIVE</span>
+                            <span class="text-xs text-gray-500">just now</span>
+                        </div>
+                        <p class="text-sm text-gray-300 leading-relaxed line-clamp-2">
+                            <strong class="text-white">${activity.user}</strong> ${activity.action}
+                            <strong class="text-accent">${activity.title}</strong>
+                        </p>
+                    </div>
+                    <button onclick="removeLiveActivity(this)" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-1 flex-shrink-0">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+
+            // Add click handler to scroll to related activity
+            activityElement.addEventListener('click', (e) => {
+                if (!e.target.closest('button')) {
+                    scrollToRelatedActivity(activity);
+                }
+            });
+
+            liveList.insertBefore(activityElement, liveList.firstChild);
+
+            // Limit to 15 activities for better scrolling
+            const allActivities = liveList.querySelectorAll('[data-activity-filter]');
+            if (allActivities.length > 15) {
+                allActivities[allActivities.length - 1].remove();
+            }
+
+            // Auto-remove after 45 seconds with fade out
+            const timeout = setTimeout(() => {
+                if (activityElement.parentElement) {
+                    activityElement.style.animation = 'slide-out-right 0.4s ease-out forwards';
+                    setTimeout(() => {
+                        if (activityElement.parentElement) {
+                            activityElement.parentElement.removeChild(activityElement);
+                            updateActivityRate();
+                            // Show empty state if no activities left
+                            if (liveList.querySelectorAll('[data-activity-filter]').length === 0 && emptyState) {
+                                emptyState.style.display = 'block';
+                            }
+                        }
+                    }, 400);
+                }
+            }, 45000);
+
+            // Store timeout for cleanup
+            activityElement.dataset.timeout = timeout;
+
+            // Update stream stats
+            updateStreamFooter();
+            updateActivityRate();
+
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Remove live activity
+        function removeLiveActivity(button) {
+            const activityElement = button.closest('.animate-slide-in-right');
+            if (activityElement) {
+                activityElement.style.animation = 'slide-out-right 0.3s ease-out forwards';
+                setTimeout(() => {
+                    if (activityElement.parentElement) {
+                        activityElement.parentElement.removeChild(activityElement);
+                        updateStreamFooter();
+                    }
+                }, 300);
+            }
+        }
+
+        // Update stream footer
+        function updateStreamFooter() {
+            const streamOnlineCount = document.getElementById('streamOnlineCount');
+            const streamLastUpdate = document.getElementById('streamLastUpdate');
+
+            if (streamOnlineCount) {
+                const count = Math.floor(Math.random() * 20) + 5;
+                streamOnlineCount.textContent = count;
+            }
+
+            if (streamLastUpdate) {
+                streamLastUpdate.textContent = 'just now';
+            }
+        }
+
+        // Scroll to related activity
+        function scrollToRelatedActivity(activity) {
+            // Find related activity in main feed
+            const activities = document.querySelectorAll('.activity-card');
+            for (const activityCard of activities) {
+                const title = activityCard.querySelector('h3')?.textContent;
+                if (title && title.includes(activity.title)) {
+                    activityCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Add highlight effect
+                    activityCard.style.animation = 'none';
+                    setTimeout(() => {
+                        activityCard.style.animation = 'pulse 1s ease-out';
+                    }, 10);
+                    break;
+                }
+            }
+        }
+
+        // Filter live activities
+        function filterLiveActivities(filter) {
+            const buttons = document.querySelectorAll('[data-filter]');
+            buttons.forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('bg-white/10', 'text-white');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('bg-white/10', 'text-white');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+
+            // Filter activities in list
+            const activities = document.querySelectorAll('[data-activity-filter]');
+            activities.forEach(activity => {
+                if (filter === 'all' || activity.dataset.activityFilter === filter) {
+                    activity.style.display = '';
+                    activity.classList.add('animate-slide-in-right');
+                } else {
+                    activity.style.display = 'none';
+                }
+            });
+        }
+
+        // Update activity rate
+        function updateActivityRate() {
+            const list = document.getElementById('liveActivityList');
+            if (list) {
+                const activityCount = list.children.length - 1; // Exclude empty state
+                const rateElement = document.getElementById('activityRate');
+                if (rateElement) {
+                    rateElement.textContent = Math.min(activityCount, 10);
+                }
+            }
+        }
+
+        // Enhanced toggle activity stream with smoother animations
+        function toggleActivityStream() {
+            const stream = document.getElementById('liveActivityStream');
+            const toggleBtn = document.getElementById('liveStreamToggle');
+
+            if (stream) {
+                const isHidden = stream.classList.contains('hidden');
+                
+                if (isHidden) {
+                    stream.classList.remove('hidden');
+                    stream.classList.add('animate-slide-in-right');
+                    updateStreamFooter();
+                    updateActivityRate();
+                } else {
+                    stream.classList.add('animate-slide-out-right');
+                    setTimeout(() => {
+                        stream.classList.add('hidden');
+                        stream.classList.remove('animate-slide-out-right');
+                    }, 500);
+                }
+
+                if (toggleBtn) {
+                    toggleBtn.classList.toggle('pulse');
+                }
+            }
+        }
+
+        // Enhanced presence tracking with visual indicators
+        function setupPresenceTracking() {
+            // Simulate user presence updates
+            setInterval(() => {
+                if (liveUpdatesEnabled && webSocketConnection) {
+                    updateOnlineCount();
+                    updatePresenceIndicators();
+                }
+            }, 10000);
+
+            // Track user activity with more sophisticated detection
+            let activityTimeout;
+            let lastActivity = Date.now();
+
+            const resetActivityTimeout = () => {
+                clearTimeout(activityTimeout);
+                lastActivity = Date.now();
+
+                activityTimeout = setTimeout(() => {
+                    updateUserPresence('away');
+                    updatePresenceIndicators();
+                }, 300000); // 5 minutes
+
+                updateUserPresence('active');
+                updatePresenceIndicators();
+            };
+
+            // Track various user activities
+            ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event => {
+                document.addEventListener(event, resetActivityTimeout, { passive: true });
+            });
+
+            resetActivityTimeout();
+        }
+
+        // Update presence indicators
+        function updatePresenceIndicators() {
+            // Update user avatars with presence status
+            document.querySelectorAll('.activity-card').forEach(card => {
+                const avatar = card.querySelector('.relative');
+                if (avatar) {
+                    const statusIndicator = avatar.querySelector('.absolute');
+                    if (statusIndicator) {
+                        // Simulate online/offline status
+                        const isOnline = Math.random() > 0.3; // 70% online
+                        statusIndicator.style.background = isOnline ?
+                            'linear-gradient(to right, #10b981, #059669)' :
+                            'linear-gradient(to right, #6b7280, #4b5563)';
+                    }
+                }
+            });
+        }
+
+        // Enhanced real-time engagement updates
+        function setupRealTimeEngagement() {
+            // Simulate real-time like/comment updates with more realistic behavior
+            setInterval(() => {
+                if (liveUpdatesEnabled && webSocketConnection) {
+                    // Update engagement counts with more sophisticated logic
+                    document.querySelectorAll('.like-button span, .comment-button span').forEach(span => {
+                        if (Math.random() < 0.03) { // 3% chance for more realistic updates
+                            const currentCount = parseInt(span.textContent);
+                            const change = Math.random() < 0.8 ? 1 : -1; // 80% increase, 20% decrease
+                            const newCount = Math.max(0, currentCount + change);
+                            span.textContent = newCount;
+
+                            // Add visual feedback with ripple effect
+                            const button = span.closest('button');
+                            if (button) {
+                                button.style.position = 'relative';
+                                button.style.overflow = 'hidden';
+
+                                const ripple = document.createElement('div');
+                                ripple.style.position = 'absolute';
+                                ripple.style.borderRadius = '50%';
+                                ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+                                ripple.style.transform = 'scale(0)';
+                                ripple.style.animation = 'ripple 0.6s linear';
+                                ripple.style.left = '50%';
+                                ripple.style.top = '50%';
+                                ripple.style.width = '20px';
+                                ripple.style.height = '20px';
+                                ripple.style.marginLeft = '-10px';
+                                ripple.style.marginTop = '-10px';
+
+                                button.appendChild(ripple);
+                                setTimeout(() => {
+                                    if (ripple.parentElement) {
+                                        ripple.parentElement.removeChild(ripple);
+                                    }
+                                }, 600);
+                            }
+                        }
+                    });
+                }
+            }, 8000); // Update every 8 seconds for more realistic timing
+        }
+
+        // Add ripple animation
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // Send connection request
+        function sendConnectionRequest(userId, buttonElement) {
+            console.log('sendConnectionRequest called with userId:', userId, 'button:', buttonElement);
+            
+            // Validate button element
+            if (!buttonElement || !buttonElement.getAttribute) {
+                console.error('Invalid button element passed to sendConnectionRequest');
+                showActionFeedback('Error: Invalid button element', 'error');
+                return;
+            }
+            
+            // Check current connection status
+            const currentStatus = buttonElement.getAttribute('data-connection-status');
+            
+            // Don't allow sending if already pending or connected
+            if (currentStatus === 'pending') {
+                showActionFeedback('Connection request already pending', 'info');
+                return;
+            }
+            
+            if (currentStatus === 'connected') {
+                showActionFeedback('Already connected with this user', 'info');
+                return;
+            }
+            
+            // Disable button and show loading state
+            buttonElement.disabled = true;
+            const originalContent = buttonElement.innerHTML;
+            buttonElement.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin mr-2"></i><span>Sending...</span>';
+            
+            const csrfToken = getCookie('csrftoken');
+            console.log('CSRF Token:', csrfToken);
+            
+            fetch(`/accounts/send-connection-request/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Update button state to pending
+                    buttonElement.setAttribute('data-connection-status', 'pending');
+                    buttonElement.innerHTML = '<i data-lucide="clock" class="w-4 h-4 mr-2"></i><span>Pending</span>';
+                    buttonElement.classList.remove('bg-green-600/20', 'text-green-400', 'hover:bg-green-600/40');
+                    buttonElement.classList.add('bg-yellow-600/20', 'text-yellow-400', 'cursor-not-allowed', 'opacity-75');
+                    buttonElement.disabled = true;
+                    
+                    // Show notification
+                    showActionFeedback('Connection request sent!', 'success');
+                    
+                    // Re-initialize Lucide icons
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                } else {
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalContent;
+                    showActionFeedback(data.message || 'Failed to send connection request', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalContent;
+                showActionFeedback('Error sending connection request', 'error');
+            });
+        }
+
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Export functions for global access
+        window.showEnhancedNotification = showActionFeedback;
+        window.clearLiveStream = clearLiveStream;
+        window.dismissNewActivityBanner = dismissNewActivityBanner;
+        window.scrollToTop = scrollToTop;
+        window.toggleActivityStream = toggleActivityStream;
+        window.sendConnectionRequest = sendConnectionRequest;
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+{% extends "base_with_footer.html" %}
+{% load static %}
+
+{% block title %}Privacy Policy - UniSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --github-dark: #0d1117;
+        --github-darker: #161b22;
+        --github-darkest: #21262d;
+        --github-light: #f6f8fa;
+        --github-lighter: #ffffff;
+        --github-accent: #58a6ff;
+        --github-text: #c9d1d9;
+        --github-text-secondary: #8b949e;
+        --github-border: #30363d;
+    }
+
+    .privacy-hero {
+        background: linear-gradient(135deg, var(--github-dark) 0%, var(--github-darker) 100%);
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .privacy-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 60px 20px;
+        background: var(--github-darker);
+        border-radius: 12px;
+        margin-top: -40px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .privacy-content h1 {
+        color: var(--github-lighter);
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .privacy-content h2 {
+        color: var(--github-accent);
+        font-size: 1.5rem;
+        margin: 2rem 0 1rem 0;
+        border-bottom: 1px solid var(--github-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .privacy-content h3 {
+        color: var(--github-text);
+        font-size: 1.2rem;
+        margin: 1.5rem 0 0.5rem 0;
+    }
+
+    .privacy-content p {
+        color: var(--github-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .privacy-content ul, .privacy-content ol {
+        color: var(--github-text-secondary);
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+
+    .privacy-content li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .last-updated {
+        background: var(--github-dark);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--github-accent);
+    }
+
+    @media (max-width: 768px) {
+        .privacy-hero {
+            padding: 60px 20px;
+        }
+
+        .privacy-content {
+            padding: 40px 20px;
+            margin-top: -20px;
+        }
+
+        .privacy-content h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="privacy-hero">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl font-bold text-white mb-4">Privacy Policy</h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                Your privacy is important to us. Learn how we collect, use, and protect your personal information.
+            </p>
+        </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="privacy-content">
+                <div class="last-updated">
+                    <strong>Last Updated:</strong> December 16, 2025
+                </div>
+
+                <h1>UniSync Privacy Policy</h1>
+
+                <p>Welcome to UniSync! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform for connecting students worldwide for collaborative innovation.</p>
+
+                <h2>1. Information We Collect</h2>
+
+                <h3>1.1 Personal Information</h3>
+                <p>We may collect the following personal information:</p>
+                <ul>
+                    <li>Name and contact information (email address)</li>
+                    <li>Educational information (college/university, interests, skills)</li>
+                    <li>Profile information and preferences</li>
+                    <li>Communication data (messages, project discussions)</li>
+                    <li>Usage data and analytics</li>
+                </ul>
+
+                <h3>1.2 Automatically Collected Information</h3>
+                <p>When you use UniSync, we automatically collect:</p>
+                <ul>
+                    <li>IP address and location information</li>
+                    <li>Device and browser information</li>
+                    <li>Usage patterns and platform interactions</li>
+                    <li>Cookies and similar technologies</li>
+                </ul>
+
+                <h2>2. How We Use Your Information</h2>
+
+                <p>We use the information we collect for:</p>
+                <ul>
+                    <li>Providing and maintaining our platform services</li>
+                    <li>Matching students with collaboration opportunities</li>
+                    <li>Facilitating communication between users</li>
+                    <li>Improving our services and user experience</li>
+                    <li>Ensuring platform security and preventing abuse</li>
+                    <li>Complying with legal obligations</li>
+                </ul>
+
+                <h2>3. Information Sharing and Disclosure</h2>
+
+                <p>We do not sell, trade, or otherwise transfer your personal information to third parties, except in the following circumstances:</p>
+
+                <ul>
+                    <li><strong>With your consent:</strong> When you explicitly agree to share information</li>
+                    <li><strong>Service providers:</strong> Trusted third parties who assist in operating our platform</li>
+                    <li><strong>Legal requirements:</strong> When required by law or to protect our rights</li>
+                    <li><strong>Platform functionality:</strong> Information necessary for platform features (e.g., displaying profiles to potential collaborators)</li>
+                </ul>
+
+                <h2>4. Data Security</h2>
+
+                <p>We implement appropriate technical and organizational measures to protect your personal information:</p>
+
+                <ul>
+                    <li>Encryption of sensitive data in transit and at rest</li>
+                    <li>Regular security audits and updates</li>
+                    <li>Access controls and authentication requirements</li>
+                    <li>Secure data storage and backup procedures</li>
+                </ul>
+
+                <h2>5. Your Rights and Choices</h2>
+
+                <p>You have the following rights regarding your personal information:</p>
+
+                <ul>
+                    <li><strong>Access:</strong> Request access to your personal information</li>
+                    <li><strong>Correction:</strong> Request correction of inaccurate information</li>
+                    <li><strong>Deletion:</strong> Request deletion of your personal information</li>
+                    <li><strong>Portability:</strong> Request transfer of your data</li>
+                    <li><strong>Opt-out:</strong> Opt out of certain data processing activities</li>
+                </ul>
+
+                <h2>6. Cookies and Tracking Technologies</h2>
+
+                <p>We use cookies and similar technologies to:</p>
+                <ul>
+                    <li>Remember your preferences and settings</li>
+                    <li>Analyze platform usage and performance</li>
+                    <li>Provide personalized recommendations</li>
+                    <li>Ensure platform security</li>
+                </ul>
+
+                <p>You can control cookie preferences through your browser settings.</p>
+
+                <h2>7. Third-Party Services</h2>
+
+                <p>UniSync integrates with third-party services:</p>
+                <ul>
+                    <li><strong>Social Login:</strong> Google and GitHub OAuth for authentication</li>
+                    <li><strong>Email Services:</strong> ZeptoMail for notifications and communications</li>
+                    <li><strong>Analytics:</strong> Platform usage analytics (anonymized)</li>
+                </ul>
+
+                <p>These services have their own privacy policies, which we encourage you to review.</p>
+
+                <h2>8. Data Retention</h2>
+
+                <p>We retain your information for as long as necessary to:</p>
+                <ul>
+                    <li>Provide our services</li>
+                    <li>Comply with legal obligations</li>
+                    <li>Resolve disputes</li>
+                    <li>Enforce our agreements</li>
+                </ul>
+
+                <p>You may request deletion of your account and associated data at any time.</p>
+
+                <h2>9. International Data Transfers</h2>
+
+                <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for such transfers.</p>
+
+                <h2>10. Children's Privacy</h2>
+
+                <p>UniSync is intended for students aged 13 and above. We do not knowingly collect personal information from children under 13. If we become aware of such collection, we will delete the information immediately.</p>
+
+                <h2>11. Changes to This Privacy Policy</h2>
+
+                <p>We may update this Privacy Policy periodically. We will notify you of significant changes through:</p>
+                <ul>
+                    <li>Email notifications</li>
+                    <li>Platform announcements</li>
+                    <li>Updated policy effective date</li>
+                </ul>
+
+                <h2>12. Contact Us</h2>
+
+                <p>If you have questions about this Privacy Policy or our data practices:</p>
+                <ul>
+                    <li><strong>Email:</strong> privacy@unisync.com</li>
+                    <li><strong>Support:</strong> Visit our <a href="/accounts/help/" class="text-blue-400 hover:text-blue-300">Help Center</a></li>
+                    <li><strong>Contact Form:</strong> Use our <a href="/accounts/contact/" class="text-blue-400 hover:text-blue-300">contact form</a></li>
+                </ul>
+
+                <p>Your privacy matters to us. Thank you for being part of the UniSync community!</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

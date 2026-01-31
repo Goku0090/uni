@@ -1,0 +1,284 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UniSync - Collaboration Platform{% endblock %}</title>
+    <meta name="description" content="UniSync - Connect with talented students, build amazing projects, and get discovered by investors.">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        :root {
+            --github-dark: #0d1117;
+            --github-darker: #161b22;
+            --github-darkest: #21262d;
+            --github-light: #f6f8fa;
+            --github-lighter: #ffffff;
+            --github-accent: #58a6ff;
+            --github-success: #238636;
+            --github-text: #c9d1d9;
+            --github-text-secondary: #8b949e;
+            --github-border: #30363d;
+            --github-border-light: #21262d;
+            --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+            --shadow-large: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.10);
+            --border-radius: 6px;
+            --border-radius-large: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--github-text);
+            background: var(--github-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: var(--github-dark);
+            border-bottom: 1px solid var(--github-border);
+            padding: 16px 0;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.025em;
+            color: var(--github-lighter);
+            margin: 0;
+        }
+
+        h1 { font-size: 48px; }
+        h2 { font-size: 32px; }
+        h3 { font-size: 24px; }
+
+        .unisync-logo {
+            color: var(--github-lighter);
+            font-weight: 600;
+            font-size: 18px;
+            letter-spacing: -0.02em;
+        }
+
+        .btn-primary {
+            background: var(--github-accent);
+            border: 1px solid var(--github-accent);
+            border-radius: var(--border-radius);
+            padding: 12px 24px;
+            color: var(--github-lighter);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: #388bfd;
+            border-color: #388bfd;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--github-border);
+            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            color: var(--github-text);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: var(--github-darker);
+            border-color: var(--github-accent);
+            color: var(--github-accent);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            h1 { font-size: 36px; }
+            h2 { font-size: 24px; }
+            h3 { font-size: 20px; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg">
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    </div>
+                    <h1 class="unisync-logo">UniSync</h1>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-8">
+                    {% if user.is_authenticated %}
+                        <a href="/home/" class="text-gray-300 hover:text-white font-medium transition-all">Dashboard</a>
+                        <a href="/find-collaborators/" class="text-gray-300 hover:text-white font-medium transition-all">Discover</a>
+                        <a href="/my-connections/" class="text-gray-300 hover:text-white font-medium transition-all">Connections</a>
+                        <a href="/messages/" class="text-gray-300 hover:text-white font-medium transition-all">Messages</a>
+                        <a href="/notifications/" class="text-gray-300 hover:text-white font-medium transition-all">Notifications</a>
+                        
+                        <div class="flex items-center gap-4 ml-4 border-l border-gray-700 pl-4">
+                            <a href="/student-profile/" class="text-gray-300 hover:text-white font-medium transition-colors">{{ user.username }}</a>
+                            <a href="/logout/" class="text-gray-300 hover:text-white font-medium transition-colors">Logout</a>
+                        </div>
+                    {% else %}
+                        <a href="/" class="text-gray-300 hover:text-white font-medium transition-all">Home</a>
+                        <a href="/#features" class="text-gray-300 hover:text-white font-medium transition-all">Features</a>
+                        <a href="/#how-it-works" class="text-gray-300 hover:text-white font-medium transition-all">How It Works</a>
+                        
+                        <div class="flex items-center gap-4 ml-4">
+                            <a href="/login/" class="text-gray-300 hover:text-white font-medium transition-colors">Login</a>
+                            <a href="/register/" class="btn-primary">Get Started</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-gray-300 hover:text-white" id="mobile-menu-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div class="md:hidden hidden mt-4 pb-4 border-t border-gray-700" id="mobile-menu">
+                <div class="flex flex-col space-y-3 pt-4">
+                    {% if user.is_authenticated %}
+                        <a href="/home/" class="text-gray-300 hover:text-white font-medium py-2">Dashboard</a>
+                        <a href="/find-collaborators/" class="text-gray-300 hover:text-white font-medium py-2">Discover</a>
+                        <a href="/my-connections/" class="text-gray-300 hover:text-white font-medium py-2">Connections</a>
+                        <a href="/messages/" class="text-gray-300 hover:text-white font-medium py-2">Messages</a>
+                        <a href="/notifications/" class="text-gray-300 hover:text-white font-medium py-2">Notifications</a>
+                        <div class="flex flex-col space-y-2 pt-2 border-t border-gray-700">
+                            <a href="/student-profile/" class="text-gray-300 hover:text-white font-medium py-2">{{ user.username }}</a>
+                            <a href="/logout/" class="text-gray-300 hover:text-white font-medium py-2">Logout</a>
+                        </div>
+                    {% else %}
+                        <a href="/" class="text-gray-300 hover:text-white font-medium py-2">Home</a>
+                        <a href="/#features" class="text-gray-300 hover:text-white font-medium py-2">Features</a>
+                        <a href="/#how-it-works" class="text-gray-300 hover:text-white font-medium py-2">How It Works</a>
+                        <div class="flex flex-col space-y-2 pt-2">
+                            <a href="/login/" class="text-gray-300 hover:text-white font-medium py-2">Login</a>
+                            <a href="/register/" class="btn-primary text-center">Get Started</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+            <div class="container mx-auto px-6 py-12">
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <div class="bg-blue-500/20 border border-blue-500 text-blue-300 px-4 py-3 rounded mb-3">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% block inner_content %}{% endblock %}
+            </div>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include "components/footer.html" %}
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuBtn.querySelector('svg');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+                } else {
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+                }
+            });
+
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    const icon = mobileMenuBtn.querySelector('svg');
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+                });
+            });
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

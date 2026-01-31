@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with {{ other_user.username }} | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* CSS Variables for theme switching */
+    :root {
+    --bg-primary: #1E1E2F;
+    --bg-secondary: #2D2D44;
+    --bg-accent: #3AB7BF;
+    --text-primary: #EAEAEA;
+    --bg-soft: #28293E;
+    }
+
+    [data-theme="light"] {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F9FA;
+    --bg-accent: #007BFF;
+        --text-primary: #212529;
+            --bg-soft: #E9ECEF;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-bg-primary { background-color: var(--bg-primary); }
+        .theme-bg-secondary { background-color: var(--bg-secondary); }
+        .theme-bg-accent { background-color: var(--bg-accent); }
+        .theme-text-primary { color: var(--text-primary); }
+        .theme-bg-soft { background-color: var(--bg-soft); }
+
+        /* Theme transition for all elements */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* 3D Animation Styles for Chat */
+        .card-3d {
+            transform-style: preserve-3d;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-5px) rotateX(3deg) rotateY(1deg);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+        }
+
+        .button-3d {
+            transform-style: preserve-3d;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-3d:active {
+            transform: translateY(0px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-bubble {
+            transform-style: preserve-3d;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .float-3d {
+            animation: float3D 4s ease-in-out infinite;
+        }
+
+        @keyframes float3D {
+            0%, 100% {
+                transform: translateY(0px) rotateZ(0deg);
+            }
+            50% {
+                transform: translateY(-8px) rotateZ(1deg);
+            }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(58, 183, 191, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(58, 183, 191, 0.8), 0 0 30px rgba(58, 183, 191, 0.6);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        // Theme management
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+    // WebSocket variables
+    let chatSocket = null;
+    let typingTimer = null;
+    const userId = {{ user.id }};
+    const otherUserId = {{ other_user.id }};
+    const roomName = '{{ room_name }}';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Auto scroll to bottom of messages
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat/${roomName}/`;
+
+            chatSocket = new WebSocket(wsUrl);
+
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === 'chat_message') {
+                    addMessageToChat(data.message, data.sender_id, data.timestamp);
+                } else if (data.type === 'typing_indicator') {
+                    handleTypingIndicator(data.action, data.sender_id);
+                }
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+                // Attempt to reconnect after 5 seconds
+                setTimeout(initWebSocket, 5000);
+            };
+
+            chatSocket.onerror = function(e) {
+                console.error('Chat socket error');
+            };
+        }
+
+        // Add message to chat UI
+        function addMessageToChat(message, senderId, timestamp) {
+            const messagesContainer = document.getElementById('messages-container');
+            const isOwnMessage = senderId == userId;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwnMessage ? 'bg-accent text-white' : 'bg-gray-700 text-text'}`;
+
+            const messageText = document.createElement('p');
+            messageText.className = 'text-sm';
+            messageText.textContent = message;
+
+            const timestampText = document.createElement('p');
+            timestampText.className = 'text-xs opacity-70 mt-1';
+            const date = new Date(timestamp);
+            timestampText.textContent = date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            messageBubble.appendChild(messageText);
+            messageBubble.appendChild(timestampText);
+            messageDiv.appendChild(messageBubble);
+            messagesContainer.appendChild(messageDiv);
+
+            scrollToBottom();
+        }
+
+        // Handle typing indicators
+        function handleTypingIndicator(action, senderId) {
+            if (senderId == otherUserId) {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (action === 'start') {
+                    typingIndicator.style.display = 'block';
+                } else {
+                    typingIndicator.style.display = 'none';
+                }
+            }
+        }
+
+        // Send typing start
+        function sendTypingStart() {
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing_start',
+                    'sender_id': userId
+                }));
+            }
+        }
+
+        // Send typing stop
+        function sendTypingStop() {
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing_stop',
+                    'sender_id': userId
+                }));
+            }
+        }
+
+        // Send message
+        function sendMessage(message) {
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender_id': userId
+                }));
+                sendTypingStop(); // Stop typing when sending
+            }
+        }
+
+        // Handle form submission
+        function handleSubmit(event) {
+            event.preventDefault();
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                messageInput.value = '';
+            }
+        }
+
+        // Handle input for typing indicators
+        function handleInput() {
+        sendTypingStart();
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(sendTypingStop, 1000);
+        }
+
+        // Add reaction to message
+        function addReaction(messageId, reaction) {
+        fetch(`/add-reaction/${messageId}/`, {
+        method: 'POST',
+            headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `reaction=${encodeURIComponent(reaction)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.reactions) {
+                    updateMessageReactions(messageId, data.reactions);
+                }
+            })
+            .catch(error => console.error('Error adding reaction:', error));
+        }
+
+        // Update message reactions display
+        function updateMessageReactions(messageId, reactions) {
+            const reactionsContainer = document.querySelector(`[data-message-id="${messageId}"] .reactions`);
+            if (reactionsContainer) {
+                reactionsContainer.innerHTML = '';
+                Object.entries(reactions).forEach(([reaction, count]) => {
+                    const reactionBtn = document.createElement('button');
+                    reactionBtn.className = 'reaction-btn px-2 py-1 text-xs bg-gray-700 rounded-full mr-1 hover:bg-gray-600 transition';
+                    reactionBtn.textContent = `${reaction} ${count}`;
+                    reactionBtn.onclick = () => addReaction(messageId, reaction);
+                    reactionsContainer.appendChild(reactionBtn);
+                });
+            }
+        }
+
+        // Search messages
+        function searchMessages() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                document.getElementById('search-results').classList.add('hidden');
+                return;
+            }
+
+            fetch(`/search-messages/${otherUserId}/?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displaySearchResults(data.results);
+            })
+            .catch(error => console.error('Error searching messages:', error));
+        }
+
+        // Display search results
+        function displaySearchResults(results) {
+            const resultsContainer = document.getElementById('search-results');
+            const resultsList = document.getElementById('search-results-list');
+
+            resultsList.innerHTML = '';
+            if (results.length === 0) {
+                resultsList.innerHTML = '<div class="p-4 text-gray-400">No messages found</div>';
+            } else {
+                results.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'p-3 border-b border-gray-700 hover:bg-gray-700 cursor-pointer';
+                    resultDiv.innerHTML = `
+                        <div class="font-semibold text-sm">${result.sender}</div>
+                        <div class="text-sm text-gray-300">${result.content}</div>
+                        <div class="text-xs text-gray-500">${new Date(result.timestamp).toLocaleString()}</div>
+                    `;
+                    resultDiv.onclick = () => scrollToMessage(result.id);
+                    resultsList.appendChild(resultDiv);
+                });
+            }
+
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // Scroll to specific message
+        function scrollToMessage(messageId) {
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.scrollIntoView({ behavior: 'smooth' });
+                messageElement.classList.add('bg-yellow-900');
+                setTimeout(() => messageElement.classList.remove('bg-yellow-900'), 2000);
+            }
+            document.getElementById('search-results').classList.add('hidden');
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        localStorage.setItem('theme', currentTheme);
+
+        // Update theme toggle button
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+                themeBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+                themeBtn.title = currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+            }
+        }
+
+        // Handle file upload preview
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileInfo = document.getElementById('file-info');
+                const maxSize = 10 * 1024 * 1024; // 10MB
+
+                if (file.size > maxSize) {
+                    alert('File size cannot exceed 10MB');
+                    event.target.value = '';
+                    fileInfo.textContent = '';
+                    return;
+                }
+
+                fileInfo.textContent = `📎 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            }
+        }
+
+        // Apply theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+        // Apply current theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+            // Set initial theme toggle button
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+            themeBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        themeBtn.title = currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+        }
+
+            scrollToBottom();
+            if ({{ is_connected|lower }}) {
+                initWebSocket();
+            }
+        });
+    </script>
+</head>
+<body class="min-h-screen font-sans" style="background-color: var(--bg-primary); color: var(--text-primary);">
+    <!-- Navbar -->
+    <nav class="shadow-lg sticky top-0 z-50" style="background-color: var(--bg-secondary);">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+    <span class="text-2xl float-3d">🚀</span>
+    <h1 class="text-2xl font-bold" style="color: var(--bg-accent);">UniSync</h1>
+    </div>
+    <div class="flex gap-6 items-center">
+        <a href="{% url 'main_home' %}" class="transition" style="color: var(--text-primary);">Home</a>
+        <a href="{% url 'messages' %}" style="color: var(--bg-accent);">← Messages</a>
+        <a href="{% url 'notifications' %}" class="transition" style="color: var(--text-primary);">Notifications</a>
+        <button id="theme-toggle" onclick="toggleTheme()" class="text-2xl hover:scale-110 transition-all duration-200" title="Switch to light mode" style="color: var(--text-primary);">🌙</button>
+    <a href="{% url 'logout' %}" class="transition" style="color: #ff6b6b;">Logout</a>
+    </div>
+    </div>
+    </nav>
+
+    <!-- Chat Section -->
+    <section class="px-6 py-8 max-w-4xl mx-auto">
+        <!-- Chat Header -->
+        <div class="p-6 rounded-2xl mb-6 shadow-xl card-3d fade-in-up" style="background-color: var(--bg-soft); border: 1px solid #555;">
+        <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl font-bold">
+                {{ other_user.username|first|upper }}
+            </div>
+        <div>
+            <h2 class="text-2xl font-bold">{{ other_user.username }}</h2>
+            {% if is_connected %}
+            <p class="text-green-400 text-sm">Connected ✓</p>
+            {% else %}
+            <p class="text-yellow-400 text-sm">Not connected yet</p>
+                {% endif %}
+                </div>
+                </div>
+                <!-- Search Bar -->
+                <div class="relative">
+                <input type="text" id="search-input" placeholder="🔍 Search messages..."
+                onkeyup="searchMessages()" class="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 w-64" style="background-color: var(--bg-secondary); border: 1px solid #555; color: var(--text-primary);">
+                <!-- Search Results Dropdown -->
+                <div id="search-results" class="absolute top-full mt-2 w-64 rounded-lg shadow-xl hidden z-10 max-h-60 overflow-y-auto" style="background-color: var(--bg-secondary); border: 1px solid #555;">
+                        <div id="search-results-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messages-container" class="rounded-2xl p-6 mb-6 shadow-xl max-h-96 overflow-y-auto card-3d" style="background-color: var(--bg-soft); border: 1px solid #555;">
+        {% if messages %}
+        <div class="space-y-4">
+        {% for message in messages %}
+        {% load static %}
+        <div class="flex {% if message.sender == user %}justify-end{% else %}justify-start{% endif %}" data-message-id="{{ message.id }}">
+        <div class="max-w-xs lg:max-w-md">
+        <!-- Message bubble -->
+        <div class="px-4 py-2 rounded-lg relative group message-bubble" style="{% if message.sender == user %}background-color: var(--bg-accent); color: white;{% else %}background-color: #666; color: var(--text-primary);{% endif %}">
+                    <p class="text-sm">{{ message.content }}</p>
+                    <!-- File attachments -->
+                        {% if message.files.all %}
+                            <div class="mt-2 space-y-1">
+                                {% for file_attachment in message.files.all %}
+                                <div class="flex items-center gap-2 p-2 bg-black/20 rounded">
+                                    {% if file_attachment.file.is_image %}
+                                    <img src="{{ file_attachment.file.file.url }}" alt="{{ file_attachment.file.filename }}" class="w-8 h-8 object-cover rounded">
+                                    {% else %}
+                                    <span class="text-lg">📎</span>
+                                    {% endif %}
+                                    <div class="flex-1 min-w-0">
+                                        <a href="{% url 'download_file' file_attachment.file.id %}" class="text-xs underline hover:no-underline">{{ file_attachment.file.filename }}</a>
+                                        <p class="text-xs opacity-70">{{ file_attachment.file.file_size_mb }} MB</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="flex items-center justify-between mt-1">
+                                <p class="text-xs opacity-70">{{ message.created_at|date:"M d, H:i" }}</p>
+                                {% if message.sender == user and message.is_read %}
+                                <span class="text-xs opacity-70" title="Read">✓✓</span>
+                                {% elif message.sender == user %}
+                                <span class="text-xs opacity-70" title="Sent">✓</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Reactions -->
+                        <div class="reactions flex flex-wrap gap-1 mt-1">
+                        {% for reaction, count in message.reaction_counts.items %}
+                        <button onclick="addReaction({{ message.id }}, '{{ reaction }}')" class="px-2 py-1 text-xs rounded-full transition" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                        {{ reaction }} {{ count }}
+                        </button>
+                        {% empty %}
+                        <div class="reaction-buttons opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 mt-1">
+                        <button onclick="addReaction({{ message.id }}, '👍')" class="text-sm hover:scale-125 transition">👍</button>
+                        <button onclick="addReaction({{ message.id }}, '👎')" class="text-sm hover:scale-125 transition">👎</button>
+                        <button onclick="addReaction({{ message.id }}, '❤️')" class="text-sm hover:scale-125 transition">❤️</button>
+                        <button onclick="addReaction({{ message.id }}, '😂')" class="text-sm hover:scale-125 transition">😂</button>
+                        <button onclick="addReaction({{ message.id }}, '😮')" class="text-sm hover:scale-125 transition">😮</button>
+                        </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+        <div class="text-center py-8">
+        <div class="text-4xl mb-2">💭</div>
+        <p class="text-gray-400">No messages yet. Start the conversation!</p>
+        </div>
+        {% endif %}
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="hidden text-gray-400 text-sm italic mt-2">
+                {{ other_user.username }} is typing...
+            </div>
+        </div>
+
+        <!-- Message Form -->
+        {% if is_connected %}
+        <form method="post" enctype="multipart/form-data" class="p-6 rounded-2xl shadow-xl" style="background-color: var(--bg-soft); border: 1px solid #555;">
+            {% csrf_token %}
+        <!-- File upload -->
+        <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Attach file (optional)</label>
+                <input type="file" name="file" onchange="handleFileSelect(event)"
+                   class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/80">
+                <p id="file-info" class="text-xs text-gray-500 mt-1"></p>
+            </div>
+            <!-- Message input -->
+            <div class="flex gap-4">
+            <input type="text" name="content" placeholder="Type your message..."
+            class="flex-1 px-4 py-3 rounded-lg focus:outline-none" style="background-color: var(--bg-secondary); border: 1px solid #555; color: var(--text-primary);"
+            maxlength="500" oninput="handleInput()" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.submit(); }">
+            <button type="submit" class="px-6 py-3 text-white rounded-lg font-semibold transition button-3d glow-3d">
+                    Send
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="p-6 rounded-2xl shadow-xl text-center" style="background-color: var(--bg-soft); border: 1px solid #555;">
+            <div class="text-4xl mb-2">🔒</div>
+            <p class="text-gray-400 mb-4">You can only message connected users.</p>
+            {% if connection %}
+                {% if connection.status == 'pending' and connection.sender == user %}
+                <p class="text-yellow-400">Connection request pending...</p>
+                {% elif connection.status == 'pending' and connection.receiver == user %}
+                <a href="{% url 'accept_connection' connection.id %}" class="inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+                    Accept Connection
+                </a>
+                {% elif connection.status == 'rejected' %}
+                <p class="text-red-400">Connection was rejected. Send a new request.</p>
+                {% endif %}
+            {% else %}
+            <a href="{% url 'send_connection' other_user.id %}" class="inline-block px-6 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold">
+                Send Connection Request
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</body>
+</html>

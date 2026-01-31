@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Project Feed</h2>
+<ul>
+  {% for project in page_obj %}
+    <li>
+      <img src="{{ project.owner.student_profile.profile_photo.url }}" alt="Avatar" class="avatar" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;"> 
+      <strong>{{ project.title }}</strong> by {{ project.owner.username }}<br>
+      {{ project.description|truncatewords:20 }}
+    </li>
+  {% empty %}
+    <li>No projects found.</li>
+  {% endfor %}
+</ul>
+<div class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+</div>
+{% endblock %}

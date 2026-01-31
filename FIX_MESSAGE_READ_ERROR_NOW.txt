@@ -1,0 +1,107 @@
+================================================================================
+MESSAGE READ STATUS ERROR - QUICK FIX
+================================================================================
+
+ERROR:
+  FieldError: Cannot resolve keyword 'is_read' into field
+
+CAUSE:
+  Message model uses MessageReadStatus for tracking, not is_read field
+  But code tries to filter using is_read=False
+
+LOCATIONS:
+  Line 1848-1852: message_view() ✅ ALREADY FIXED
+  Line 889-893:   chat_view() ❌ NEEDS FIXING
+  Line 911-915:   chat_view() ❌ NEEDS FIXING
+
+================================================================================
+HOW TO FIX
+================================================================================
+
+Open: accounts/views.py
+
+LOCATION 1: Line 889-893
+Replace this:
+    Message.objects.filter(
+        sender=other_user,
+        receiver=request.user,
+        is_read=False
+    ).update(is_read=True, read_at=timezone.now())
+
+With this:
+    received_messages = Message.objects.filter(
+        sender=other_user,
+        receiver=request.user
+    )
+    for message in received_messages:
+        message.mark_as_read_by(request.user)
+
+---
+
+LOCATION 2: Line 911-915
+Replace this:
+    Message.objects.filter(
+        sender=other_user,
+        receiver=request.user,
+        is_read=False
+    ).update(is_read=True)
+
+With this:
+    received_messages = Message.objects.filter(
+        sender=other_user,
+        receiver=request.user
+    )
+    for message in received_messages:
+        message.mark_as_read_by(request.user)
+
+================================================================================
+WHY THIS WORKS
+================================================================================
+
+Message model structure:
+✅ message.mark_as_read_by(user)  → Marks as read
+✅ message.is_read_by(user)       → Checks if read
+
+Instead of:
+❌ is_read=False    → Doesn't exist!
+
+MessageReadStatus table:
+  message_id | user_id | read_at
+  -----------|---------|----------
+       1     |    2    | 2024-01-28...
+
+When a user reads a message, an entry is created in MessageReadStatus.
+
+================================================================================
+AFTER EDITING
+================================================================================
+
+1. Save the file (Ctrl+S)
+2. Restart Django: Ctrl+C then python manage.py runserver
+3. Test /messages/ page
+4. Should work now! ✅
+
+================================================================================
+FILES
+================================================================================
+
+Modified: accounts/models.py
+  ✅ Line 491: activity_type max_length 20 → 30
+
+To Fix: accounts/views.py  
+  ✅ Line 1848-1852: ALREADY FIXED
+  ❌ Line 889-893: Manual edit needed
+  ❌ Line 911-915: Manual edit needed
+
+Reference: MESSAGE_READ_STATUS_FIX.md (detailed guide)
+
+================================================================================
+SUMMARY
+================================================================================
+
+Problem:  Using is_read field that doesn't exist
+Solution: Use message.mark_as_read_by(user)
+Time:     2 minutes
+Edits:    2 locations in views.py
+
+Status: 1 location fixed ✅, 2 locations need manual edit

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ other_user.username }} | UniSync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+        }
+
+        .chat-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar.online::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            background: #10b981;
+            border: 3px solid white;
+            border-radius: 50%;
+        }
+
+        .message-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message-group {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message-group.sent {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .message-bubble.received {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .message-bubble.sent {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .message-status {
+            font-size: 11px;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                opacity: 0.4;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-area {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 16px 24px;
+        }
+
+        .message-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            resize: none;
+            max-height: 120px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .message-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+
+        .action-button:hover {
+            background: #f1f5f9;
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .search-bar {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar:focus-within {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #f1f5f9;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-preview {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .file-preview-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .connection-prompt {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(236, 72, 153, 0.05));
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .connection-prompt-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Chat Header -->
+    <div class="chat-header sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'messages' %}" class="text-gray-600 hover:text-blue-600 transition">
+                        ←
+                    </a>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="avatar">
+                            {% if other_user.first_name %}{{ other_user.first_name|first|upper }}{% else %}{{ other_user.username|first|upper }}{% endif %}
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">
+                                {% if other_user.first_name and other_user.last_name %}
+                                    {{ other_user.first_name }} {{ other_user.last_name }}
+                                {% else %}
+                                    {{ other_user.username }}
+                                {% endif %}
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                {% if is_connected %}
+                                    <span class="inline-flex items-center gap-1 text-sm text-green-600">
+                                        <span class="w-2 h-2 bg-green-600 rounded-full"></span>
+                                        Connected
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1 text-sm text-yellow-600">
+                                        <span class="w-2 h-2 bg-yellow-600 rounded-full"></span>
+                                        Not connected
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Search -->
+                    <div class="relative search-bar w-64" style="display: flex; align-items: center;">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" 
+                               id="searchInput"
+                               placeholder="Search messages..."
+                               class="flex-1 pl-2 py-2"
+                               onkeyup="searchMessages()">
+                        <div id="searchResults" class="search-results hidden"></div>
+                    </div>
+
+                    <!-- Actions -->
+                    <button onclick="toggleOptions()" class="action-button">
+                        ⋮
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="max-w-5xl mx-auto px-6 py-6 flex flex-col h-screen">
+        <!-- Messages Container -->
+        <div id="messagesContainer" class="message-container">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="message-group {% if message.sender == user %}sent{% endif %}">
+                    {% if message.sender != user %}
+                    <div class="avatar" style="width: 32px; height: 32px; font-size: 12px;">
+                        {{ message.sender.username|first|upper }}
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <div class="message-bubble {% if message.sender == user %}sent{% else %}received{% endif %}">
+                            <p>{{ message.content }}</p>
+                            
+                            {% if message.files.all %}
+                            <div class="mt-3 space-y-2">
+                                {% for file_attachment in message.files.all %}
+                                <div class="file-preview">
+                                    <div class="file-preview-icon">
+                                        📎
+                                    </div>
+                                    <div class="flex-1 text-left">
+                                        <a href="#" 
+                                           class="block font-medium text-sm hover:underline">
+                                            {{ file_attachment.file.filename }}
+                                        </a>
+                                        <p class="text-xs opacity-70">{{ file_attachment.file.file_size_mb }} MB</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="message-time">
+                                {{ message.created_at|date:"H:i" }}
+                            </div>
+
+                            {% if message.sender == user %}
+                            <div class="message-status">
+                                {% if message.is_read %}
+                                    ✓✓ Read
+                                {% else %}
+                                    ✓ Sent
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state flex items-center justify-center flex-1">
+                <div>
+                    <div class="empty-state-icon">💬</div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Start a conversation</h3>
+                    <p class="text-gray-600">Say hello to {{ other_user.first_name|default:other_user.username }}!</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="hidden">
+                <div class="message-group">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        {% if is_connected %}
+        <div class="input-area">
+            <form id="messageForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- File Preview -->
+                <div id="filePreview" class="hidden mb-4"></div>
+
+                <!-- Input Fields -->
+                <div class="message-input-wrapper">
+                    <textarea id="messageInput"
+                             name="content"
+                             placeholder="Type a message..."
+                             class="message-input"
+                             rows="1"
+                             onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }"
+                             oninput="autoResizeTextarea(this); handleTyping()"></textarea>
+
+                    <input type="file" 
+                           id="fileInput"
+                           name="file"
+                           class="hidden"
+                           onchange="handleFileSelect(event)"
+                           accept="image/*,.pdf,.doc,.docx,.txt">
+
+                    <button type="button" onclick="document.getElementById('fileInput').click()" class="action-button" title="Attach file">
+                        📎
+                    </button>
+
+                    <button type="button" onclick="sendMessage()" class="send-button" id="sendBtn">
+                        <span>Send</span>
+                        ✉️
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="input-area">
+            <div class="connection-prompt">
+                <div class="connection-prompt-icon">🔒</div>
+                <h3 class="font-semibold text-gray-900 mb-2">Connect to message</h3>
+                <p class="text-gray-600 mb-4">You can only message connected users.</p>
+                {% if connection %}
+                    {% if connection.status == 'pending' and connection.sender == user %}
+                    <p class="text-yellow-600 font-medium">Connection request pending...</p>
+                    {% elif connection.status == 'pending' and connection.receiver == user %}
+                    <button class="inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+                        Accept Connection
+                    </button>
+                    {% elif connection.status == 'rejected' %}
+                    <p class="text-red-600 font-medium">Connection was rejected</p>
+                    {% endif %}
+                {% else %}
+                <button class="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+                    Send Connection Request
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+
+        // Auto-resize textarea
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('File size cannot exceed 10MB');
+                event.target.value = '';
+                return;
+            }
+
+            const preview = document.getElementById('filePreview');
+            const size = (file.size / 1024 / 1024).toFixed(2);
+            preview.innerHTML = `
+                <div class="file-preview">
+                    <div class="file-preview-icon">
+                        📎
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-sm">${file.name}</p>
+                        <p class="text-xs text-gray-600">${size} MB</p>
+                    </div>
+                    <button type="button" onclick="clearFile()" class="text-gray-400 hover:text-red-600">
+                        ✕
+                    </button>
+                </div>
+            `;
+            preview.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function clearFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const form = document.getElementById('messageForm');
+            const formData = new FormData(form);
+
+            // Optimistic update
+            addMessageToUI(message);
+            input.value = '';
+            autoResizeTextarea(input);
+
+            // Submit to server
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            }).catch(error => console.error('Error sending message:', error));
+        }
+
+        // Add message to UI
+        function addMessageToUI(content) {
+            const container = document.getElementById('messagesContainer');
+            const messageGroup = document.createElement('div');
+            messageGroup.className = 'message-group sent';
+
+            messageGroup.innerHTML = `
+                <div>
+                    <div class="message-bubble sent">
+                        <p>${escapeHtml(content)}</p>
+                        <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="message-status">✓ Sent</div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(messageGroup);
+            scrollToBottom();
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Handle typing
+        let typingTimer;
+        function handleTyping() {
+            clearTimeout(typingTimer);
+            // Send typing indicator after 500ms of inactivity
+            typingTimer = setTimeout(() => {
+                // Send typing stop via WebSocket or AJAX
+            }, 500);
+        }
+
+        // Search messages
+        function searchMessages() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                document.getElementById('searchResults').classList.add('hidden');
+                return;
+            }
+
+            // Implement search functionality
+            const messages = document.querySelectorAll('.message-bubble');
+            const results = [];
+            
+            messages.forEach((bubble, index) => {
+                if (bubble.textContent.toLowerCase().includes(query)) {
+                    results.push({ index, content: bubble.textContent });
+                }
+            });
+
+            displaySearchResults(results);
+        }
+
+        function displaySearchResults(results) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="p-4 text-gray-500">No messages found</div>';
+            } else {
+                results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.textContent = result.content.substring(0, 50);
+                    resultsContainer.appendChild(div);
+                });
+            }
+
+            resultsContainer.classList.remove('hidden');
+        }
+
+        function toggleOptions() {
+            console.log('Toggle options');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            scrollToBottom();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
