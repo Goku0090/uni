@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pip install -r auth_project/requirements.txt && python auth_project/manage.py collectstatic --noinput",
+  "startCommand": "gunicorn auth_project.wsgi:application --bind 0.0.0.0:$PORT",
+  "previewUrl": "https://$RAILWAY_DOMAIN"
+}
