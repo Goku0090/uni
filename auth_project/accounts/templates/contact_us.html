@@ -44,24 +44,32 @@
             top: 0;
             left: 0;
             right: 0;
-            background: var(--github-dark);
+            background: rgba(13, 17, 23, 0.95);
             border-bottom: 1px solid var(--github-border);
-            padding: 16px 0;
+            padding: 6px 0;
             z-index: 1000;
             backdrop-filter: blur(12px);
+            height: 45px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar .container {
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         .unisync-logo {
             color: var(--github-lighter);
             font-weight: 600;
-            font-size: 18px;
+            font-size: 14px;
             letter-spacing: -0.02em;
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 120px 20px 40px;
+            padding: 50px 20px 40px;
         }
 
         h1 {
@@ -210,6 +218,19 @@
             h1 {
                 font-size: 32px;
             }
+
+            .container {
+                padding: 65px 16px 30px;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
         }
 
         button.submit-btn {
@@ -311,8 +332,8 @@
                     <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg">
                     <h1 class="unisync-logo">UniSync</h1>
                 </div>
-                <a href="/" class="text-gray-300 hover:text-white font-medium transition-colors px-4 py-2 rounded hover:bg-gray-800">
-                    ← Back Home
+                <a href="/" class="text-gray-300 hover:text-white font-medium transition-colors px-4 py-2 rounded hover:bg-gray-700" title="Back to Home">
+                    <i class="fas fa-arrow-left"></i> Home
                 </a>
             </div>
         </div>
@@ -320,8 +341,6 @@
 
     <!-- Content -->
     <div class="container">
-        <a href="/" class="back-to-home">← Back to Home</a>
-
         <h1>Get in Touch</h1>
         <p class="subtitle">Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
 

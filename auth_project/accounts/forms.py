@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import StudentProfile, Project, OTP
+from .models import StudentProfile, Project, OTP, Comment
 
 
 class RegisterForm(UserCreationForm):
@@ -581,3 +581,29 @@ class CustomSocialSignupForm(forms.Form):
             profile.save()
 
         return user
+
+
+# --- COMMENT FORM ---
+class CommentForm(forms.ModelForm):
+    """Form for adding comments to projects"""
+    
+    content = forms.CharField(
+        label='',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control comment-input',
+            'rows': 2,
+            'placeholder': 'Share your thoughts on this project...',
+            'style': 'resize: none; border-radius: 8px; font-size: 14px;'
+        }),
+        required=True,
+        min_length=1,
+        max_length=1000
+    )
+    
+    class Meta:
+        model = Comment
+        fields = ['content']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['content'].widget.attrs['autofocus'] = False

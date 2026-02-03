@@ -524,6 +524,7 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
     <script>
         // Recent Searches Management
@@ -933,6 +934,258 @@
             });
         }
 
+        // ========================================
+        // COMMENTS SECTION FUNCTIONALITY
+        // ========================================
+        let loadedComments = {};
+
+        function toggleComments(projectId, button) {
+            const container = document.querySelector(`.comments-container-${projectId}`);
+            
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                loadCommentsIfNeeded(projectId);
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function loadCommentsIfNeeded(projectId) {
+            if (loadedComments[projectId]) return;
+            
+            fetch(`/accounts/api/projects/${projectId}/comments/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadedComments[projectId] = true;
+                const count = data.count || 0;
+                document.querySelector(`.comment-count-${projectId}`).textContent = `(${count})`;
+                
+                const commentsList = document.querySelector(`.comments-list-${projectId}`);
+                commentsList.innerHTML = '';
+                
+                if (data.comments && data.comments.length > 0) {
+                    data.comments.forEach(comment => {
+                        const commentEl = createCommentElement(comment, projectId);
+                        commentsList.appendChild(commentEl);
+                    });
+                } else {
+                    commentsList.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No comments yet. Be the first to comment!</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading comments:', error);
+                const commentsList = document.querySelector(`.comments-list-${projectId}`);
+                commentsList.innerHTML = '<p class="text-red-400 text-sm text-center py-4">Error loading comments</p>';
+            });
+        }
+
+        function createCommentElement(comment, projectId) {
+            const div = document.createElement('div');
+            div.className = 'comment-item bg-gray-700/50 rounded-lg p-3 text-sm';
+            div.id = `comment-${comment.id}`;
+            
+            const profilePhoto = comment.user.profile_photo ? 
+                `<img src="${comment.user.profile_photo}" alt="${comment.user.username}" class="w-8 h-8 rounded-full object-cover">` :
+                `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold">${comment.user.username[0].toUpperCase()}</div>`;
+            
+            const deleteBtn = comment.can_delete ? 
+                `<button onclick="deleteComment(${comment.id}, ${projectId})" class="text-xs text-red-400 hover:text-red-300 transition-colors ml-auto">Delete</button>` : '';
+            
+            const editBtn = comment.can_edit ? 
+                `<button onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}', ${projectId})" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Edit</button>` : '';
+            
+            div.innerHTML = `
+                <div class="flex gap-2 mb-2">
+                    ${profilePhoto}
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <p class="font-semibold text-white text-xs">${comment.user.username}</p>
+                            <span class="text-gray-500 text-xs">${comment.formatted_time}</span>
+                            ${editBtn}
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-200 break-words">${escapeHtml(comment.content)}</p>
+            `;
+            
+            return div;
+        }
+
+        function submitComment(projectId, button) {
+            const input = document.querySelector(`.comment-input-${projectId}`);
+            const content = input.value.trim();
+            const errorEl = document.querySelector(`.comment-error-${projectId}`);
+            
+            if (!content) {
+                errorEl.textContent = 'Comment cannot be empty';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            if (content.length > 1000) {
+                errorEl.textContent = 'Comment is too long (max 1000 characters)';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            errorEl.classList.add('hidden');
+            button.disabled = true;
+            button.textContent = 'Posting...';
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                errorEl.textContent = 'Security error: CSRF token missing. Please refresh the page.';
+                errorEl.classList.remove('hidden');
+                button.disabled = false;
+                button.textContent = 'Post';
+                return;
+            }
+            
+            console.log('Posting comment to project:', projectId);
+            console.log('CSRF Token present:', !!csrfToken);
+            
+            fetch(`/accounts/api/projects/${projectId}/comments/add/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    input.value = '';
+                    const commentsList = document.querySelector(`.comments-list-${projectId}`);
+                    
+                    if (!commentsList) {
+                        console.error('Comments list not found');
+                        errorEl.textContent = 'Error: Comments list not found';
+                        errorEl.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // Remove "no comments" message if exists
+                    const noCommentsMsg = commentsList.querySelector('.text-center');
+                    if (noCommentsMsg) noCommentsMsg.remove();
+                    
+                    const commentEl = createCommentElement(data.comment, projectId);
+                    commentsList.insertBefore(commentEl, commentsList.firstChild);
+                    
+                    // Update comment count
+                    const countSpan = document.querySelector(`.comment-count-${projectId}`);
+                    if (countSpan) {
+                        const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+                        countSpan.textContent = `(${currentCount + 1})`;
+                    }
+                    
+                    showNotification('Comment posted successfully!', 'success');
+                } else {
+                    console.error('Server returned error:', data.error);
+                    errorEl.textContent = data.error || 'Failed to post comment';
+                    errorEl.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error posting comment:', error);
+                errorEl.textContent = error.message || 'Failed to post comment. Please try again.';
+                errorEl.classList.remove('hidden');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.textContent = 'Post';
+            });
+        }
+
+        function deleteComment(commentId, projectId) {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            
+            fetch(`/accounts/api/comments/${commentId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const commentEl = document.getElementById(`comment-${commentId}`);
+                    if (commentEl) {
+                        commentEl.remove();
+                        const countSpan = document.querySelector(`.comment-count-${projectId}`);
+                        const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+                        countSpan.textContent = `(${Math.max(0, currentCount - 1)})`;
+                        showNotification('Comment deleted successfully!', 'success');
+                    }
+                } else {
+                    showNotification(data.error || 'Failed to delete comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting comment:', error);
+                showNotification('Failed to delete comment', 'error');
+            });
+        }
+
+        function editComment(commentId, currentContent, projectId) {
+            const newContent = prompt('Edit your comment:', currentContent);
+            if (newContent === null || newContent.trim() === '') return;
+            
+            fetch(`/accounts/api/comments/${commentId}/edit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: JSON.stringify({ content: newContent })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const commentEl = document.getElementById(`comment-${commentId}`);
+                    if (commentEl) {
+                        const contentP = commentEl.querySelector('p:last-child');
+                        contentP.textContent = escapeHtml(newContent);
+                        showNotification('Comment updated successfully!', 'success');
+                    }
+                } else {
+                    showNotification(data.error || 'Failed to edit comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error editing comment:', error);
+                showNotification('Failed to edit comment', 'error');
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
         // Initialize animations on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Start stats animation after a delay
@@ -983,8 +1236,12 @@
                 }
             });
         });
+
+        // Load authenticated content if user is logged in
+        {% if user.is_authenticated %}
+        // Keep any authenticated-only code here if needed
+        {% endif %}
     </script>
-    {% endif %}
 
     <!-- Live Feed Section -->
     <section class="px-6 py-12 max-w-7xl mx-auto">
@@ -1098,7 +1355,7 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex gap-2 mt-4">
+                <div class="flex gap-2 mt-4 mb-4">
                     <a href="{% url 'project_detail' post.id %}" class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-white text-center transition-all duration-300 transform hover:scale-105 shadow-lg">
                         View Details
                     </a>
@@ -1109,6 +1366,42 @@
                     {% else %}
                     <div class="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg font-semibold text-center">
                         Your Project
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Comments Section -->
+                <div class="border-t border-gray-600 pt-4">
+                    <!-- Comments Counter & Toggle -->
+                    <button onclick="toggleComments({{ post.id }}, this)" class="text-sm font-semibold text-accent hover:text-accent/80 mb-3 flex items-center gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"></path>
+                            <path d="M15 7H5"></path>
+                        </svg>
+                        💬 Comments <span class="comment-count-{{ post.id }} text-gray-400 text-xs">(0)</span>
+                    </button>
+
+                    <!-- Comments Container (Initially Hidden) -->
+                    <div class="comments-container-{{ post.id }} hidden max-h-64 overflow-y-auto space-y-3 mb-3 bg-gray-800/30 rounded-lg p-3">
+                        <div class="comments-list-{{ post.id }} space-y-3">
+                            <!-- Comments loaded here via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Add Comment Form (Only for logged-in users) -->
+                    {% if user.is_authenticated %}
+                    <div class="add-comment-form-{{ post.id }} bg-gray-800/50 rounded-lg p-3">
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Add a comment..." class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent comment-input-{{ post.id }}" maxlength="1000">
+                            <button onclick="submitComment({{ post.id }}, this)" class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold text-sm transition-colors">
+                                Post
+                            </button>
+                        </div>
+                        <div class="comment-error-{{ post.id }} text-red-400 text-xs mt-2 hidden"></div>
+                    </div>
+                    {% else %}
+                    <div class="bg-gray-800/50 rounded-lg p-3 text-center">
+                        <p class="text-gray-400 text-sm"><a href="{% url 'login' %}" class="text-accent hover:text-accent/80 font-semibold">Login</a> to comment</p>
                     </div>
                     {% endif %}
                 </div>

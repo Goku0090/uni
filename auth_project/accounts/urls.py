@@ -8,6 +8,7 @@ from .chat_api import (
     MessageSearchView, MessageStatusView, DraftView, TypingIndicatorView,
     MessageReactionView, ConversationListView
 )
+from .comment_api import add_comment, get_comments, delete_comment, edit_comment
 
 urlpatterns = [
     # Main pages
@@ -117,4 +118,12 @@ urlpatterns = [
     path('user-stats/', views.user_stats_api, name='user_stats_api'),
     path('user-profile/<int:user_id>/', views.user_profile_api, name='user_profile_api'),
     path('nlp-analyze/', views.nlp_analyze_api, name='nlp_analyze_api'),
+    
+    # =============================================
+    # COMMENT SYSTEM - LIVE FEED API
+    # =============================================
+    path('api/projects/<int:project_id>/comments/', get_comments, name='get-comments'),
+    path('api/projects/<int:project_id>/comments/add/', add_comment, name='add-comment'),
+    path('api/comments/<int:comment_id>/delete/', delete_comment, name='delete-comment'),
+    path('api/comments/<int:comment_id>/edit/', edit_comment, name='edit-comment'),
 ]

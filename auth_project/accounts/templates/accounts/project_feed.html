@@ -1,24 +1,517 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<h2>Project Feed</h2>
-<ul>
+<style>
+  .project-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .project-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+  }
+  
+  .project-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+  }
+  
+  .project-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+  }
+  
+  .project-info {
+    flex: 1;
+  }
+  
+  .project-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .project-meta {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .project-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+  
+  .comment-section {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+    margin-top: 15px;
+  }
+  
+  .comments-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+  }
+  
+  .comment-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  
+  .comment-content {
+    flex: 1;
+  }
+  
+  .comment-user {
+    font-weight: bold;
+    font-size: 12px;
+    color: #333;
+  }
+  
+  .comment-text {
+    font-size: 13px;
+    color: #666;
+    word-break: break-word;
+  }
+  
+  .comment-time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+  }
+  
+  .comment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+  }
+  
+  .comment-btn {
+    font-size: 11px;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .comment-btn:hover {
+    color: #666;
+  }
+  
+  .comment-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .comment-input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 32px;
+  }
+  
+  .comment-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 3px rgba(76, 175, 80, 0.3);
+  }
+  
+  .comment-submit {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .comment-submit:hover {
+    background: #45a049;
+  }
+  
+  .comment-submit:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  .no-comments {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    padding: 10px 0;
+  }
+  
+  .toggle-comments {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  .toggle-comments:hover {
+    background: #e8e8e8;
+  }
+  
+  .comment-count {
+    display: inline-block;
+    background: #4CAF50;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 10px;
+    margin-left: 5px;
+    font-weight: bold;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding: 20px 0;
+  }
+
+  .pagination a, .pagination span {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    text-decoration: none;
+    color: #333;
+  }
+
+  .pagination a:hover {
+    background: #f0f0f0;
+  }
+</style>
+
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+  <h2 style="font-size: 28px; margin-bottom: 30px; color: #333;">📱 Project Feed</h2>
+  
   {% for project in page_obj %}
-    <li>
-      <img src="{{ project.owner.student_profile.profile_photo.url }}" alt="Avatar" class="avatar" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;"> 
-      <strong>{{ project.title }}</strong> by {{ project.owner.username }}<br>
-      {{ project.description|truncatewords:20 }}
-    </li>
+    <div class="project-card" data-project-id="{{ project.id }}">
+      <!-- Project Header -->
+      <div class="project-header">
+        {% if project.owner.student_profile.profile_photo %}
+          <img src="{{ project.owner.student_profile.profile_photo.url }}" alt="Avatar" class="project-avatar">
+        {% else %}
+          <div class="project-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+            {{ project.owner.username|first|upper }}
+          </div>
+        {% endif %}
+        
+        <div class="project-info">
+          <div class="project-title">{{ project.title }}</div>
+          <div class="project-meta">
+            by <strong>{{ project.owner.username }}</strong> • 
+            <span>Posted {{ project.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Project Description -->
+      <div class="project-description">
+        {{ project.description|truncatewords:50 }}
+      </div>
+      
+      <!-- Project Meta -->
+      {% if project.category %}
+        <div style="margin-bottom: 10px;">
+          <span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+            📂 {{ project.category }}
+          </span>
+        </div>
+      {% endif %}
+      
+      <!-- View Details Link -->
+      <div style="margin-bottom: 15px;">
+        <a href="{% url 'project_detail' project.id %}" style="color: #4CAF50; text-decoration: none; font-weight: 500; font-size: 13px;">
+          View Full Project →
+        </a>
+      </div>
+      
+      <!-- Comment Section -->
+      <div class="comment-section">
+        <button class="toggle-comments" onclick="toggleComments({{ project.id }})">
+          💬 Comments
+          <span class="comment-count" id="comment-count-{{ project.id }}">0</span>
+        </button>
+        
+        <div id="comments-container-{{ project.id }}" style="display: none; margin-top: 15px;">
+          <!-- Comments List -->
+          <div class="comments-container" id="comments-list-{{ project.id }}">
+            <div class="no-comments">Loading comments...</div>
+          </div>
+          
+          <!-- Comment Form (Only for logged in users) -->
+          {% if user.is_authenticated %}
+            <div class="comment-form">
+              <textarea 
+                class="comment-input" 
+                placeholder="Add a comment..." 
+                id="comment-input-{{ project.id }}"
+                rows="1"
+                style="max-height: 80px;"></textarea>
+              <button 
+                class="comment-submit" 
+                onclick="submitComment({{ project.id }})"
+                id="submit-btn-{{ project.id }}">
+                Post
+              </button>
+            </div>
+          {% else %}
+            <div style="background: #f5f5f5; padding: 10px; border-radius: 6px; text-align: center; font-size: 12px; color: #666;">
+              <a href="{% url 'login' %}" style="color: #4CAF50; text-decoration: none;">Login</a> to add comments
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   {% empty %}
-    <li>No projects found.</li>
+    <div style="text-align: center; padding: 40px 20px; color: #999;">
+      <h3>📭 No Projects Found</h3>
+      <p>Check back later for new projects!</p>
+    </div>
   {% endfor %}
-</ul>
-<div class="pagination">
-  {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-  {% endif %}
-  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-  {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-  {% endif %}
+  
+  <!-- Pagination -->
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">« First</a>
+      <a href="?page={{ page_obj.previous_page_number }}">‹ Previous</a>
+    {% endif %}
+    
+    <span style="border: none; background: none;">
+      Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+    </span>
+    
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next ›</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+    {% endif %}
+  </div>
 </div>
+
+<script>
+  // Toggle comments visibility
+  function toggleComments(projectId) {
+    const container = document.getElementById(`comments-container-${projectId}`);
+    const isVisible = container.style.display !== 'none';
+    
+    if (isVisible) {
+      container.style.display = 'none';
+    } else {
+      container.style.display = 'block';
+      loadComments(projectId);
+    }
+  }
+  
+  // Load comments for a project
+  function loadComments(projectId) {
+    const commentsList = document.getElementById(`comments-list-${projectId}`);
+    const countBadge = document.getElementById(`comment-count-${projectId}`);
+    
+    fetch(`/api/projects/${projectId}/comments/`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.comments.length > 0) {
+          countBadge.textContent = data.count;
+          commentsList.innerHTML = data.comments.map(comment => `
+            <div class="comment-item">
+              <img src="${comment.user.profile_photo || '/static/images/default-avatar.png'}" 
+                   alt="${comment.user.username}" class="comment-avatar">
+              <div class="comment-content">
+                <div class="comment-user">${comment.user.full_name || comment.user.username}</div>
+                <div class="comment-text">${escapeHtml(comment.content)}</div>
+                <div class="comment-time">${comment.formatted_time}</div>
+                ${comment.can_delete || comment.can_edit ? `
+                  <div class="comment-actions">
+                    ${comment.can_edit ? `<button class="comment-btn" onclick="editComment(${comment.id}, ${projectId})">Edit</button>` : ''}
+                    ${comment.can_delete ? `<button class="comment-btn" onclick="deleteComment(${comment.id}, ${projectId})">Delete</button>` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          countBadge.textContent = '0';
+          commentsList.innerHTML = '<div class="no-comments">No comments yet. Be the first to comment!</div>';
+        }
+      })
+      .catch(error => {
+        console.error('Error loading comments:', error);
+        commentsList.innerHTML = '<div class="no-comments" style="color: #e74c3c;">Failed to load comments</div>';
+      });
+  }
+  
+  // Submit a new comment
+  function submitComment(projectId) {
+    const input = document.getElementById(`comment-input-${projectId}`);
+    const button = document.getElementById(`submit-btn-${projectId}`);
+    const content = input.value.trim();
+    
+    if (!content) {
+      alert('Please write a comment');
+      return;
+    }
+    
+    if (content.length > 1000) {
+      alert('Comment is too long (max 1000 characters)');
+      return;
+    }
+    
+    button.disabled = true;
+    button.textContent = 'Posting...';
+    
+    fetch(`/api/projects/${projectId}/comments/add/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        input.value = '';
+        input.style.height = 'auto';
+        loadComments(projectId);
+        button.disabled = false;
+        button.textContent = 'Post';
+      } else {
+        alert('Error: ' + (data.error || 'Failed to post comment'));
+        button.disabled = false;
+        button.textContent = 'Post';
+      }
+    })
+    .catch(error => {
+      console.error('Error submitting comment:', error);
+      alert('Failed to post comment');
+      button.disabled = false;
+      button.textContent = 'Post';
+    });
+  }
+  
+  // Delete a comment
+  function deleteComment(commentId, projectId) {
+    if (!confirm('Delete this comment?')) return;
+    
+    fetch(`/api/comments/${commentId}/delete/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        loadComments(projectId);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to delete comment'));
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment');
+    });
+  }
+  
+  // Edit a comment
+  function editComment(commentId, projectId) {
+    const newContent = prompt('Edit your comment:');
+    if (!newContent || !newContent.trim()) return;
+    
+    fetch(`/api/comments/${commentId}/edit/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ content: newContent.trim() })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        loadComments(projectId);
+      } else {
+        alert('Error: ' + (data.error || 'Failed to edit comment'));
+      }
+    })
+    .catch(error => {
+      console.error('Error editing comment:', error);
+      alert('Failed to edit comment');
+    });
+  }
+  
+  // Auto-resize textarea
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('comment-input')) {
+      e.target.style.height = 'auto';
+      e.target.style.height = Math.min(e.target.scrollHeight, 80) + 'px';
+    }
+  });
+  
+  // Get CSRF token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  
+  // Escape HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+
 {% endblock %}
