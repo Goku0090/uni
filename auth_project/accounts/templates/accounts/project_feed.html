@@ -349,7 +349,7 @@
     const commentsList = document.getElementById(`comments-list-${projectId}`);
     const countBadge = document.getElementById(`comment-count-${projectId}`);
     
-    fetch(`/api/projects/${projectId}/comments/`)
+    fetch(`/accounts/projects/${projectId}/comments/`)
       .then(response => response.json())
       .then(data => {
         if (data.success && data.comments.length > 0) {
@@ -401,7 +401,7 @@
     button.disabled = true;
     button.textContent = 'Posting...';
     
-    fetch(`/api/projects/${projectId}/comments/add/`, {
+    fetch(`/accounts/projects/${projectId}/comments/add/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -435,7 +435,7 @@
   function deleteComment(commentId, projectId) {
     if (!confirm('Delete this comment?')) return;
     
-    fetch(`/api/comments/${commentId}/delete/`, {
+    fetch(`/accounts/comments/${commentId}/delete/`, {
       method: 'DELETE',
       headers: {
         'X-CSRFToken': getCookie('csrftoken')
@@ -460,7 +460,7 @@
     const newContent = prompt('Edit your comment:');
     if (!newContent || !newContent.trim()) return;
     
-    fetch(`/api/comments/${commentId}/edit/`, {
+    fetch(`/accounts/comments/${commentId}/edit/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

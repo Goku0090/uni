@@ -1741,14 +1741,17 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="flex gap-3 pt-4 border-t border-gray-200">
-                            <button onclick="sendConnectionRequest(${profileData.id}, event)" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition">
-                                Send Connection Request
-                            </button>
-                            <a href="/accounts/chat/${profileData.id}/" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition">
-                                Start Chat
-                            </a>
-                        </div>
+                         <div class="flex gap-3 pt-4 border-t border-gray-200 flex-wrap">
+                             <a href="/user/${profileData.username}/" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition text-center">
+                                 View Full Profile
+                             </a>
+                             <button onclick="sendConnectionRequest(${profileData.id}, event)" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold transition">
+                                 Connect
+                             </button>
+                             <a href="/accounts/chat/${profileData.id}/" class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition text-center">
+                                 Message
+                             </a>
+                         </div>
                     </div>
                 </div>
             `;
@@ -1760,23 +1763,39 @@
             document.body.style.overflow = '';
         }
 
-        // Get CSRF token from cookie
+        // Get CSRF token from multiple sources
         function getCsrfToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                         break;
-                     }
-                 }
-             }
-             // Fallback to form field
-             return cookieValue || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-         }
+            // Method 1: Try to get from meta tag first
+            let token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (token) {
+                console.log('CSRF token from meta tag');
+                return token;
+            }
+            
+            // Method 2: Try csrfmiddlewaretoken hidden input field (Django template tag)
+            token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (token) {
+                console.log('CSRF token from hidden input field');
+                return token;
+            }
+            
+            // Method 3: Try to get from cookie
+            const name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        token = decodeURIComponent(cookie.substring(name.length + 1));
+                        console.log('CSRF token from cookie');
+                        return token;
+                    }
+                }
+            }
+            
+            console.error('CSRF token not found!');
+            return null;
+        }
 
          // Connection request functionality
          function sendConnectionRequest(userId, event) {
@@ -1793,6 +1812,15 @@
            const originalContent = button.innerHTML;
          const csrftoken = getCsrfToken();
          
+         // Validate CSRF token exists
+         if (!csrftoken) {
+             console.error('CSRF token is null or undefined');
+             showNotification('Security error: CSRF token missing. Please refresh the page.', 'error');
+             button.disabled = false;
+             button.innerHTML = originalContent;
+             return;
+         }
+         
          // Show loading state on button
               button.disabled = true;
               button.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin mr-2"></i>Sending...';
@@ -1806,7 +1834,16 @@
            },
          body: JSON.stringify({})
          })
-         .then(response => response.json())
+         .then(response => {
+             // Handle HTTP errors
+             if (response.status === 403) {
+                 throw new Error('CSRF token validation failed - please refresh the page');
+             }
+             if (!response.ok) {
+                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+             }
+             return response.json();
+         })
            .then(data => {
          if (data.success) {
                    showNotification('Connection request sent successfully!', 'success');

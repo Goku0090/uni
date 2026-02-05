@@ -122,8 +122,8 @@ urlpatterns = [
     # =============================================
     # COMMENT SYSTEM - LIVE FEED API
     # =============================================
-    path('api/projects/<int:project_id>/comments/', get_comments, name='get-comments'),
-    path('api/projects/<int:project_id>/comments/add/', add_comment, name='add-comment'),
-    path('api/comments/<int:comment_id>/delete/', delete_comment, name='delete-comment'),
-    path('api/comments/<int:comment_id>/edit/', edit_comment, name='edit-comment'),
+    path('projects/<int:project_id>/comments/', get_comments, name='get-comments'),
+    path('projects/<int:project_id>/comments/add/', add_comment, name='add-comment'),
+    path('comments/<int:comment_id>/delete/', delete_comment, name='delete-comment'),
+    path('comments/<int:comment_id>/edit/', edit_comment, name='edit-comment'),
 ]

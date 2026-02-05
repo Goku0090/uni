@@ -77,9 +77,11 @@
     <!-- Navbar -->
     <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="{% url 'main_home' %}" class="flex items-center space-x-2 hover:opacity-90 transition-all duration-300">
+            <a href="{% url 'main_home' %}" class="logo-link flex items-center gap-2 hover:opacity-80 transition-opacity" title="Back to Home">
                 <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
-                <span class="text-white font-bold text-xl">UniSync</span>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">
+                    UniSync
+                </h1>
             </a>
             <nav class="hidden md:flex space-x-8">
                 <a href="{% url 'main_home' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Home</a>
@@ -130,15 +132,38 @@
     <!-- Main Content -->
     <main class="max-w-5xl mx-auto px-6 py-12">
         <!-- Header with Logo -->
-        <div class="mb-8">
-            <div class="flex items-center gap-4 mb-4">
-                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-12 w-12 object-contain rounded-lg shadow-md">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900">🔔 Notifications</h2>
-                    <p class="text-sm text-gray-500">UniSync Notification Center</p>
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-6">
+                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-14 w-14 object-contain rounded-lg shadow-md ring-2 ring-blue-100">
+                <div class="flex-1">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-2">🔔 Notifications</h1>
+                    <p class="text-gray-600">Stay updated with your activities and connections</p>
+                </div>
+                <div class="text-right hidden md:block">
+                    <div class="text-sm text-gray-500 mb-1">Total Notifications</div>
+                    <div class="text-3xl font-bold text-blue-600">{{ notifications|length }}</div>
                 </div>
             </div>
-            <p class="text-gray-600 ml-15">Stay updated with your activities and connections</p>
+            
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-3 gap-4 mb-6 md:grid-cols-4">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div class="text-sm text-gray-600">All Notifications</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ notifications|length }}</div>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
+                    <div class="text-sm text-gray-600">Unread</div>
+                    <div class="text-2xl font-bold text-yellow-600" id="unreadCount">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                    <div class="text-sm text-gray-600">Read</div>
+                    <div class="text-2xl font-bold text-green-600" id="readCount">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200 hidden md:block">
+                    <div class="text-sm text-gray-600">Today</div>
+                    <div class="text-2xl font-bold text-purple-600" id="todayCount">0</div>
+                </div>
+            </div>
         </div>
 
         <!-- Notifications List -->

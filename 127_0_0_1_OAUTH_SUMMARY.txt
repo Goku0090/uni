@@ -1,0 +1,88 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     YOUR APP URL: http://127.0.0.1:8000                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+PROBLEM:
+  You're using 127.0.0.1 but added localhost to OAuth settings
+  127.0.0.1 ≠ localhost → Error 400
+
+SOLUTION:
+  Add 127.0.0.1 callback URLs to Google and GitHub settings
+
+════════════════════════════════════════════════════════════════════════════════
+
+YOUR CALLBACK URLS:
+
+  Google: http://127.0.0.1:8000/accounts/google/login/callback/
+  GitHub: http://127.0.0.1:8000/accounts/github/login/callback/
+
+════════════════════════════════════════════════════════════════════════════════
+
+3 QUICK STEPS:
+
+  [1] Add to Google Console
+      https://console.cloud.google.com/apis/credentials
+      → Click OAuth Client ID
+      → Add redirect URI: http://127.0.0.1:8000/accounts/google/login/callback/
+      → Save & copy credentials to .env
+
+  [2] Add to GitHub Settings
+      https://github.com/settings/developers
+      → Click OAuth App
+      → Set callback: http://127.0.0.1:8000/accounts/github/login/callback/
+      → Update & copy credentials to .env
+
+  [3] Restart Django
+      python manage.py runserver
+      → Clear browser cookies
+      → Test login
+
+════════════════════════════════════════════════════════════════════════════════
+
+WHAT TO DO:
+
+  ✓ Go to Google Cloud Console
+  ✓ Click your OAuth Client ID
+  ✓ Add redirect URI with 127.0.0.1
+  ✓ Save
+  ✓ Copy Client ID to .env
+  ✓ Copy Client Secret to .env
+
+  ✓ Go to GitHub Developer Settings
+  ✓ Click your OAuth App
+  ✓ Set callback URL with 127.0.0.1
+  ✓ Update
+  ✓ Copy Client ID to .env
+  ✓ Copy Client Secret to .env
+
+  ✓ Restart Django: python manage.py runserver
+  ✓ Clear cookies: Ctrl+Shift+Delete
+  ✓ Test login at http://127.0.0.1:8000/accounts/login/
+  ✓ Done!
+
+════════════════════════════════════════════════════════════════════════════════
+
+IMPORTANT:
+
+  ✓ Use: http://127.0.0.1:8000/accounts/google/login/callback/
+  ✓ NOT:  http://localhost:8000/accounts/google/login/callback/
+  
+  ✓ Include the trailing slash /
+  ✓ Include the :8000 port
+  ✓ Use http:// not https://
+  ✓ Copy credentials to .env
+
+════════════════════════════════════════════════════════════════════════════════
+
+EXPECTED RESULT:
+
+  ✅ Google login works
+  ✅ GitHub login works
+  ✅ User logged in
+  ✅ No Error 400
+
+════════════════════════════════════════════════════════════════════════════════
+
+TIME: 10 minutes
+
+For detailed steps, see: QUICK_ACTION_127_0_0_1.txt

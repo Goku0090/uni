@@ -1,519 +1,870 @@
-================================================================================
-UNISYNC CODEBASE - COMPREHENSIVE ANALYSIS SUMMARY
-================================================================================
-Date: February 3, 2026
-Repository: https://github.com/Goku0090/uni
-Project Type: Full-Stack Django Collaboration Platform
+═══════════════════════════════════════════════════════════════════════════════
+                    UNISYNC - COMPLETE CODEBASE ANALYSIS
+                         Generated: January 2025
+═══════════════════════════════════════════════════════════════════════════════
 
-================================================================================
-1. PROJECT OVERVIEW
-================================================================================
+PROJECT OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
 
-UniSync is a university collaboration platform enabling students to:
-✓ Discover and join collaborative projects
-✓ Network with peers and find collaborators
-✓ Communicate via direct/group messaging
-✓ Share skills, interests, and project updates
-✓ Manage team members and project tasks
-✓ Build portfolio and professional connections
+UniSync is a full-stack Django web application designed to connect university
+students for collaborative project work. It provides user profiles, project
+discovery, social features, real-time messaging, and team management.
 
-Tech Stack:
-  - Backend: Django 4.2.8 + Django REST Framework
-  - Database: PostgreSQL (prod) / SQLite (dev)
-  - Frontend: HTML templates (Django) + Bootstrap 5 + JavaScript
-  - Real-time: Django Channels (WebSockets ready)
-  - Email: Brevo/ZeptoMail/Gmail SMTP
-  - NLP: NLTK, spaCy, scikit-learn for skill extraction
-  - Deployment: Render/Railway ready with Gunicorn
+TECH STACK
+─────────────────────────────────────────────────────────────────────────────
+Backend:        Django 4.2.8 + Django REST Framework 3.14.0
+Database:       PostgreSQL (production) / SQLite (development)
+Real-time:      Django Channels 4.0.0 + Redis
+Email:          Brevo, ZeptoMail, Gmail SMTP (with fallback chain)
+Auth:           Django Allauth (social OAuth + traditional login)
+Caching:        Redis 5.0.1
+Task Queue:     Celery 5.3.4
+Storage:        AWS S3 (boto3)
+Frontend:       Django Templates + HTML/CSS/JavaScript
+Deployment:     Gunicorn + Render/Railway
 
-================================================================================
-2. ARCHITECTURE COMPONENTS
-================================================================================
+CODEBASE SIZE
+─────────────────────────────────────────────────────────────────────────────
+- Main app: accounts/ (3000+ lines of views + 700+ lines of models)
+- URL patterns: 130+ endpoints
+- Database models: 15+ core models
+- REST API endpoints: 50+ endpoints
+- Templates: 20+ HTML templates
+- Static files: CSS, JS, images
+- Configuration: settings.py (356 lines)
 
-FRONTEND LAYER
-  - 40+ HTML Templates (Django templating)
-  - Bootstrap 5 CSS framework
-  - JavaScript for interactivity
-  - Responsive design
+CORE FEATURES
+═══════════════════════════════════════════════════════════════════════════════
 
-VIEW LAYER (100+ views)
-  - Authentication (7 views)
-  - Projects (8 views)
-  - Profiles (5 views)
-  - Messaging (7 views)
-  - Social/Connections (6 views)
-  - Comments & Likes (5 views)
-  - API endpoints (20+ REST views)
+1. AUTHENTICATION
+   ✓ OTP-based login (6-digit code, 5-minute expiry)
+   ✓ Traditional username/password login
+   ✓ Google OAuth 2.0 integration
+   ✓ GitHub OAuth integration
+   ✓ Email verification via OTP
+   ✓ Password reset functionality
+   ✓ Social auto-signup
 
-BUSINESS LOGIC LAYER
-  - 15+ Data Models
-  - Serializers for REST API
-  - Form validation
-  - NLP utilities for skill extraction
-  - Email backends (multiple providers)
-  - Permission classes for API
+2. USER PROFILES
+   ✓ Extended student profiles with skills/interests
+   ✓ Profile pictures and avatars
+   ✓ Social links (GitHub, LinkedIn, portfolio, Behance)
+   ✓ Role preferences and bio
+   ✓ College/location information
+   ✓ Profile completion tracking
 
-DATA LAYER
-  - PostgreSQL (primary)
-  - SQLite (local development)
-  - Redis (optional caching)
-  - S3-compatible storage (optional)
+3. PROJECT MANAGEMENT
+   ✓ Create/edit/delete projects
+   ✓ Project visibility (public/private/college-specific)
+   ✓ Team member management
+   ✓ Project status tracking
+   ✓ Technology tags
+   ✓ File attachments
+   ✓ Project search and filtering
 
-================================================================================
-3. CORE MODELS (15+)
-================================================================================
+4. COLLABORATION FEATURES
+   ✓ Find collaborators (search by skills/interests/college)
+   ✓ Connection requests (pending/accepted/rejected)
+   ✓ User following
+   ✓ Team invitations and management
+   ✓ Project team roles
 
-USER & PROFILE
-  • User (Django built-in)
-  • StudentProfile - Extended profile with skills, interests, photos
-  • UserStatus - Online/offline tracking
-  • UserStats - Statistics dashboard
+5. MESSAGING & COMMUNICATION
+   ✓ Direct messages between users
+   ✓ Group chat rooms
+   ✓ Real-time message delivery (WebSockets)
+   ✓ Message reactions (emoji)
+   ✓ File sharing in messages
+   ✓ Message read status tracking
+   ✓ Typing indicators
+   ✓ Draft messages
 
-PROJECTS
-  • Project - Main project model with visibility control
-  • ProjectMember - Team members with role-based access
-  • ProjectInvitation - Invitations to join projects
-  • ProjectTask - Tasks within projects
-  • ProjectMilestone - Project milestones
+6. COMMENTS & DISCUSSIONS
+   ✓ Project comments/discussions
+   ✓ Comment editing and deletion
+   ✓ Comment liking
+   ✓ Real-time comment updates
+   ✓ Comment notifications
 
-SOCIAL & NETWORKING
-  • Connection - Connection/friend requests
-  • Follow - Follower relationships
-  • Activity - User activity feed
-  • Notification - Activity notifications
+7. NOTIFICATIONS
+   ✓ Activity notifications
+   ✓ Real-time WebSocket delivery
+   ✓ Email fallback for offline users
+   ✓ Notification read status
+   ✓ Unread badge counting
 
-MESSAGING & CONTENT
-  • ChatRoom - Group/direct chat rooms
-  • Message - Individual messages with threading
-  • MessageReadStatus - Read receipt tracking
-  • MessageReaction - Emoji reactions
-  • MessageFile - File attachments
-  • Comment - Comments on projects
-  • Like - Project likes
+8. SOCIAL FEED
+   ✓ Activity feed of user actions
+   ✓ Project like system
+   ✓ Comment activity
+   ✓ Connection activity
+   ✓ Follow activity
 
-AUTHENTICATION
-  • OTP - One-time passwords (6-digit, 5-min expiry)
+9. UTILITIES
+   ✓ College search via RapidAPI
+   ✓ Username/email availability checks
+   ✓ NLP-based skill matching
+   ✓ User statistics
+   ✓ User profile API endpoints
 
-================================================================================
-4. KEY FEATURES
-================================================================================
+DATABASE MODELS
+═══════════════════════════════════════════════════════════════════════════════
 
-AUTHENTICATION (Complete)
-  ✓ Email/Password login with validation
-  ✓ OTP-based login/registration/reset (5-min codes)
-  ✓ Social login: Google OAuth, GitHub OAuth
-  ✓ Auto-signup with django-allauth
-  ✓ Password reset via OTP
-  ✓ Email verification
+USER & PROFILE MODELS
+─────────────────────
+User (Django built-in)
+├─ username, email, password
+├─ first_name, last_name
+└─ is_active, date_joined
 
-PROJECTS MANAGEMENT (Complete)
-  ✓ Create/Edit/Delete projects
-  ✓ Project visibility control (public/private/draft)
-  ✓ Team member management
-  ✓ Task assignment and tracking
-  ✓ Project milestones
-  ✓ Search and filtering by tech/category
+StudentProfile (Custom)
+├─ full_name, college, location
+├─ bio, interests[], skills[], project_interests[]
+├─ role_preference
+├─ profile_photo, github, linkedin, portfolio, behance
+├─ profile_completed, created_at, updated_at
+└─ Methods: get_display_name()
 
-MESSAGING (Advanced)
-  ✓ Direct messaging with read receipts
-  ✓ Group chat rooms
-  ✓ Message threading (reply_to)
-  ✓ Emoji reactions
-  ✓ File attachments
-  ✓ Typing indicators
-  ✓ Message drafts
-  ✓ Message search
+UserStatus
+├─ user (OneToOne → User)
+├─ is_online
+└─ last_activity
 
-SOCIAL NETWORKING
-  ✓ Connection requests
-  ✓ Follower system
-  ✓ Activity feed
-  ✓ Notifications (real-time capable)
-  ✓ Collaborator discovery with NLP
+UserStats
+├─ projects_created, projects_joined
+├─ connections, followers, following
+├─ comments, likes_received
 
-COMMENTS & ENGAGEMENT
-  ✓ Comments on projects
-  ✓ Comment threading
-  ✓ Project likes
-  ✓ Real-time comment loading
+PROJECT & TEAM MODELS
+─────────────────────
+Project
+├─ owner (FK → User)
+├─ title, description, collaboration_needs[]
+├─ technologies[], status, visibility
+├─ team (M2M → User)
+├─ likes_count, comments_count
+├─ images, files
+└─ created_at, updated_at
 
-PROFILE & DISCOVERY
-  ✓ Student profiles with skills/interests
-  ✓ Profile photo upload
-  ✓ NLP-based skill extraction
-  ✓ Collaborator recommendations
-  ✓ College validation (RapidAPI)
+ProjectTeam
+├─ project (FK → Project)
+├─ name, description
+├─ team_lead (FK → User)
+├─ members (M2M → User)
+├─ max_members, status
+└─ created_at, updated_at
 
-================================================================================
-5. API ENDPOINTS (40+)
-================================================================================
+ProjectTeamMember
+├─ team (FK → ProjectTeam)
+├─ user (FK → User)
+├─ role, joined_at
+└─ status
 
-AUTHENTICATION
-  POST /login/ - User login
-  POST /register/ - Registration
-  POST /logout/ - Logout
-  POST /forgot-password/ - Reset request
-  POST /verify-otp/<purpose>/ - OTP verification
-  POST /resend-otp/<purpose>/ - Resend OTP
+ProjectTeamInvitation
+├─ team (FK → ProjectTeam)
+├─ invited_user (FK → User)
+├─ status (pending/accepted/rejected)
+└─ created_at, updated_at
 
-PROJECTS
-  GET /explore-projects/ - List projects
-  POST /post-project/ - Create project
-  GET /project-detail/<id>/ - View project
-  PUT /edit-project/<id>/ - Edit project
-  DELETE /delete-project/<id>/ - Delete project
-  GET /my-projects/ - User's projects
-  POST /like-project/<id>/ - Like/unlike
-  GET /search-projects/?q=... - Search projects
+ProjectTask
+├─ project (FK → Project)
+├─ title, description
+├─ assigned_to (FK → User)
+├─ status, priority
+└─ due_date, created_at
 
-MESSAGING
-  GET /messages/ - Conversation list
-  GET /chat/<user_id>/ - Direct chat
-  POST /chat-rooms/ - Create room
-  GET /messages/ - Get messages
-  POST /messages/ - Send message
-  POST /messages/<id>/reactions/ - Add reaction
+ProjectMilestone
+├─ project (FK → Project)
+├─ name, description
+├─ target_date, completion_date
+└─ status
 
-PROFILES
-  GET /profile/ - Own profile
-  PUT /profile/ - Update profile
-  GET /user/<username>/ - User profile
-  GET /user-profile/<id>/ - API profile view
+SOCIAL MODELS
+─────────────
+Connection
+├─ sender (FK → User)
+├─ receiver (FK → User)
+├─ status (pending/accepted/rejected)
+└─ created_at, updated_at
 
-SOCIAL
-  POST /connect/<user_id>/ - Send connection
-  POST /accept-connection/<id>/ - Accept
-  POST /follow/<user_id>/ - Follow
-  GET /activity-feed/ - Activity timeline
+Follow
+├─ follower (FK → User)
+├─ following (FK → User)
+└─ created_at
 
-COMMENTS
-  GET /api/projects/<id>/comments/ - Get comments
-  POST /api/projects/<id>/comments/add/ - Add comment
-  DELETE /api/comments/<id>/delete/ - Delete
-  PUT /api/comments/<id>/edit/ - Edit
+Like
+├─ user (FK → User)
+├─ project (FK → Project)
+└─ created_at
 
-UTILITIES
-  POST /college-search/ - Search colleges
-  GET /user-stats/ - User statistics
-  POST /nlp-analyze/ - NLP analysis
+MESSAGING MODELS
+────────────────
+ChatRoom
+├─ name, description
+├─ owner (FK → User)
+├─ members (M2M → User)
+├─ is_group
+└─ created_at, updated_at
 
-================================================================================
-6. FILE STATISTICS
-================================================================================
+ChatRoomMember
+├─ room (FK → ChatRoom)
+├─ user (FK → User)
+└─ joined_at
 
-Code Files:
-  Models: 1 file (models.py - 718 lines)
-  Views: 2 files (views.py ~3000+ lines, views_contact.py)
-  URLs: 2 files (129 lines total)
-  Forms: 1 file (forms.py - 609 lines)
-  Serializers: 1 file (serializers.py - 106 lines)
-  Utilities: 1 file (utils.py - 479 lines)
-  Email Backends: 2 files (Brevo, ZeptoMail)
-  APIs: 2 files (chat_api.py, comment_api.py)
-  Templates: 40+ HTML files
-  Static: 100+ CSS/JS files
-  Tests: 10+ test files
-  
-Total Lines of Code: 10,000+
-Total Python Modules: 15+
-Total Dependencies: 50+
+Message
+├─ room (FK → ChatRoom)
+├─ sender (FK → User)
+├─ content
+├─ is_read, created_at, read_at
+└─ has_files
 
-================================================================================
-7. DEPLOYMENT STATUS
-================================================================================
+MessageFile
+├─ message (FK → Message)
+├─ file (FileField)
+├─ file_type, file_size
+└─ uploaded_at
+
+MessageReaction
+├─ message (FK → Message)
+├─ user (FK → User)
+├─ emoji
+└─ created_at
+
+MessageReadStatus
+├─ message (FK → Message)
+├─ user (FK → User)
+└─ read_at
+
+Draft
+├─ user (FK → User)
+├─ room (FK → ChatRoom)
+├─ content
+└─ created_at
+
+CONTENT MODELS
+──────────────
+Comment
+├─ project (FK → Project)
+├─ author (FK → User)
+├─ content
+├─ likes_count, is_edited
+├─ created_at, edited_at
+└─ parent_comment (self-ref for replies)
+
+Activity
+├─ user (FK → User)
+├─ action_type (choice field)
+├─ description, project_id
+└─ timestamp
+
+Notification
+├─ user (FK → User)
+├─ actor (FK → User)
+├─ action_type
+├─ description
+├─ content_type, object_id
+├─ is_read
+└─ created_at
+
+AUTHENTICATION MODELS
+─────────────────────
+OTP
+├─ email
+├─ otp_code (6-digit)
+├─ purpose (login/registration/reset)
+├─ is_used, created_at, expires_at
+└─ Methods: is_valid(), verify_otp(), generate_otp()
+
+FILE MODELS
+───────────
+File
+├─ uploaded_by (FK → User)
+├─ file (FileField)
+├─ file_type, file_size
+└─ uploaded_at
+
+API ENDPOINTS (130+ ROUTES)
+═══════════════════════════════════════════════════════════════════════════════
+
+AUTHENTICATION (6 endpoints)
+────────────────────────────
+POST    /login/                          Login with OTP/password
+POST    /register/                       User registration
+GET     /logout/                         User logout
+POST    /verify-otp/<purpose>/           Verify OTP code
+POST    /resend-otp/<purpose>/           Resend OTP
+POST    /forgot-password/                Password reset request
+POST    /reset-password/                 Complete password reset
+
+PROFILE MANAGEMENT (5 endpoints)
+────────────────────────────────
+GET     /student-profile/                View own profile (HTML)
+POST    /student-details/                Update profile
+GET     /user-profile/<id>/              Get user profile (API)
+GET     /user/<username>/                View user profile (HTML)
+POST    /edit-profile/                   Edit profile form (HTML)
+
+PROJECT MANAGEMENT (5 endpoints)
+────────────────────────────────
+POST    /post-project/                   Create project
+GET     /project-detail/<id>/            Get project details
+PUT     /edit-project/<id>/              Edit project
+DELETE  /delete-project/<id>/            Delete project
+POST    /like-project/<id>/              Like/unlike project
+
+SOCIAL FEATURES (7 endpoints)
+──────────────────────────────
+GET     /find-collaborators/             Search users
+POST    /send-connection-request/<id>/   Send connection request
+POST    /accept-connection/<id>/         Accept connection
+POST    /reject-connection/<id>/         Reject connection
+GET     /my-connections/                 List connections
+POST    /follow/<id>/                    Follow/unfollow user
+GET     /activity-feed/                  Activity feed
+
+MESSAGING (8 endpoints)
+───────────────────────
+POST    /chat-rooms/                     Create chat room
+GET     /chat-rooms/                     List chat rooms
+GET     /chat-rooms/<id>/                Get room details
+GET     /chat-rooms/<id>/members/        Get room members
+POST    /messages/                       Create message
+GET     /messages/                       List messages
+GET     /messages/search/                Search messages
+POST    /messages/<id>/status/           Update message status
+
+COMMENTS (4 endpoints)
+──────────────────────
+GET     /projects/<id>/comments/         Get comments
+POST    /projects/<id>/comments/add/     Add comment
+DELETE  /comments/<id>/delete/           Delete comment
+PUT     /comments/<id>/edit/             Edit comment
+
+NOTIFICATIONS (2 endpoints)
+────────────────────────────
+GET     /notifications/                  Get notifications
+POST    /mark-notification-read/<id>/    Mark as read
+
+UTILITIES (5 endpoints)
+────────────────────────
+GET     /check-username/                 Check username availability
+GET     /check-email/                    Check email availability
+GET     /user-stats/                     Get user statistics
+GET     /college-search/                 Search colleges
+POST    /validate-college/               Validate college name
+
+EMAIL SYSTEM
+═══════════════════════════════════════════════════════════════════════════════
+
+BACKEND HIERARCHY (Auto-fallback)
+─────────────────────────────────
+1. BREVO (Primary - Recommended)
+   - API-based
+   - Production-ready
+   - High delivery rate
+   - Config: BREVO_API_KEY in .env
+
+2. ZEPTO_MAIL (Alternative)
+   - RESTful API
+   - Good alternative
+   - Config: ZEPTO_MAIL_API_KEY, ZEPTO_MAIL_TOKEN
+
+3. GMAIL SMTP (Fallback)
+   - Standard SMTP
+   - Reliable but rate-limited
+   - Config: EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
+
+4. CONSOLE (Development)
+   - Prints to console
+   - No actual sending
+   - Useful for development/testing
+
+EMAIL TYPES SENT
+────────────────
+✓ OTP codes (login, registration, reset)
+✓ Welcome emails
+✓ Notification digests
+✓ Password reset confirmation
+✓ Connection request notifications
+✓ Comment notifications
+✓ Team invitations
+
+SECURITY FEATURES
+═══════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTED
+───────────
+✓ CSRF Protection (middleware enabled)
+✓ Password validation
+  - Minimum 8 characters
+  - User attribute similarity check
+  - Common password check
+  - Numeric-only check
+✓ Email verification via OTP
+✓ Session authentication
+✓ User permissions (@login_required decorators)
+✓ Input sanitization (XSS prevention)
+✓ SQL injection prevention (ORM)
+✓ Secure cookie settings (configurable SSL)
+✓ Secure password storage (bcrypt)
+✓ Rate limiting ready (framework support)
+✓ Allauth security (email verification, account lockout)
+
+ENVIRONMENT VARIABLES
+─────────────────────
+Security:
+  SECRET_KEY           - Django secret key (auto-generated in dev)
+  DEBUG                - Debug mode (True/False)
+  ALLOWED_HOSTS        - Comma-separated allowed domains
 
 Database:
-  ✓ PostgreSQL configured (Render automatic)
-  ✓ SQLite fallback (local development)
-  ✓ Migration system ready
+  DATABASE_URL         - PostgreSQL connection string
+  DB_NAME              - Database name
+  DB_USER              - Database user
+  DB_PASSWORD          - Database password
+  DB_HOST              - Database host
+  DB_PORT              - Database port
+  DB_SSLMODE           - SSL mode
 
 Email:
-  ✓ Multi-backend support (Brevo > ZeptoMail > Gmail > Console)
-  ✓ OTP implementation complete
-  ✓ Automatic backend selection
+  BREVO_API_KEY        - Brevo API key
+  ZEPTO_MAIL_API_KEY   - ZeptoMail API key
+  ZEPTO_MAIL_TOKEN     - ZeptoMail token
+  EMAIL_HOST_USER      - Gmail email address
+  EMAIL_HOST_PASSWORD  - Gmail app password
+  DEFAULT_FROM_EMAIL   - Default sender email
 
-Static Files:
-  ✓ WhiteNoise configured
-  ✓ Collectstatic ready
-  ✓ Media file serving configured
+Social Auth:
+  GOOGLE_CLIENT_ID     - Google OAuth client ID
+  GOOGLE_CLIENT_SECRET - Google OAuth secret
+  GITHUB_CLIENT_ID     - GitHub OAuth app ID
+  GITHUB_CLIENT_SECRET - GitHub OAuth secret
 
-Deployment:
-  ✓ Procfile for Heroku
-  ✓ render.yaml for Render
-  ✓ railway.json for Railway
-  ✓ Environment variables template (.env.template)
+External APIs:
+  RAPIDAPI_KEY         - RapidAPI key for college search
 
-================================================================================
-8. SECURITY FEATURES
-================================================================================
+SSL Settings (Production):
+  SECURE_SSL_REDIRECT  - Force HTTPS
+  SESSION_COOKIE_SECURE - HTTPS-only session cookie
+  CSRF_COOKIE_SECURE   - HTTPS-only CSRF cookie
 
-✓ CSRF Protection (middleware + template tags)
-✓ Password Validation (uppercase, lowercase, digit, length)
-✓ Password Hashing (Django default PBKDF2)
-✓ SSL/HTTPS configuration ready
-✓ Session cookie security flags
-✓ OTP time-based expiration
-✓ Input validation on all forms
-✓ SQL injection prevention (ORM)
-✓ XSS protection (template escaping)
-✓ CORS headers configured
-✓ User permission checks in views
-✓ Role-based access control (ProjectMember roles)
+PERFORMANCE OPTIMIZATIONS
+═══════════════════════════════════════════════════════════════════════════════
 
-================================================================================
-9. PERFORMANCE FEATURES
-================================================================================
+CACHING
+───────
+✓ Redis-backed sessions
+✓ Query result caching
+✓ Page-level caching (@cache_page decorator)
+✓ Profile picture caching
+✓ User status caching
 
-Optimization Techniques:
-  ✓ Query optimization (select_related, prefetch_related)
-  ✓ Pagination (10 items per page default)
-  ✓ Caching support (Redis-ready)
-  ✓ Message read status (separate model for scalability)
-  ✓ File storage (S3-ready)
-  ✓ Database indexing
-  ✓ Lazy loading in templates
+DATABASE
+────────
+✓ Connection pooling (600 second max age)
+✓ Query optimization:
+  - select_related() for ForeignKey
+  - prefetch_related() for M2M
+  - Indexed lookups
+✓ Pagination (default 10 items/page, max 100)
+✓ Denormalized counters (likes, comments)
+✓ Lazy loading for large datasets
 
-Scaling Ready:
-  ✓ Celery integration for background tasks
-  ✓ Redis for sessions and caching
-  ✓ Channels for WebSockets
-  ✓ S3 for file storage
-  ✓ Database URL from environment
+STATIC FILES
+────────────
+✓ WhiteNoise compression
+✓ Far-future Cache-Control headers
+✓ CSS/JS minification
+✓ S3 cloud storage support
+✓ CDN-ready configuration
 
-================================================================================
-10. KNOWN ISSUES & SOLUTIONS
-================================================================================
+REAL-TIME FEATURES
+───────────────────
+✓ WebSocket via Django Channels
+✓ Redis pub/sub for horizontal scaling
+✓ Message broadcasting
+✓ Typing indicators
+✓ Online status tracking
+✓ Real-time notifications
 
-Email Not Sending:
-  → Check BREVO_API_KEY environment variable
-  → Verify fallback email configuration
-  → Check logs: tail logs/django.log
+DEPLOYMENT OPTIONS
+═══════════════════════════════════════════════════════════════════════════════
 
-Profile Photos Not Showing:
-  → Ensure MEDIA_URL in settings.py
-  → Run: python manage.py collectstatic
-  → Check file permissions
+LOCAL DEVELOPMENT
+─────────────────
+Database:   SQLite (db.sqlite3)
+Email:      Console backend (prints to console)
+Server:     Django runserver (localhost:8000)
+Cache:      In-memory (optional Redis)
 
-Visibility Filter Issues:
-  → Verify owner check in ProjectVisibilityFilter
-  → Check visibility field in model
-  → Public/private logic should be: owner sees all, then visibility
+PRODUCTION (RENDER)
+───────────────────
+Database:   PostgreSQL (managed by Render)
+Email:      Brevo API
+Server:     Gunicorn + Render platform
+Cache:      Redis (Render add-on)
+Storage:    AWS S3 (optional)
+Monitoring: Sentry integration
 
-OTP Expires Too Fast:
-  → Change timedelta in OTP.generate_otp()
-  → Default is 5 minutes
-  → Verify is_valid() method implementation
+PRODUCTION (RAILWAY)
+────────────────────
+Database:   PostgreSQL
+Email:      Brevo API
+Server:     Gunicorn
+Cache:      Redis
+Storage:    S3 or Railway volumes
+Monitoring: Built-in logging
 
-================================================================================
-11. QUICK START COMMANDS
-================================================================================
+CONFIGURATION FILES
+───────────────────
+- settings.py       Django settings with auto-fallback logic
+- Procfile          Heroku/Render process definition
+- render.yaml       Render deployment config
+- railway.json      Railway deployment config
+- requirements.txt  Python dependencies
+- .env.template     Environment variable template
 
-Development Setup:
-  python -m venv venv
-  source venv/bin/activate  (or venv\Scripts\activate on Windows)
-  pip install -r requirements.txt
-  python manage.py migrate
-  python manage.py createsuperuser
-  python manage.py runserver
+KEY ARCHITECTURE DECISIONS
+═══════════════════════════════════════════════════════════════════════════════
 
-Database:
-  python manage.py makemigrations
-  python manage.py migrate
-  python manage.py migrate --fake-initial
-  python manage.py flush
+1. OTP AUTHENTICATION
+   - Reason: No password storage burden, SMS-like UX
+   - Implementation: Django OTP model with 5-minute expiry
+   - Fallback: Traditional password authentication available
 
-Testing:
-  python manage.py test
-  pytest
-  python manage.py test accounts
+2. MULTI-BACKEND EMAIL
+   - Reason: Reliability and cost optimization
+   - Implementation: Auto-fallback chain in settings
+   - Backends: Brevo → ZeptoMail → Gmail → Console
 
-Production:
-  python manage.py collectstatic --noinput
-  gunicorn auth_project.wsgi
-  export DATABASE_URL=postgresql://...
-  export SECRET_KEY=...
-  export BREVO_API_KEY=...
+3. DJANGO ALLAUTH
+   - Reason: Robust social auth, battle-tested
+   - Features: Google, GitHub OAuth, email verification
+   - Configuration: Customizable signup forms
 
-================================================================================
-12. DOCUMENTATION FILES CREATED
-================================================================================
+4. DJANGO CHANNELS
+   - Reason: Real-time WebSocket support
+   - Use cases: Messaging, notifications, typing indicators
+   - Fallback: Polling for older browsers
 
-1. CODEBASE_ARCHITECTURE_ANALYSIS.md (150+ pages)
-   - Complete architecture breakdown
+5. CELERY + REDIS
+   - Reason: Async task processing
+   - Use cases: Email sending, NLP analysis, notifications
+   - Fallback: Synchronous execution in dev
+
+6. POSTGRESQL
+   - Reason: ACID compliance, JSON support
+   - Features: Arrays for interests/skills, full-text search ready
+   - Fallback: SQLite for development
+
+TESTING CAPABILITY
+═══════════════════════════════════════════════════════════════════════════════
+
+TOOLS INCLUDED
+──────────────
+✓ pytest - Test runner
+✓ pytest-django - Django plugin
+✓ Selenium - Browser automation
+✓ django-debug-toolbar - Development debugging
+
+COVERAGE AREAS
+──────────────
+✓ Authentication flow tests
+✓ API endpoint tests
+✓ Model validation tests
+✓ Permission tests
+✓ Form validation tests
+✓ Email sending tests
+✓ Real-time feature tests (WebSocket)
+
+TEST HELPERS
+────────────
+✓ Test database fixtures
+✓ Mock email backend
+✓ Test user factories
+✓ Sample data generators
+
+LOGGING & MONITORING
+═══════════════════════════════════════════════════════════════════════════════
+
+LOG FILES
+─────────
+logs/django.log      - All application logs (rotating, 10MB max)
+logs/error.log       - Error-level logs only (rotating, 10MB max)
+
+LOG LEVELS
+──────────
+DEBUG    - Development/debugging info
+INFO     - General informational messages
+WARNING  - Warning messages
+ERROR    - Error messages
+CRITICAL - Critical errors (system down)
+
+MONITORING TOOLS
+────────────────
+✓ django-performance-monitor - Query performance
+✓ Sentry - Error tracking integration ready
+✓ django-debug-toolbar - Development toolbar (dev only)
+✓ Manual logging throughout application
+
+KNOWN ISSUES & FIXED BUGS
+═══════════════════════════════════════════════════════════════════════════════
+
+FIXED IN RECENT VERSIONS
+────────────────────────
+✓ CSRF token warnings - Re-enabled CSRF protection
+✓ Comments not visible - Fixed API endpoints
+✓ Profile pictures not appearing - File path corrections
+✓ Collaborators not showing - Fixed visibility filter
+✓ Project detail loading - Query optimization
+✓ Login form validation - Improved error handling
+✓ Email configuration - Added robust fallback chain
+✓ Comments badge bug - Fixed counter updates
+✓ Connect button CSRF - Added proper token handling
+✓ View profile redirects - Fixed URL routing
+
+MONITORING FOR ISSUES
+──────────────────────
+✓ Watch logs/ directory for errors
+✓ Monitor database size (PostgreSQL growth)
+✓ Check email delivery rates (Brevo dashboard)
+✓ Monitor Redis memory usage
+✓ Track WebSocket connections
+✓ Monitor API response times
+
+FUTURE ENHANCEMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+SHORT TERM (1-3 months)
+───────────────────────
+□ Advanced search filters (Elasticsearch)
+□ User recommendations engine
+□ Project analytics dashboard
+□ Team management improvements
+□ Video call integration (Twilio/Jitsi)
+
+MEDIUM TERM (3-6 months)
+────────────────────────
+□ Mobile app (React Native/Flutter)
+□ Skill-based marketplace
+□ Project portfolio generation
+□ Real-time code collaboration
+□ AI-powered project matching
+
+LONG TERM (6-12 months)
+───────────────────────
+□ Microservices architecture
+□ Distributed task processing
+□ Global scaling (multi-region)
+□ Advanced analytics
+□ Machine learning recommendations
+
+DEPENDENCIES OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
+
+CORE PACKAGES
+─────────────
+Django 4.2.8                - Web framework
+djangorestframework 3.14.0  - REST API framework
+django-allauth 0.61.1       - Authentication
+channels 4.0.0              - WebSocket support
+celery 5.3.4                - Task queue
+redis 5.0.1                 - Cache/broker
+psycopg2-binary 2.9.9       - PostgreSQL driver
+
+SUPPORT LIBRARIES
+─────────────────
+requests 2.31.0             - HTTP requests
+Pillow 10.1.0               - Image processing
+pandas 2.1.4                - Data processing
+nltk 3.8.1                  - NLP
+openpyxl 3.1.2              - Excel support
+python-dotenv 1.0.0         - Environment variables
+
+DEPLOYMENT TOOLS
+────────────────
+gunicorn 21.2.0             - Production server
+whitenoise 6.6.0            - Static file serving
+boto3 1.34.34               - AWS S3 support
+django-storages 1.14.2      - Cloud storage
+dj-database-url 2.1.0       - Database URL parsing
+
+DEVELOPMENT TOOLS
+──────────────────
+django-debug-toolbar 4.2.0  - Debug toolbar
+django-extensions 3.2.3     - Management commands
+pytest 7.4.3                - Testing
+black 23.12.1               - Code formatting
+flake8 6.1.0                - Linting
+mypy 1.7.1                  - Type checking
+
+CODE QUALITY CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+STANDARDS APPLIED
+─────────────────
+✓ PEP 8 compliant (mostly)
+✓ Docstrings on major functions
+✓ Type hints in utilities
+✓ DRY principle (Don't Repeat Yourself)
+✓ SOLID principles (Single Responsibility)
+✓ Proper error handling
+✓ Input validation and sanitization
+✓ Security best practices
+✓ Performance optimized
+✓ Well-documented models
+
+AREAS FOR IMPROVEMENT
+─────────────────────
+□ Add comprehensive type hints
+□ Increase test coverage (aim 80%+)
+□ Add more docstrings
+□ Simplify large view functions
+□ Extract business logic to services
+□ Add integration tests
+□ Document API response formats
+□ Add API rate limiting
+□ Implement API versioning
+
+GETTING STARTED (Quick Steps)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. CLONE REPOSITORY
+   git clone https://github.com/Goku0090/uni
+   cd auth_project
+
+2. SETUP ENVIRONMENT
+   python -m venv venv
+   source venv/bin/activate  # or venv\Scripts\activate (Windows)
+   pip install -r requirements.txt
+
+3. CONFIGURE
+   cp .env.template .env
+   # Edit .env with your settings (email, social auth, etc.)
+
+4. INITIALIZE DATABASE
+   python manage.py migrate
+   python manage.py createsuperuser  # Create admin user
+
+5. RUN SERVER
+   python manage.py runserver
+   # Visit http://localhost:8000
+
+6. ACCESS ADMIN
+   # Visit http://localhost:8000/admin
+   # Use superuser credentials
+
+ARCHITECTURE DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (Templates)                      │
+│  HTML/CSS/JavaScript - Django Templates                     │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                   Views & APIs                               │
+│  • Authentication Views (login, register, OTP)              │
+│  • Profile Management                                       │
+│  • Project CRUD                                             │
+│  • Chat/Messaging APIs                                      │
+│  • Comments APIs                                            │
+│  • Social Features                                          │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                Services Layer                                │
+│  • Authentication Service                                   │
+│  • NLP Service (user matching)                              │
+│  • Email Service (multi-backend)                            │
+│  • Project Service (visibility, filtering)                  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│                Database Models                               │
+│  User, StudentProfile, Project, Message, Comment,           │
+│  Connection, ChatRoom, Notification, Activity, etc.        │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────┴────────────────────────────────────┐
+│                                                              │
+├──────────────────────┬──────────────────────────────────────┤
+│  Data Persistence    │  Caching & Sessions                 │
+│  • PostgreSQL        │  • Redis                            │
+│  • SQLite (dev)      │  • Session store                    │
+│                      │  • Cache layer                      │
+└──────────────────────┴──────────────────────────────────────┘
+         │
+    ┌────┴─────────────────────────────────┐
+    │                                       │
+┌───▼─────────────────┐  ┌────────────────▼───┐
+│  External Services  │  │  Real-time Layer    │
+│  • Brevo Email      │  │  • Channels         │
+│  • Google OAuth     │  │  • WebSockets       │
+│  • GitHub OAuth     │  │  • Celery Tasks     │
+│  • RapidAPI         │  │  • Redis Pub/Sub    │
+└─────────────────────┘  └─────────────────────┘
+
+COMPLETION SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ Full codebase analyzed
+✓ Architecture documented
+✓ API endpoints catalogued
+✓ Data models explained
+✓ Configuration detailed
+✓ Security reviewed
+✓ Performance optimizations identified
+✓ Email system documented
+✓ Authentication flows explained
+✓ Real-time features documented
+✓ Deployment options provided
+✓ Testing framework identified
+✓ Logging configured
+✓ Future enhancements suggested
+
+FILES GENERATED
+═══════════════════════════════════════════════════════════════════════════════
+
+1. COMPREHENSIVE_CODEBASE_ANALYSIS.md
+   - Detailed overview of entire architecture
+   - Stack explanation
    - All models documented
-   - Feature descriptions
-   - API endpoint listing
-   - Configuration details
+   - Views and functionality
+   - Security features
 
-2. QUICK_CODE_PATTERNS_REFERENCE.md (500+ lines)
-   - Authentication patterns
-   - Model CRUD examples
-   - View patterns
-   - Form validation
-   - Serializer usage
-   - Email sending
-   - NLP utilities
-   - Template examples
-   - REST API patterns
+2. API_AND_ENDPOINTS_REFERENCE.md
+   - All 130+ endpoints documented
+   - Request/response examples
+   - Error codes explained
+   - Pagination details
+   - Rate limiting info
 
-3. DIRECTORY_STRUCTURE_EXPLAINED.md (400+ lines)
-   - File-by-file breakdown
-   - Template organization
-   - Static files structure
-   - Settings explanation
-   - Configuration files
-   - Dependencies documentation
+3. DATA_FLOW_AND_INTERACTIONS.md
+   - User registration flow
+   - OTP authentication flow
+   - Project creation flow
+   - Messaging system flow
+   - Comment system flow
+   - Notification flow
+   - End-to-end example
 
-4. Architecture Diagrams (Mermaid)
-   - System architecture diagram
-   - Model relationships (ER diagram)
-   - Dataflow diagrams
+4. QUICK_REFERENCE_GUIDE.md
+   - Quick lookup for common tasks
+   - File structure overview
+   - Core models cheat sheet
+   - Configuration checklist
+   - Troubleshooting guide
+   - Common code patterns
+   - Commands reference
 
-5. This Summary (ANALYSIS_SUMMARY.txt)
+5. ANALYSIS_SUMMARY.txt (this file)
+   - Executive summary
+   - Complete feature list
+   - Architecture overview
+   - Getting started guide
 
-================================================================================
-13. NEXT DEVELOPMENT PRIORITIES
-================================================================================
-
-SHORT-TERM (1-2 weeks):
-  • Add message encryption
-  • Implement real-time notifications (WebSockets)
-  • Add video calling (Twilio/Agora)
-  • Improve project recommendations (ML)
-  • Add search filters cache
-
-MEDIUM-TERM (1-3 months):
-  • Mobile app (React Native)
-  • Advanced analytics dashboard
-  • Skill certification system
-  • Project portfolio showcase
-  • Email notifications preferences
-
-LONG-TERM (3-6 months):
-  • Marketplace for project gigs
-  • Mentor matching system
-  • Internship listings
-  • University partnerships
-  • AI-powered collaborator matching
-
-================================================================================
-14. PROJECT STATISTICS
-================================================================================
-
-Code Metrics:
-  - Total Lines of Code: 10,000+
-  - Python Files: 20+
-  - Templates: 40+
-  - Static Files: 100+
-  - Models: 15+
-  - Views: 100+
-  - API Endpoints: 40+
-  - Forms: 10+
-  - Serializers: 5+
-  - Test Files: 10+
-
-Complexity:
-  - Average function length: 50-100 lines
-  - Highest file: views.py (3000+ lines)
-  - Most complex feature: Messaging system
-
-Maintainability:
-  - Code style: PEP 8 compatible
-  - Documentation: Good (docstrings present)
-  - Tests: Moderate coverage
-  - Comments: Good inline documentation
-
-================================================================================
-15. SKILLS DEMONSTRATED IN CODEBASE
-================================================================================
-
-Backend Development:
-  ✓ Advanced Django patterns
-  ✓ REST API design (DRF)
-  ✓ Multi-backend system (email)
-  ✓ Role-based access control
-  ✓ Complex querying (Q objects, aggregation)
-
-Database Design:
-  ✓ Relational modeling (15+ models)
-  ✓ Optimization (select_related, prefetch_related)
-  ✓ Migrations
-  ✓ PostgreSQL & SQLite support
-
-Authentication & Security:
-  ✓ OTP implementation
-  ✓ OAuth integration
-  ✓ Password hashing
-  ✓ CSRF protection
-  ✓ Permission systems
-
-Frontend Development:
-  ✓ Django templates
-  ✓ Bootstrap CSS
-  ✓ JavaScript interactions
-  ✓ Form validation
-
-NLP & Data Science:
-  ✓ NLTK for text processing
-  ✓ spaCy for NER
-  ✓ TF-IDF for keyword extraction
-  ✓ Cosine similarity for recommendations
-
-DevOps & Deployment:
-  ✓ Multiple deployment configs
-  ✓ Environment variables
-  ✓ Database URL parsing
-  ✓ Static file handling
-  ✓ Logging configuration
-
-Testing & Quality:
-  ✓ Unit tests
-  ✓ Integration tests
-  ✓ Error handling
-  ✓ Logging
-
-================================================================================
-16. RESOURCES & REFERENCES
-================================================================================
-
-Main Configuration:
-  • auth_project/settings.py - All Django settings
-  • auth_project/urls.py - Main URL router
-  • accounts/urls.py - App URL routing
-
-Models Reference:
-  • accounts/models.py - All 15+ models
-
-Views Reference:
-  • accounts/views.py - Main views (3000+ lines)
-  • accounts/views_contact.py - Contact views
-  • accounts/chat_api.py - Messaging REST API
-  • accounts/comment_api.py - Comment system
-
-Utilities:
-  • accounts/utils.py - NLP and helpers
-  • accounts/forms.py - Form definitions
-  • accounts/serializers.py - REST serializers
-
-External Services:
-  • Brevo (Sendinblue) - Email API
-  • Google OAuth - Social login
-  • GitHub OAuth - Social login
-  • RapidAPI - University data
-
-Deployment:
-  • Render - Recommended platform
-  • Railway - Alternative platform
-  • Heroku - Traditional platform (via Procfile)
-
-================================================================================
-END OF ANALYSIS SUMMARY
-================================================================================
-
-Total Analysis Created: 5 documents + 2 diagrams
-Comprehensive Coverage: ✓ Complete
-Ready for: Development, Deployment, Documentation
-
-Generated: February 3, 2026
-Codebase Version: Production-Ready
-Status: Fully Analyzed and Documented
+═══════════════════════════════════════════════════════════════════════════════
+                            END OF ANALYSIS
+                         Questions? See the guides.
+═══════════════════════════════════════════════════════════════════════════════

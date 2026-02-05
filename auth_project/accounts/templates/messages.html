@@ -478,16 +478,39 @@
     <!-- Main Content -->
     <main class="max-w-5xl mx-auto px-6 py-12">
         <!-- Header with Logo -->
-        <div class="mb-8">
+        <div class="mb-12">
             <div class="flex items-center gap-4 mb-6">
-                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-12 w-12 object-contain rounded-lg shadow-md">
-                <div class="flex-1">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-2">💬 Messages</h2>
-                    <p class="text-gray-600">Connect and collaborate with your peers</p>
-                </div>
-                <div class="text-right">
+                <a href="{% url 'main_home' %}" class="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-14 w-14 object-contain rounded-lg shadow-md ring-2 ring-blue-100 group-hover:ring-blue-300 transition">
+                    <div>
+                        <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">UniSync</h2>
+                        <p class="text-xs text-gray-500 font-medium">Collaborate & Innovate</p>
+                    </div>
+                </a>
+                <div class="flex-1"></div>
+                <div class="text-right hidden md:block">
                     <div class="text-3xl font-bold text-blue-600">{% if conversations %}{{ conversations|length }}{% else %}0{% endif %}</div>
-                    <div class="text-sm text-gray-600">Active conversations</div>
+                    <div class="text-sm text-gray-600">Conversations</div>
+                </div>
+            </div>
+            
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-2 gap-4 mb-6 md:grid-cols-4">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                    <div class="text-sm text-gray-600">Conversations</div>
+                    <div class="text-2xl font-bold text-blue-600">{% if conversations %}{{ conversations|length }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-lg border border-pink-200">
+                    <div class="text-sm text-gray-600">Unread</div>
+                    <div class="text-2xl font-bold text-pink-600" id="unreadMessageCount">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200 hidden md:block">
+                    <div class="text-sm text-gray-600">Online Now</div>
+                    <div class="text-2xl font-bold text-green-600" id="onlineCount">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200 hidden md:block">
+                    <div class="text-sm text-gray-600">Connected</div>
+                    <div class="text-2xl font-bold text-purple-600" id="connectedCount">0</div>
                 </div>
             </div>
 

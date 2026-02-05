@@ -1,0 +1,250 @@
+================================================================================
+GOOGLE LOGIN - VISUAL GUIDE
+================================================================================
+
+THE ERROR YOU'RE SEEING:
+┌─────────────────────────────────────────────────────────────┐
+│ Error: redirect_uri_mismatch                                │
+│                                                             │
+│ The redirect URI provided is not registered with the       │
+│ authorization server.                                      │
+└─────────────────────────────────────────────────────────────┘
+
+WHY IS THIS HAPPENING:
+┌─────────────────────────────────────────────────────────────┐
+│ Your App                    Google Cloud Console           │
+│ ────────────────────────    ──────────────────────────    │
+│ Sending:                    Registered:                   │
+│ http://localhost:8000/      http://localhost:8000/       │
+│ accounts/google/            accounts/google/             │
+│ login/callback/             login/callback/              │
+│                                                           │
+│ ✓ Same                      ✓ Same                       │
+│ ✓ Just needs to be          ✓ But NOT registered         │
+│   registered!                                             │
+└─────────────────────────────────────────────────────────────┘
+
+THE FIX:
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Go to Google Cloud Console                              │
+│ 2. Find OAuth 2.0 credentials                              │
+│ 3. Add the URL to "Authorized redirect URIs"               │
+│ 4. Click SAVE                                              │
+│ 5. Restart Django                                          │
+│ 6. Test                                                    │
+└─────────────────────────────────────────────────────────────┘
+
+STEP-BY-STEP VISUAL:
+
+Step 1: Google Cloud Console
+┌────────────────────────────────────────┐
+│ console.cloud.google.com               │
+│                                        │
+│ Select Project → Your Project          │
+│         ↓                              │
+│ APIs & Services (left sidebar)         │
+│         ↓                              │
+│ Credentials                            │
+│         ↓                              │
+│ OAuth 2.0 Client IDs (find yours)      │
+│         ↓                              │
+│ Click the Client                       │
+└────────────────────────────────────────┘
+
+Step 2: Add Redirect URI
+┌────────────────────────────────────────┐
+│ OAuth 2.0 Client Details              │
+│                                        │
+│ Authorized redirect URIs:              │
+│ ┌──────────────────────────────────┐   │
+│ │ (empty or has other URIs)        │   │
+│ │ [+ ADD URI]                      │   │
+│ │                                  │   │
+│ │ Paste:                           │   │
+│ │ http://localhost:8000/           │   │
+│ │ accounts/google/login/callback/  │   │
+│ │                                  │   │
+│ │ [SAVE]                           │   │
+│ └──────────────────────────────────┘   │
+└────────────────────────────────────────┘
+
+Step 3: Update .env
+┌────────────────────────────────────────┐
+│ .env file                              │
+│                                        │
+│ GOOGLE_CLIENT_ID=                      │
+│ your_client_id_from_google             │
+│                                        │
+│ GOOGLE_CLIENT_SECRET=                  │
+│ your_client_secret_from_google         │
+│                                        │
+│ ALLOWED_HOSTS=                         │
+│ localhost,127.0.0.1                    │
+└────────────────────────────────────────┘
+
+Step 4: Restart Server
+┌────────────────────────────────────────┐
+│ $ python manage.py runserver           │
+│                                        │
+│ [Waiting for connections...]           │
+│ Starting development server...          │
+│ Started server successfully             │
+└────────────────────────────────────────┘
+
+Step 5: Test
+┌────────────────────────────────────────┐
+│ Browser: http://localhost:8000/        │
+│ accounts/login/                        │
+│                                        │
+│ [Login Form]                           │
+│ [Login with Google Button] ← Click!    │
+│                                        │
+│ Redirects to: Google Login             │
+│ ✓ WORKS!                               │
+└────────────────────────────────────────┘
+
+LOGIN FLOW DIAGRAM:
+
+User
+ │
+ ├─→ Click "Login with Google"
+ │                    ↓
+ ├─→ Redirected to Google login
+ │    (if URL registered)
+ │                    ↓
+ ├─→ User logs in
+ │                    ↓
+ ├─→ User grants permission
+ │                    ↓
+ ├─→ Google redirects back
+ │    http://localhost:8000/
+ │    accounts/google/login/callback/
+ │                    ↓
+ ├─→ Django processes
+ │                    ↓
+ └─→ User logged in ✓
+
+WHAT YOU NEED:
+
+From Google Cloud Console:
+┌──────────────────────────────────┐
+│ ✓ Client ID                      │
+│ ✓ Client Secret                  │
+│ ✓ Redirect URI registered        │
+└──────────────────────────────────┘
+       ↓
+   Copy to .env
+       ↓
+┌──────────────────────────────────┐
+│ .env file                        │
+│ ──────────────────────────────── │
+│ GOOGLE_CLIENT_ID=<paste here>   │
+│ GOOGLE_CLIENT_SECRET=<paste>    │
+│ ALLOWED_HOSTS=localhost,...     │
+└──────────────────────────────────┘
+
+COMMON MISTAKES TO AVOID:
+
+❌ MISTAKE 1: Didn't click SAVE
+   After adding URI, must click SAVE button
+   Fix: Click SAVE, wait 30 seconds
+
+❌ MISTAKE 2: Used different port
+   Registered 8000, but running 8001
+   Fix: Register the actual port you're using
+
+❌ MISTAKE 3: Used 127.0.0.1 vs localhost
+   They're different! Need both
+   Fix: Register both versions
+
+❌ MISTAKE 4: Typo in credentials
+   Client ID or Secret copied wrong
+   Fix: Copy directly from Google, not by hand
+
+❌ MISTAKE 5: Didn't restart server
+   Changed .env but didn't restart
+   Fix: Ctrl+C, restart runserver
+
+VERIFICATION CHECKLIST:
+
+Google Cloud Console:
+  [ ] Project selected
+  [ ] OAuth 2.0 Client ID found
+  [ ] Redirect URI added
+  [ ] SAVE clicked
+  [ ] 30 seconds waited
+
+Django Configuration:
+  [ ] .env file updated
+  [ ] GOOGLE_CLIENT_ID set
+  [ ] GOOGLE_CLIENT_SECRET set
+  [ ] ALLOWED_HOSTS includes domain
+  [ ] Server restarted
+
+Testing:
+  [ ] Visit login page
+  [ ] See "Login with Google" button
+  [ ] Click button
+  [ ] See Google login (not error)
+  [ ] Login works
+  [ ] Back to app works
+
+TIMING:
+
+Setting up:        1-2 minutes
+Updating .env:     1 minute
+Restarting:        30 seconds
+Testing:           1 minute
+──────────────────────────────
+Total:             3-5 minutes
+
+EXPECTED BEHAVIOR AFTER FIX:
+
+Before (BROKEN):
+User → Click Google → Error page ❌
+
+After (WORKING):
+User → Click Google → Google login page ✓
+     → Enter credentials → Grant permission
+     → Back to your app → Logged in ✓
+
+HELP IF STILL NOT WORKING:
+
+Read:       GOOGLE_OAUTH_TROUBLESHOOTING.md
+Check:      Console output for errors
+Verify:     Callback URL is exactly correct
+Clear:      Browser cache (Ctrl+Shift+Delete)
+Try:        Incognito/Private window
+Restart:    Django server
+
+QUICK REFERENCE:
+
+Callback URL:
+http://localhost:8000/accounts/google/login/callback/
+
+Configuration location:
+e:/login/auth_project/auth_project/settings.py (already configured)
+
+Environment file:
+e:/login/auth_project/.env
+
+Server command:
+python manage.py runserver
+
+Test URL:
+http://localhost:8000/accounts/login/
+
+================================================================================
+                         YOU'VE GOT THIS! 💪
+================================================================================
+
+1. Register callback URL in Google Console
+2. Add credentials to .env
+3. Restart Django
+4. Test login
+
+DONE! ✅
+
+For detailed help:
+→ START_HERE_GOOGLE_LOGIN.md
+

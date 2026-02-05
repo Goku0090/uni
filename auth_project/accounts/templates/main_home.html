@@ -1,5 +1,6 @@
 {% load static %}
 {% load humanize %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -951,15 +952,15 @@
         }
 
         function loadCommentsIfNeeded(projectId) {
-            if (loadedComments[projectId]) return;
-            
-            fetch(`/accounts/api/projects/${projectId}/comments/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                }
-            })
+             if (loadedComments[projectId]) return;
+             
+             fetch(`/api/projects/${projectId}/comments/`, {
+                 method: 'GET',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                 }
+             })
             .then(response => response.json())
             .then(data => {
                 loadedComments[projectId] = true;
@@ -1053,7 +1054,7 @@
             console.log('Posting comment to project:', projectId);
             console.log('CSRF Token present:', !!csrfToken);
             
-            fetch(`/accounts/api/projects/${projectId}/comments/add/`, {
+            fetch(`/api/projects/${projectId}/comments/add/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1116,12 +1117,12 @@
         function deleteComment(commentId, projectId) {
             if (!confirm('Are you sure you want to delete this comment?')) return;
             
-            fetch(`/accounts/api/comments/${commentId}/delete/`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                }
+            fetch(`/api/comments/${commentId}/delete/`, {
+               method: 'DELETE',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+               }
             })
             .then(response => response.json())
             .then(data => {
@@ -1148,13 +1149,13 @@
             const newContent = prompt('Edit your comment:', currentContent);
             if (newContent === null || newContent.trim() === '') return;
             
-            fetch(`/accounts/api/comments/${commentId}/edit/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                },
-                body: JSON.stringify({ content: newContent })
+            fetch(`/api/comments/${commentId}/edit/`, {
+               method: 'POST',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+               },
+               body: JSON.stringify({ content: newContent })
             })
             .then(response => response.json())
             .then(data => {
@@ -1360,7 +1361,10 @@
                         View Details
                     </a>
                     {% if post.user.id != user.id %}
-                    <button onclick="quickConnect({{ post.user.id }}, '{{ post.user.username }}', this)" class="px-4 py-2 bg-accent hover:bg-accent/80 text-white rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <button class="connect-btn px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg text-white"
+                            data-user-id="{{ post.user.id }}"
+                            data-connection-status="{{ connection_status|get_item:post.user.id }}"
+                            onclick="quickConnect({{ post.user.id }}, '{{ post.user.username }}', this)">
                         🤝 Connect
                     </button>
                     {% else %}
@@ -1814,6 +1818,41 @@
         }
 
         // Quick Connect function (needs to be globally accessible)
+        // Initialize connect button states on page load
+        function initializeConnectButtons() {
+            const buttons = document.querySelectorAll('.connect-btn');
+            buttons.forEach(btn => {
+                const status = btn.getAttribute('data-connection-status');
+                updateConnectButtonState(btn, status);
+            });
+        }
+        
+        function updateConnectButtonState(button, status) {
+            if (!status) {
+                // No connection - show Connect button
+                button.innerHTML = '🤝 Connect';
+                button.disabled = false;
+                button.style.background = '';
+                button.classList.remove('opacity-60');
+            } else if (status === 'pending') {
+                // Pending connection
+                button.innerHTML = '⏳ Pending';
+                button.disabled = true;
+                button.style.background = 'rgba(255, 193, 7, 0.3)';
+                button.style.color = '#ffc107';
+                button.classList.add('opacity-60');
+            } else if (status === 'accepted') {
+                // Already connected
+                button.innerHTML = '✅ Connected';
+                button.disabled = true;
+                button.style.background = 'rgba(76, 175, 80, 0.3)';
+                button.style.color = '#4caf50';
+                button.classList.add('opacity-60');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializeConnectButtons);
+
         function quickConnect(userId, username, buttonElement) {
             console.log('quickConnect called for user:', username, 'id:', userId);
             const button = buttonElement || event.currentTarget || event.target;
@@ -1821,6 +1860,19 @@
                 console.error('Button element not found');
                 return;
             }
+            
+            const currentStatus = button.getAttribute('data-connection-status');
+            
+            // If already connected or pending, don't allow clicking
+            if (currentStatus === 'accepted') {
+                showNotification('You are already connected!', 'info');
+                return;
+            }
+            if (currentStatus === 'pending') {
+                showNotification('Connection request already pending', 'info');
+                return;
+            }
+            
             const originalContent = button.innerHTML;
             
             button.disabled = true;
@@ -1837,8 +1889,6 @@
             }
 
             console.log('Making fetch request to:', `/accounts/send-connection-request/${userId}/`);
-            console.log('Method: POST');
-            console.log('CSRF Token:', csrfToken.value);
             
             fetch(`/accounts/send-connection-request/${userId}/`, {
                 method: 'POST',
@@ -1859,22 +1909,33 @@
                 console.log('Response data:', data);
                 if (data.success) {
                     showNotification(`Connection request sent to ${username}!`, 'success');
-                    // Update the button
-                    button.innerHTML = '✅ Request Sent';
-                    button.disabled = true;
-                    button.classList.add('opacity-70');
-                    button.classList.remove('hover:bg-accent/80');
+                    // Update button state to pending
+                    button.setAttribute('data-connection-status', 'pending');
+                    updateConnectButtonState(button, 'pending');
+                    // Show temp success message
+                    setTimeout(() => {
+                        button.innerHTML = '✅ Request Sent';
+                    }, 500);
                 } else {
-                    showNotification(data.message || 'Failed to send connection request', 'error');
-                    // Restore button
-                    button.innerHTML = originalContent;
-                    button.disabled = false;
+                    // Handle error cases - check what happened
+                    if (data.message.includes('already pending')) {
+                        button.setAttribute('data-connection-status', 'pending');
+                        updateConnectButtonState(button, 'pending');
+                        showNotification('Connection request already pending', 'info');
+                    } else if (data.message.includes('already connected')) {
+                        button.setAttribute('data-connection-status', 'accepted');
+                        updateConnectButtonState(button, 'accepted');
+                        showNotification('You are already connected!', 'info');
+                    } else {
+                        showNotification(data.message || 'Failed to send connection request', 'error');
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }
                 }
             })
             .catch(error => {
                 console.error('Connection request error:', error);
                 showNotification('Error: ' + error.message, 'error');
-                // Restore button
                 button.innerHTML = originalContent;
                 button.disabled = false;
             });

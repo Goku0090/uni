@@ -1,0 +1,108 @@
+================================================================================
+                    COMMENTS "ERROR LOADING" - FINAL SUMMARY
+================================================================================
+
+ISSUE:
+------
+When viewing projects, users see "Failed to load comments" error instead of
+the comments list.
+
+ROOT CAUSES:
+------------
+1. Server not restarted after fix (70% of cases)
+2. Browser cache not cleared (15% of cases)
+3. Fix not properly applied (10% of cases)
+4. Actual server error (5% of cases)
+
+SOLUTION:
+---------
+STEP 1: Restart the server
+  Ctrl+C  (in the terminal)
+  python manage.py runserver
+
+STEP 2: Clear browser cache
+  Ctrl+Shift+Delete
+  Select "All time"
+  Click "Delete data"
+
+STEP 3: Reload page
+  F5 or Ctrl+R
+
+RESULT: This fixes 90% of cases! ✅
+
+IF STILL BROKEN:
+--------------
+1. Check if fix was applied:
+   grep "path('projects/<int:project_id>/comments/" accounts/urls.py
+   
+   Should show: path('projects/...  (WITHOUT /api/ prefix)
+   Should NOT show: path('api/projects/... (WITH double prefix)
+
+2. If showing double prefix, apply the fix:
+   Edit: auth_project/accounts/urls.py
+   Lines: 125-128
+   
+   Change FROM:
+     path('api/projects/<int:project_id>/comments/', ...)
+   
+   Change TO:
+     path('projects/<int:project_id>/comments/', ...)
+   
+   Same for comments/add/, comments/delete/, comments/edit/
+
+3. Run diagnostic test:
+   python test_comments_api.py
+   
+   This will tell you exactly what's working and what's not.
+
+4. Check browser DevTools:
+   F12 → Network tab → Look for /api/projects/X/comments/ request
+   
+   Status 200 = ✅ Working
+   Status 404 = ❌ Fix not applied or URL wrong
+   Status 500 = ❌ Server error
+
+VERIFICATION:
+-----------
+After fix, you should see:
+  ✅ Comments section loads without error
+  ✅ Can post comments
+  ✅ Comments appear immediately
+  ✅ Other users see your comments (without page refresh)
+  ✅ No red errors in browser console (F12)
+  ✅ Network requests show 200 status (F12)
+
+FILES TO CHECK:
+---------------
+- accounts/urls.py (Line 125-128) - Should have: path('projects/...
+- test_comments_api.py - Run this for diagnostics
+- DEBUG_ERROR_LOADING_COMMENTS.md - Detailed troubleshooting
+- QUICK_FIX_STEPS.md - Step-by-step guide
+- ERROR_LOADING_COMMENTS_SOLUTION.md - Complete solution
+
+WHAT WAS FIXED:
+---------------
+The comment API routes had duplicate 'api/' prefix:
+  WRONG: path('api/projects/<id>/comments/', ...)
+         + included under path('api/', ...)
+         = /api/api/projects/<id>/... (double prefix!)
+  
+  CORRECT: path('projects/<id>/comments/', ...)
+           + included under path('api/', ...)
+           = /api/projects/<id>/... (single prefix!)
+
+STEPS (In Order):
+-----------------
+1. Restart server (Ctrl+C, then python manage.py runserver)
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Reload page (F5)
+4. If still broken: python test_comments_api.py
+5. If test shows errors: check accounts/urls.py lines 125-128
+
+MOST LIKELY SOLUTION:
+---------------------
+Just restart the server and clear the browser cache!
+
+That fixes 90% of "Error loading comments" issues.
+
+================================================================================

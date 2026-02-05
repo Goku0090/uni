@@ -1,0 +1,77 @@
+================================================================================
+                    COMMENTS NOT VISIBLE - QUICK FIX SUMMARY
+================================================================================
+
+PROBLEM:
+--------
+When one user posts a comment on a project, other users cannot see it.
+
+ROOT CAUSE:
+-----------
+Duplicate 'api/' prefix in URL routes for comments:
+  - Routes defined as: path('api/projects/<id>/comments/', ...)
+  - But included under: path('api/', include(...))
+  - Result: /api/api/projects/<id>/comments/ (double prefix!)
+  - Frontend calls: /api/projects/<id>/comments/ (mismatch!)
+
+FILE MODIFIED:
+--------------
+auth_project/accounts/urls.py (Lines 125-128)
+
+CHANGES:
+--------
+BEFORE:
+  path('api/projects/<int:project_id>/comments/', get_comments, ...)
+  path('api/projects/<int:project_id>/comments/add/', add_comment, ...)
+  path('api/comments/<int:comment_id>/delete/', delete_comment, ...)
+  path('api/comments/<int:comment_id>/edit/', edit_comment, ...)
+
+AFTER:
+  path('projects/<int:project_id>/comments/', get_comments, ...)
+  path('projects/<int:project_id>/comments/add/', add_comment, ...)
+  path('comments/<int:comment_id>/delete/', delete_comment, ...)
+  path('comments/<int:comment_id>/edit/', edit_comment, ...)
+
+WHY:
+----
+The 'api/' prefix is already added by:
+  path('api/', include('accounts.urls'))
+
+So specifying 'api/' again creates: /api/api/... (WRONG)
+By removing it: /api/projects/... (CORRECT)
+
+TESTING:
+--------
+1. Start server: python manage.py runserver
+2. Log in as User A, post comment on a project
+3. Open incognito/private window, log in as User B
+4. View the same project in User B's browser
+5. ✅ You should now see User A's comment!
+6. Post comment as User B
+7. Refresh User A's page
+8. ✅ You should see User B's comment!
+
+DEPLOYMENT:
+-----------
+1. Pull/apply the updated accounts/urls.py
+2. Restart the server
+3. NO database migration needed (routing-only fix)
+4. Test manually to confirm
+
+VERIFICATION:
+--------------
+In Django shell:
+  python manage.py shell
+  >>> from django.urls import get_resolver
+  >>> resolver = get_resolver()
+  >>> [str(p.pattern) for p in resolver.url_patterns if 'comment' in str(p)]
+
+Should show:
+  ['api/projects/<int:project_id>/comments/', 
+   'api/projects/<int:project_id>/comments/add/',
+   'api/comments/<int:comment_id>/delete/',
+   'api/comments/<int:comment_id>/edit/']
+
+STATUS: ✅ FIX APPLIED AND READY FOR TESTING
+
+================================================================================

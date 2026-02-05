@@ -1,0 +1,182 @@
+================================================================================
+                    OAUTH FIX FOR http://127.0.0.1:8000
+================================================================================
+
+YOUR URL: http://127.0.0.1:8000/
+
+CALLBACK URLS YOU NEED:
+  Google: http://127.0.0.1:8000/accounts/google/login/callback/
+  GitHub: http://127.0.0.1:8000/accounts/github/login/callback/
+
+================================================================================
+                          QUICK FIX - 10 MINUTES
+================================================================================
+
+[ 1 ] Go to Google Cloud Console
+      https://console.cloud.google.com/apis/credentials
+
+[ 2 ] Click your OAuth 2.0 Client ID
+
+[ 3 ] Scroll to "Authorized redirect URIs"
+
+[ 4 ] Click "Add URI"
+
+[ 5 ] Paste exactly:
+      http://127.0.0.1:8000/accounts/google/login/callback/
+
+[ 6 ] Click "Save"
+
+[ 7 ] Copy "Client ID" → Paste into .env as GOOGLE_CLIENT_ID
+
+[ 8 ] Copy "Client Secret" → Paste into .env as GOOGLE_CLIENT_SECRET
+
+[ 9 ] Go to GitHub Developer Settings
+      https://github.com/settings/developers
+
+[ 10] Click "OAuth Apps"
+
+[ 11] Click your app
+
+[ 12] Find "Authorization callback URL"
+
+[ 13] Set to exactly:
+      http://127.0.0.1:8000/accounts/github/login/callback/
+
+[ 14] Click "Update application"
+
+[ 15] Copy "Client ID" → Paste into .env as GITHUB_CLIENT_ID
+
+[ 16] Copy "Client Secret" → Paste into .env as GITHUB_CLIENT_SECRET
+
+[ 17] Update Django Admin site domain:
+      Visit: http://127.0.0.1:8000/admin/sites/site/1/
+      Change "Domain name" to: 127.0.0.1:8000
+      Click "Save"
+
+[ 18] Restart Django:
+      python manage.py runserver
+
+[ 19] Clear browser cookies:
+      Press: Ctrl+Shift+Delete
+      Clear All
+
+[ 20] Test login:
+      Go to: http://127.0.0.1:8000/accounts/login/
+      Click "Sign in with Google"
+      Should work now!
+
+================================================================================
+                         EXACT CALLBACK URLS
+================================================================================
+
+GOOGLE:
+  http://127.0.0.1:8000/accounts/google/login/callback/
+
+GITHUB:
+  http://127.0.0.1:8000/accounts/github/login/callback/
+
+DON'T ADD:
+  ❌ http://localhost:8000/... (different domain)
+  ❌ https://127.0.0.1:8000/... (wrong protocol)
+  ❌ http://127.0.0.1/... (missing :8000 port)
+
+================================================================================
+                          .ENV FILE
+================================================================================
+
+MUST HAVE:
+
+GOOGLE_CLIENT_ID=your_actual_id_here
+GOOGLE_CLIENT_SECRET=your_actual_secret_here
+GITHUB_CLIENT_ID=your_actual_id_here
+GITHUB_CLIENT_SECRET=your_actual_secret_here
+
+(Get these from Google Console and GitHub settings)
+
+================================================================================
+                         VERIFICATION
+================================================================================
+
+Check these items:
+
+Google Settings:
+  [ ] https://console.cloud.google.com/apis/credentials
+  [ ] OAuth Client ID has redirect URI:
+      http://127.0.0.1:8000/accounts/google/login/callback/
+  [ ] Credentials copied to .env
+
+GitHub Settings:
+  [ ] https://github.com/settings/developers
+  [ ] OAuth App has callback URL:
+      http://127.0.0.1:8000/accounts/github/login/callback/
+  [ ] Credentials copied to .env
+
+Django:
+  [ ] http://127.0.0.1:8000/admin/sites/site/1/
+  [ ] Domain name set to: 127.0.0.1:8000
+  [ ] Django restarted: python manage.py runserver
+
+Testing:
+  [ ] Browser cookies cleared
+  [ ] Go to: http://127.0.0.1:8000/accounts/login/
+  [ ] Click "Sign in with Google" → Works?
+  [ ] Click "Sign in with GitHub" → Works?
+
+================================================================================
+                       IF STILL GETTING ERROR
+================================================================================
+
+TRY THIS:
+
+1. Clear all cookies
+   Ctrl+Shift+Delete → Clear All
+
+2. Wait 5 minutes
+   OAuth settings take time to apply
+
+3. Verify callback URL exactly
+   Look at error - it shows what URL was sent
+   Compare with what you added
+
+4. Check .env has credentials
+   python manage.py shell
+   import os
+   print(os.getenv('GOOGLE_CLIENT_ID'))
+   Should show actual value, not empty
+
+5. Check Django site
+   python manage.py shell
+   from django.contrib.sites.models import Site
+   print(Site.objects.first().domain)
+   Should show: 127.0.0.1:8000
+
+6. Check logs
+   tail -f logs/django.log
+   Look for error messages
+
+================================================================================
+                         IMPORTANT NOTES
+================================================================================
+
+- URL is http://127.0.0.1:8000 NOT localhost:8000
+- Callback URLs MUST use 127.0.0.1 (not localhost)
+- Trailing slash IS required: /callback/
+- Port :8000 IS required
+- HTTP (not HTTPS) for local development
+- All 20 steps above are needed
+
+================================================================================
+                        EXPECTED RESULT
+================================================================================
+
+✅ Go to http://127.0.0.1:8000/accounts/login/
+✅ Click "Sign in with Google" → Google login page appears
+✅ Click "Sign in with GitHub" → GitHub login page appears
+✅ Sign in successfully → Redirected to dashboard
+✅ No more "Error 400: redirect_uri_mismatch"
+
+================================================================================
+
+TOTAL TIME: ~10 minutes
+
+Good luck! 🚀

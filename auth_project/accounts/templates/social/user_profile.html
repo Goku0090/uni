@@ -1,3 +1,5 @@
+{% load custom_filters %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -63,9 +65,11 @@
     <!-- Navbar -->
     <nav class="bg-primary shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:opacity-80 transition float-3d">🚀</a>
-                <h1 class="text-2xl font-bold">UniSync</h1>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'main_home' %}" class="flex items-center gap-2 hover:opacity-80 transition">
+                    <img src="{% static 'images/unisync-logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 rounded-lg">
+                    <h1 class="text-2xl font-bold">UniSync</h1>
+                </a>
             </div>
             <div class="flex gap-10">
                 <a href="{% url 'main_home' %}" class="hover:text-accent transition">Home</a>
@@ -248,11 +252,13 @@
                         Interests
                     </h3>
                     <div class="flex flex-wrap gap-2">
-                        {% for interest in student_profile.interests.split ',' %}
-                            <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">
-                                {{ interest|strip }}
-                            </span>
-                        {% endfor %}
+                        {% if student_profile.interests %}
+                            {% for interest in student_profile.interests|split:"," %}
+                                <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">
+                                    {{ interest|strip }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}

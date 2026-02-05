@@ -234,30 +234,42 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadComments(projectId) {
-    const section = document.querySelector(`[data-project-id="${projectId}"]`);
-    const commentsList = section.querySelector('.comments-list');
-    const commentCount = section.querySelector('.comment-count');
-    
-    fetch(`/accounts/api/projects/${projectId}/comments/`)
+     const section = document.querySelector(`[data-project-id="${projectId}"]`);
+     const commentsList = section.querySelector('.comments-list');
+     const commentCount = section.querySelector('.comment-count');
+     
+     // Create abort controller for timeout (5 seconds)
+     const controller = new AbortController();
+     const timeoutId = setTimeout(() => controller.abort(), 5000);
+     
+     fetch(`/accounts/projects/${projectId}/comments/`, {
+        signal: controller.signal
+     })
         .then(response => {
-            if (!response.ok) throw new Error('Failed to load comments');
-            return response.json();
+             clearTimeout(timeoutId);
+             if (!response.ok) throw new Error('Failed to load comments');
+             return response.json();
         })
         .then(data => {
-            if (data.success) {
-                commentCount.textContent = data.count;
-                
-                if (data.comments.length === 0) {
-                    commentsList.innerHTML = '<div class="comments-empty">No comments yet. Be the first to comment!</div>';
-                } else {
-                    commentsList.innerHTML = data.comments.map(comment => createCommentHTML(comment, projectId)).join('');
-                    attachCommentActions(projectId);
-                }
-            }
+             if (data.success) {
+                 commentCount.textContent = data.count;
+                 
+                 if (data.comments.length === 0) {
+                     commentsList.innerHTML = '<div class="comments-empty">No comments yet. Be the first to comment!</div>';
+                 } else {
+                     commentsList.innerHTML = data.comments.map(comment => createCommentHTML(comment, projectId)).join('');
+                     attachCommentActions(projectId);
+                 }
+             }
         })
         .catch(error => {
-            console.error('Error loading comments:', error);
-            commentsList.innerHTML = '<div class="alert alert-warning mb-0"><small>Failed to load comments</small></div>';
+             clearTimeout(timeoutId);
+             console.error('Error loading comments:', error);
+             if (error.name === 'AbortError') {
+                 commentsList.innerHTML = '<div class="alert alert-warning mb-0"><small>Comments taking too long to load. <a href="javascript:location.reload()">Refresh</a></small></div>';
+             } else {
+                 commentsList.innerHTML = '<div class="alert alert-warning mb-0"><small>Failed to load comments. Please refresh.</small></div>';
+             }
         });
 }
 
@@ -278,7 +290,7 @@ function submitComment(projectId, form, commentsList, commentCount) {
     spinner.classList.remove('d-none');
     submitText.classList.add('d-none');
     
-    fetch(`/accounts/api/projects/${projectId}/comments/add/`, {
+    fetch(`/accounts/projects/${projectId}/comments/add/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -372,7 +384,7 @@ function deleteComment(commentId, projectId) {
     const btn = document.querySelector(`[data-comment-id="${commentId}"]`);
     btn.style.opacity = '0.5';
     
-    fetch(`/accounts/api/comments/${commentId}/delete/`, {
+    fetch(`/accounts/comments/${commentId}/delete/`, {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -424,7 +436,7 @@ function editComment(commentId, projectId) {
     
     commentElement.style.opacity = '0.5';
     
-    fetch(`/accounts/api/comments/${commentId}/edit/`, {
+    fetch(`/accounts/comments/${commentId}/edit/`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

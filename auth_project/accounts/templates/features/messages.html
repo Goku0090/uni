@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Messages | UniSync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -37,7 +38,7 @@
         nav.glass-effect {
             background: var(--bg-primary);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: none;
         }
 
         nav h1 {
@@ -133,8 +134,8 @@
         }
 
         .search-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+            border-color: var(--border-color);
+            box-shadow: none;
             outline: none;
         }
 
@@ -213,7 +214,7 @@
         #settingsMenu {
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         /* Mobile Menu */
@@ -424,15 +425,13 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
             <!-- Mobile Menu Button -->
             <div class="flex items-center justify-between lg:hidden">
-                <div class="flex items-center space-x-3">
-                    <a href="{% url 'main_home' %}" class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
-                        🚀
-                    </a>
+                <a href="{% url 'main_home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
                     <div>
-                        <h1 class="text-lg font-bold text-white">Messages</h1>
-                        <p class="text-xs text-gray-400 hidden sm:block">Connect & Collaborate</p>
+                        <h1 class="text-lg font-bold text-white">UniSync</h1>
+                        <p class="text-xs text-gray-400 hidden sm:block">Collaborate & Innovate</p>
                     </div>
-                </div>
+                </a>
                 <button onclick="toggleMobileMenu()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
@@ -440,15 +439,13 @@
 
             <!-- Desktop Navigation -->
             <div class="hidden lg:flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{% url 'main_home' %}" class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent hover:scale-110 transition-transform">
-                        🚀
-                    </a>
+                <a href="{% url 'main_home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-12 w-12 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
                     <div>
-                        <h1 class="text-xl font-bold text-white">Messages</h1>
-                        <p class="text-xs text-gray-400">Connect & Collaborate</p>
+                        <h1 class="text-2xl font-bold text-white">UniSync</h1>
+                        <p class="text-xs text-gray-400">Collaborate & Innovate</p>
                     </div>
-                </div>
+                </a>
 
                 <!-- Desktop Nav Items -->
                 <div class="flex items-center gap-2 xl:gap-3">

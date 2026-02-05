@@ -1,563 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages | UniSync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #1d4ed8;
-            --accent: #ec4899;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-        }
-
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
-        }
-
-        .message-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .message-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #2563eb, #ec4899);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .message-card:hover {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .message-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .message-card.unread {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.02), rgba(236, 72, 153, 0.02));
-            border-color: #2563eb;
-        }
-
-        .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2563eb, #ec4899);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            position: relative;
-        }
-
-        .avatar.online::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 12px;
-            height: 12px;
-            background: #10b981;
-            border: 2px solid white;
-            border-radius: 50%;
-        }
-
-        .online-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            color: #10b981;
-            font-weight: 500;
-        }
-
-        .typing-animation {
-            display: flex;
-            gap: 3px;
-        }
-
-        .typing-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #64748b;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                opacity: 0.3;
-                transform: translateY(0);
-            }
-            30% {
-                opacity: 1;
-                transform: translateY(-8px);
-            }
-        }
-
-        .search-input {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 16px;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-            outline: none;
-        }
-
-        .filter-button {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .filter-button:hover {
-            border-color: #2563eb;
-            color: #2563eb;
-            background: rgba(37, 99, 235, 0.05);
-        }
-
-        .filter-button.active {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: white;
-        }
-
-        .message-time {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-
-        .unread-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: #ec4899;
-            color: white;
-            border-radius: 50%;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        .status-indicator.active {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-
-        .status-indicator.typing {
-            background: rgba(37, 99, 235, 0.1);
-            color: #2563eb;
-        }
-
-        .chat-preview {
-            color: #94a3b8;
-            font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 300px;
-        }
-
-        .chat-preview.unread {
-            color: #1e293b;
-            font-weight: 500;
-        }
-
-        .hover-actions {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .message-card:hover .hover-actions {
-            opacity: 1;
-        }
-
-        .action-button {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-
-        .action-button:hover {
-            background: #f1f5f9;
-            border-color: #2563eb;
-            color: #2563eb;
-        }
-
-        .conversation-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 12px;
-        }
-
-        .tab {
-            padding: 8px 16px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #94a3b8;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s ease;
-            margin-bottom: -14px;
-        }
-
-        .tab:hover {
-            color: #64748b;
-        }
-
-        .tab.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
-
-        .notification-dot {
-            width: 8px;
-            height: 8px;
-            background: #ec4899;
-            border-radius: 50%;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 </head>
-<body class="min-h-screen">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">
-                    UniSync
-                </h1>
-            </div>
-            <nav class="hidden md:flex space-x-8">
-                <a href="{% url 'main_home' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Home</a>
-                <a href="{% url 'find_collaborators' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Find People</a>
-                <a href="{% url 'post_project' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Projects</a>
-                <a href="{% url 'messages' %}" class="text-blue-600 text-sm font-medium">Messages</a>
-                <a href="{% url 'notifications' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Notifications</a>
-                <a href="{% url 'student_profile' %}" class="text-gray-700 hover:text-blue-600 transition text-sm font-medium">Profile</a>
-                <a href="{% url 'logout' %}" class="text-gray-700 hover:text-red-600 transition text-sm font-medium">Logout</a>
-            </nav>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-5xl mx-auto px-6 py-12">
-        <!-- Header -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-4xl font-bold text-gray-900 mb-2">💬 Messages</h2>
-                    <p class="text-gray-600">Connect and collaborate with your peers</p>
-                </div>
-                <div class="text-right">
-                    <div class="text-3xl font-bold text-blue-600">{{ conversations|length }}</div>
-                    <div class="text-sm text-gray-600">Active conversations</div>
-                </div>
-            </div>
-
-            <!-- Search and Filters -->
-            <div class="space-y-4">
-                <div class="relative">
-                    <i data-lucide="search" class="absolute left-4 top-3 w-5 h-5 text-gray-400"></i>
-                    <input type="text" 
-                           id="searchInput"
-                           placeholder="Search conversations..." 
-                           class="search-input w-full pl-12 pr-4 py-3 text-gray-900 placeholder-gray-500">
-                </div>
-
-                <!-- Filter Tabs -->
-                <div class="tabs">
-                    <button class="tab active" onclick="filterConversations('all')">
-                        All <span class="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">{{ conversations|length }}</span>
-                    </button>
-                    <button class="tab" onclick="filterConversations('unread')">
-                        Unread <span id="unreadCount" class="ml-2 text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">0</span>
-                    </button>
-                    <button class="tab" onclick="filterConversations('connected')">
-                        Connected <span class="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">0</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Conversations List -->
-        {% if conversations %}
-            <div class="conversation-list" id="conversationsList">
-                {% for conversation in conversations %}
-                <div class="message-card {% if conversation.unread_count > 0 %}unread{% endif %} fade-in" data-username="{{ conversation.user.username|lower }}">
-                    <div class="p-4 flex items-center justify-between">
-                        <div class="flex items-center gap-4 flex-1 min-w-0">
-                            <!-- Avatar -->
-                            <div class="avatar {% if conversation.user.is_online %}online{% endif %}">
-                                {% if conversation.user.profile.profile_photo %}
-                                    <img src="{{ conversation.user.profile.profile_photo.url }}" 
-                                         alt="{{ conversation.user.username }}"
-                                         class="w-full h-full object-cover rounded-full">
-                                {% else %}
-                                    {{ conversation.user.username|first|upper }}
-                                {% endif %}
-                            </div>
-
-                            <!-- User Info -->
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="font-semibold text-gray-900">{{ conversation.user.first_name }} {{ conversation.user.last_name }}</h3>
-                                    {% if conversation.user.is_online %}
-                                        <span class="online-badge">
-                                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                            Online
-                                        </span>
-                                    {% elif conversation.user.last_seen %}
-                                        <span class="status-indicator">
-                                            Active {{ conversation.user.last_seen|timesince }} ago
-                                        </span>
-                                    {% endif %}
-                                </div>
-
-                                <!-- Last Message Preview -->
-                                {% if conversation.last_message %}
-                                    <p class="chat-preview {% if conversation.unread_count > 0 %}unread{% endif %}">
-                                        {% if conversation.last_message.sender == user %}
-                                            <span class="text-gray-600">You:</span>
-                                        {% endif %}
-                                        {{ conversation.last_message.content|truncatechars:60 }}
-                                    </p>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span class="message-time">{{ conversation.last_message.created_at|timesince }} ago</span>
-                                        {% if conversation.last_message.sender != user and not conversation.last_message.is_read %}
-                                            <span class="notification-dot"></span>
-                                        {% endif %}
-                                    </div>
-                                {% else %}
-                                    <p class="chat-preview text-gray-400">No messages yet</p>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex items-center gap-3 ml-4">
-                            {% if conversation.unread_count > 0 %}
-                                <div class="unread-badge">{{ conversation.unread_count }}</div>
-                            {% endif %}
-
-                            <div class="hover-actions flex gap-2">
-                                <button onclick="pinConversation({{ conversation.user.id }})" 
-                                        class="action-button"
-                                        title="Pin conversation">
-                                    <i data-lucide="pin" class="w-4 h-4 inline"></i>
-                                </button>
-                                <button onclick="muteConversation({{ conversation.user.id }})" 
-                                        class="action-button"
-                                        title="Mute notifications">
-                                    <i data-lucide="bell-off" class="w-4 h-4 inline"></i>
-                                </button>
-                            </div>
-
-                            <a href="{% url 'chat' conversation.user.id %}" 
-                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition whitespace-nowrap">
-                                Chat
-                            </a>
-                        </div>
+<body>
+    <!-- Main Container -->
+    <div class="h-screen flex flex-col">
+        <!-- Header Navigation -->
+        <nav class="glass-effect sticky top-0 z-40 px-4 py-3 sm:px-6 sm:py-4">
+            <div class="flex items-center justify-between max-w-7xl mx-auto">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">U</span>
+                    </div>
+                    <div class="hidden sm:block">
+                        <h1>Messages</h1>
+                        <p class="text-sm">Stay connected with your team</p>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <!-- Empty State -->
-            <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">No conversations yet</h3>
-                <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                    Start connecting with collaborators to begin messaging and collaborating on projects.
-                </p>
-                <div class="flex gap-4 justify-center">
-                    <a href="{% url 'find_collaborators' %}" 
-                       class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-                        Find Collaborators
-                    </a>
-                    <a href="{% url 'my_connections' %}" 
-                       class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-semibold transition">
-                        View Connections
-                    </a>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-sm mx-4 hidden sm:block">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Search conversations..." 
+                            class="search-input w-full px-4 py-2 pl-10 rounded-lg"
+                            autocomplete="off"
+                        >
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Mobile Search -->
+                    <button onclick="toggleSearch()" class="sm:hidden p-2 hover:bg-gray-700 rounded-lg transition">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-300"></i>
+                    </button>
+
+                    <!-- Notification Bell -->
+                    <button class="relative p-2 hover:bg-gray-700 rounded-lg transition" title="Notifications">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-300"></i>
+                        <span class="notification-dot absolute top-1 right-1 w-3 h-3 rounded-full"></span>
+                    </button>
+
+                    <!-- Settings Menu -->
+                    <div class="relative">
+                        <button onclick="toggleSettingsMenu()" class="p-2 hover:bg-gray-700 rounded-lg transition">
+                            <i data-lucide="more-vertical" class="w-5 h-5 text-gray-300"></i>
+                        </button>
+                        <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 rounded-lg shadow-lg border border-gray-600 py-1">
+                            <button onclick="toggleDarkMode()" class="w-full text-left px-4 py-2 hover:bg-gray-700 transition flex items-center gap-2">
+                                <i data-lucide="moon" class="w-4 h-4"></i>
+                                Toggle Dark Mode
+                            </button>
+                            <button onclick="toggleNotifications()" class="w-full text-left px-4 py-2 hover:bg-gray-700 transition flex items-center gap-2">
+                                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                                Notifications
+                            </button>
+                            <button onclick="showKeyboardShortcuts()" class="w-full text-left px-4 py-2 hover:bg-gray-700 transition flex items-center gap-2">
+                                <i data-lucide="keyboard" class="w-4 h-4"></i>
+                                Keyboard Shortcuts
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu -->
+                    <button onclick="toggleMobileMenu()" class="sm:hidden p-2 hover:bg-gray-700 rounded-lg transition">
+                        <i data-lucide="menu" class="w-5 h-5 text-gray-300"></i>
+                    </button>
                 </div>
             </div>
-        {% endif %}
-    </main>
+        </nav>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script>
-        // Initialize lucide icons
-        lucide.createIcons();
+        <!-- Main Content -->
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Conversations Sidebar -->
+            <div id="conversationsSidebar" class="w-full sm:w-96 bg-gray-900 border-r border-gray-700 flex flex-col">
+                <!-- Sidebar Header -->
+                <div class="p-4 border-b border-gray-700 flex items-center justify-between">
+                    <h2 class="font-bold text-lg">Conversations</h2>
+                    <button onclick="showNewMessageModal()" class="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition" title="New message">
+                        <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const conversations = document.querySelectorAll('.message-card');
-            
-            conversations.forEach(card => {
-                const username = card.getAttribute('data-username');
-                if (username.includes(query)) {
-                    card.style.display = '';
-                    card.classList.add('fade-in');
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+                <!-- Conversation List -->
+                <div class="flex-1 overflow-y-auto" id="conversationList">
+                    <div class="p-4 text-center text-gray-400">
+                        <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                        <p>No conversations yet</p>
+                    </div>
+                </div>
 
-        // Filter conversations
-        function filterConversations(filter) {
-            // Update active tab
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.closest('.tab').classList.add('active');
+                <!-- Group Chat Button -->
+                <div class="p-4 border-t border-gray-700">
+                    <button onclick="showGroupChatModal()" class="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition flex items-center justify-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        New Group Chat
+                    </button>
+                </div>
+            </div>
 
-            // Filter cards
-            const conversations = document.querySelectorAll('.message-card');
-            conversations.forEach(card => {
-                const unreadCount = card.querySelector('.unread-badge')?.textContent || '0';
-                const isUnread = card.classList.contains('unread');
-                
-                let shouldShow = true;
-                if (filter === 'unread') {
-                    shouldShow = isUnread;
-                } else if (filter === 'connected') {
-                    shouldShow = card.querySelector('.online-badge') !== null;
-                }
-                
-                card.style.display = shouldShow ? '' : 'none';
-            });
-        }
+            <!-- Chat Area -->
+            <div class="hidden sm:flex flex-1 flex-col bg-gray-800">
+                <!-- Chat Header -->
+                <div id="chatHeader" class="p-4 border-b border-gray-700 flex items-center justify-between">
+                    <div id="chatHeaderContent" class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <div>
+                            <h3 id="chatName" class="font-semibold text-white">Select a conversation</h3>
+                            <p id="chatStatus" class="text-xs text-gray-400">Online</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 hover:bg-gray-700 rounded-lg transition" title="Call">
+                            <i data-lucide="phone" class="w-5 h-5 text-gray-300"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-700 rounded-lg transition" title="Video call">
+                            <i data-lucide="video" class="w-5 h-5 text-gray-300"></i>
+                        </button>
+                        <button class="p-2 hover:bg-gray-700 rounded-lg transition" title="Info">
+                            <i data-lucide="info" class="w-5 h-5 text-gray-300"></i>
+                        </button>
+                    </div>
+                </div>
 
-        // Pin conversation
-        function pinConversation(userId) {
-            // Implement pin logic
-            console.log('Pinned conversation with user:', userId);
-        }
+                <!-- Messages Container -->
+                <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div class="text-center text-gray-400 py-8">
+                        <i data-lucide="message-circle" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                        <p>Select a conversation to start messaging</p>
+                    </div>
+                </div>
 
-        // Mute conversation
-        function muteConversation(userId) {
-            // Implement mute logic
-            console.log('Muted conversation with user:', userId);
-        }
+                <!-- Message Input -->
+                <div class="p-4 border-t border-gray-700">
+                    <div class="flex gap-3 items-end">
+                        <input 
+                            type="text"
+                            id="messageInput"
+                            placeholder="Type your message..."
+                            class="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            autocomplete="off"
+                        >
+                        <button onclick="attachFile()" class="p-2 hover:bg-gray-700 rounded-lg transition" title="Attach file">
+                            <i data-lucide="paperclip" class="w-5 h-5 text-gray-300"></i>
+                        </button>
+                        <button onclick="sendMessage()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div id="typingIndicator" class="mt-2 text-sm text-gray-400 hidden">
+                        <i data-lucide="loader" class="w-4 h-4 inline animate-spin"></i>
+                        Someone is typing...
+                    </div>
+                </div>
+            </div>
 
-        // Update unread count
-        function updateUnreadCount() {
-            const unreadCards = document.querySelectorAll('.message-card.unread');
-            document.getElementById('unreadCount').textContent = unreadCards.length;
-        }
+            <!-- Empty State for Mobile -->
+            <div class="sm:hidden flex-1 flex items-center justify-center bg-gray-800">
+                <div class="text-center">
+                    <i data-lucide="message-circle" class="w-16 h-16 mx-auto mb-4 text-gray-600"></i>
+                    <p class="text-gray-400">Select a conversation from the list</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Initialize
-        window.addEventListener('load', () => {
-            lucide.createIcons();
-            updateUnreadCount();
-        });
-    </script>
+    <!-- External JavaScript Files -->
+    <script src="{% static 'js/messages-api.js' %}"></script>
+    <script src="{% static 'js/messages-ui.js' %}"></script>
+    <script src="{% static 'js/messages-handlers.js' %}"></script>
 </body>
 </html>

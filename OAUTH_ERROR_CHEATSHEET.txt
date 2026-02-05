@@ -1,0 +1,199 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   OAUTH REDIRECT URI MISMATCH - CHEATSHEET                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+ERROR MESSAGE:
+  Error 400: redirect_uri_mismatch
+  "You can't sign in because this app sent an invalid request"
+
+ROOT CAUSE:
+  Callback URL in Django ≠ Callback URL in Google/GitHub
+
+SOLUTION:
+  Add correct callback URLs to Google & GitHub settings
+
+════════════════════════════════════════════════════════════════════════════════
+
+CALLBACK URLS (for localhost:8000):
+
+  Google: http://localhost:8000/accounts/google/login/callback/
+  GitHub: http://localhost:8000/accounts/github/login/callback/
+
+  IMPORTANT:
+    - Include the trailing slash /
+    - Use http:// (not https://) for local dev
+    - Include :8000 port number
+    - Exactly as shown above
+
+════════════════════════════════════════════════════════════════════════════════
+
+QUICK FIX STEPS:
+
+  [ 1 ] Go to Google Cloud Console
+        https://console.cloud.google.com/apis/credentials
+        
+  [ 2 ] Click your OAuth 2.0 Client ID
+  
+  [ 3 ] Add redirect URIs:
+        http://localhost:8000/accounts/google/login/callback/
+        http://127.0.0.1:8000/accounts/google/login/callback/
+        
+  [ 4 ] Click Save
+  
+  [ 5 ] Copy Client ID → .env as GOOGLE_CLIENT_ID
+  
+  [ 6 ] Copy Client Secret → .env as GOOGLE_CLIENT_SECRET
+  
+  [ 7 ] Go to GitHub Settings
+        https://github.com/settings/developers/oauth-apps
+        
+  [ 8 ] Click your OAuth App
+  
+  [ 9 ] Set Authorization callback URL:
+        http://localhost:8000/accounts/github/login/callback/
+        
+  [ 10] Copy Client ID → .env as GITHUB_CLIENT_ID
+  
+  [ 11] Copy Client Secret → .env as GITHUB_CLIENT_SECRET
+  
+  [ 12] Restart Django:
+         python manage.py runserver
+  
+  [ 13] Clear browser cookies (Ctrl+Shift+Delete)
+  
+  [ 14] Test login - should work now!
+
+════════════════════════════════════════════════════════════════════════════════
+
+.ENV FILE MUST HAVE:
+
+  GOOGLE_CLIENT_ID=123456789-abcdefgh.apps.googleusercontent.com
+  GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxxxxxxxxx
+  GITHUB_CLIENT_ID=abc123def456
+  GITHUB_CLIENT_SECRET=ghij789klmno012
+  ALLOWED_HOSTS=localhost,127.0.0.1
+
+════════════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+
+  Still getting error?
+  
+    [ A ] Clear browser cookies
+          Ctrl+Shift+Delete → Clear All
+  
+    [ B ] Wait 5 minutes
+          OAuth settings take time to apply
+  
+    [ C ] Check exact URL match
+          Compare what you added to Google/GitHub
+          with what Django generates
+  
+    [ D ] Verify credentials
+          python manage.py shell
+          import os
+          print(os.getenv('GOOGLE_CLIENT_ID'))
+          Should show actual value, not empty
+  
+    [ E ] Check Django site
+          http://localhost:8000/admin/
+          Sites → Site object
+          Domain name must be: localhost:8000
+  
+    [ F ] Check logs
+          tail -f logs/django.log
+          Look for error messages
+
+════════════════════════════════════════════════════════════════════════════════
+
+COMMON MISTAKES:
+
+  ❌ /accounts/google/login/callback (MISSING SLASH)
+  ✅ /accounts/google/login/callback/ (CORRECT)
+
+  ❌ https://localhost:8000/... (WRONG FOR LOCAL)
+  ✅ http://localhost:8000/... (CORRECT FOR LOCAL)
+
+  ❌ http://localhost/... (MISSING PORT)
+  ✅ http://localhost:8000/... (CORRECT WITH PORT)
+
+  ❌ GOOGLE_CLIENT_ID= (EMPTY)
+  ✅ GOOGLE_CLIENT_ID=123456789-abc... (FILLED)
+
+  ❌ GoogleClientID (DIFFERENT NAME)
+  ✅ GOOGLE_CLIENT_ID (EXACT NAME)
+
+════════════════════════════════════════════════════════════════════════════════
+
+IMPORTANT SETTINGS LOCATIONS:
+
+  Google:      https://console.cloud.google.com/apis/credentials
+  GitHub:      https://github.com/settings/developers
+  Django Admin: http://localhost:8000/admin/sites/site/1/
+  Django Login: http://localhost:8000/accounts/login/
+
+════════════════════════════════════════════════════════════════════════════════
+
+WHAT TO DO AFTER FIXING:
+
+  [ 1 ] Restart Django
+        python manage.py runserver
+        
+  [ 2 ] Go to login page
+        http://localhost:8000/accounts/login/
+        
+  [ 3 ] Click "Sign in with Google"
+        Should see Google login (not error page)
+        
+  [ 4 ] Sign in with your Google account
+        Should redirect to dashboard
+        
+  [ 5 ] Try "Sign in with GitHub"
+        Same process
+        
+  [ 6 ] You should be logged in
+        Dashboard should load
+
+════════════════════════════════════════════════════════════════════════════════
+
+EXPECTED RESULT:
+
+  ✅ Click "Sign in with Google" → Google login page → Dashboard
+  ✅ Click "Sign in with GitHub" → GitHub login page → Dashboard
+  ✅ User created and logged in successfully
+  ✅ No Error 400 messages
+
+════════════════════════════════════════════════════════════════════════════════
+
+FOR MORE HELP:
+
+  Quick Start:        START_HERE_OAUTH_FIX.md
+  Detailed Guide:     FIX_OAUTH_REDIRECT_URI_MISMATCH.md
+  Visual Steps:       OAUTH_SETUP_VISUAL_GUIDE.md
+  Reference:          OAUTH_QUICK_FIX_STEPS.txt
+  This File:          OAUTH_ERROR_CHEATSHEET.txt
+
+════════════════════════════════════════════════════════════════════════════════
+
+TIME ESTIMATE:
+
+  Google setup:     5 minutes
+  GitHub setup:     3 minutes
+  Django restart:   2 minutes
+  Testing:          1 minute
+  ───────────────────────
+  TOTAL:           ~10 minutes
+
+════════════════════════════════════════════════════════════════════════════════
+
+SUMMARY:
+
+  1. Add callback URL to Google
+  2. Add callback URL to GitHub
+  3. Copy credentials to .env
+  4. Restart Django
+  5. Clear cookies
+  6. Test login
+  → Done!
+
+════════════════════════════════════════════════════════════════════════════════

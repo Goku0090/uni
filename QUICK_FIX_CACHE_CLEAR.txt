@@ -1,0 +1,52 @@
+===================================================================
+           QUICK FIX: 403 Error on /connect/3/
+===================================================================
+
+THE ISSUE:
+  You're getting: POST /connect/3/ 403 (Forbidden)
+  But code calls: /send-connection-request/3/
+
+WHY:
+  Browser cached OLD JavaScript code
+
+THE FIX (2 Steps, 1 Minute):
+
+Step 1: CLEAR BROWSER CACHE
+  Windows/Linux: Ctrl+Shift+Delete
+  Mac:           Cmd+Shift+Delete
+
+  Then select:
+    ✓ Cookies and site data
+    ✓ Cached images and files
+    ✓ All time
+  Click: Clear data
+
+Step 2: HARD REFRESH
+  Windows/Linux: Ctrl+Shift+R
+  Mac:           Cmd+Shift+R
+
+===================================================================
+
+VERIFY IT WORKS:
+
+Open DevTools (F12) → Network tab
+Click Connect button
+Look at request URL:
+
+  CORRECT: POST /send-connection-request/3/
+           Status 200 OK ✓
+
+  WRONG:   POST /connect/3/
+           Status 403 Forbidden ✗
+
+===================================================================
+
+If still 403:
+
+1. Restart Django: python manage.py runserver
+2. Try different browser
+3. Check console for errors (F12)
+
+===================================================================
+
+That's it! Try it now.

@@ -1,0 +1,185 @@
+================================================================================
+               OAUTH REDIRECT URI MISMATCH - QUICK FIX
+================================================================================
+
+ERROR: "Error 400: redirect_uri_mismatch"
+
+CAUSE: The redirect URL in your app doesn't match OAuth provider settings
+
+================================================================================
+                         QUICK FIX - 5 MINUTES
+================================================================================
+
+STEP 1: Identify Your Callback URL
+================================
+Local Development:
+  Google: http://localhost:8000/accounts/google/login/callback/
+  GitHub: http://localhost:8000/accounts/github/login/callback/
+
+Production (Render):
+  Google: https://yourapp.onrender.com/accounts/google/login/callback/
+  GitHub: https://yourapp.onrender.com/accounts/github/login/callback/
+
+IMPORTANT: Match protocol (http vs https), domain, port, and trailing slash EXACTLY
+
+
+STEP 2: Add to Google Developer Console
+========================================
+1. Go to: https://console.cloud.google.com
+2. Select your project
+3. Go to: APIs & Services → Credentials
+4. Click on your OAuth 2.0 Client ID
+5. Scroll to "Authorized redirect URIs"
+6. Click "Add URI"
+7. Paste (exactly): http://localhost:8000/accounts/google/login/callback/
+8. Click "Add URI" again
+9. Paste: http://127.0.0.1:8000/accounts/google/login/callback/
+10. Click "Save"
+
+
+STEP 3: Add to GitHub OAuth Settings
+=====================================
+1. Go to: https://github.com/settings/developers
+2. Click "OAuth Apps"
+3. Click on your app
+4. Find "Authorization callback URL"
+5. Set to (exactly): http://localhost:8000/accounts/github/login/callback/
+6. Click "Update application"
+
+
+STEP 4: Check .env File
+========================
+In your .env file, verify you have:
+  GOOGLE_CLIENT_ID=your_actual_client_id
+  GOOGLE_CLIENT_SECRET=your_actual_client_secret
+  GITHUB_CLIENT_ID=your_actual_github_id
+  GITHUB_CLIENT_SECRET=your_actual_github_secret
+
+(Get these from Google Console and GitHub settings)
+
+
+STEP 5: Restart Django
+======================
+python manage.py runserver
+
+Clear browser cache (Ctrl+Shift+Delete)
+
+
+STEP 6: Test
+============
+1. Go to login page
+2. Click "Sign in with Google" or "Sign in with GitHub"
+3. Should work now!
+
+================================================================================
+                           COMMON MISTAKES
+================================================================================
+
+❌ Missing trailing slash:
+   WRONG: http://localhost:8000/accounts/google/login/callback
+   RIGHT: http://localhost:8000/accounts/google/login/callback/
+
+❌ Wrong protocol:
+   WRONG: https://localhost:8000/accounts/google/login/callback/
+   RIGHT: http://localhost:8000/accounts/google/login/callback/
+
+❌ Wrong domain:
+   WRONG: http://127.0.0.1:8000/accounts/google/login/callback/
+   RIGHT: http://localhost:8000/accounts/google/login/callback/
+   (You need BOTH if testing on both localhost and 127.0.0.1)
+
+❌ Wrong port:
+   WRONG: http://localhost:3000/accounts/google/login/callback/
+   RIGHT: http://localhost:8000/accounts/google/login/callback/
+
+❌ Empty credentials:
+   Check that GOOGLE_CLIENT_ID is not empty in .env
+   Check that GITHUB_CLIENT_ID is not empty in .env
+
+================================================================================
+                        IF STILL GETTING ERROR
+================================================================================
+
+TRY 1: Wait 5 minutes
+  OAuth settings can take time to propagate
+
+TRY 2: Clear cookies
+  Press Ctrl+Shift+Delete in browser
+  Clear all cookies
+  Try again
+
+TRY 3: Check error details
+  When you get error, look at URL
+  It shows redirect_uri that was sent
+  Compare with what you added to Google/GitHub
+
+TRY 4: Django admin check
+  python manage.py shell
+  from django.contrib.sites.models import Site
+  print(Site.objects.all())
+  
+  Should show: localhost:8000 (for local) or yourdomain.com (for production)
+
+TRY 5: Check .env
+  python manage.py shell
+  import os
+  print("GOOGLE_CLIENT_ID:", os.getenv('GOOGLE_CLIENT_ID'))
+  print("GOOGLE_CLIENT_SECRET:", os.getenv('GOOGLE_CLIENT_SECRET'))
+  
+  Both should show values, not empty
+
+TRY 6: Verify credentials are correct
+  Go to Google Console → Credentials
+  Copy GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET again
+  Paste into .env
+  Restart Django
+
+================================================================================
+                         DETAILED HELP
+================================================================================
+
+For detailed troubleshooting, see:
+  FIX_OAUTH_REDIRECT_URI_MISMATCH.md
+
+Key sections:
+  - Step 1: Identify Current URL
+  - Step 2: Find What's Configured
+  - Step 3: Add Missing Redirect URIs
+  - Step 4: Check Django Configuration
+  - Step 5: Check Site Configuration
+  - Step 6: Troubleshooting
+
+================================================================================
+                         IMPORTANT FILES
+================================================================================
+
+Check these files for reference:
+  accounts/urls.py - OAuth URL patterns
+  auth_project/settings.py - OAuth configuration
+  .env - OAuth credentials
+  admin/sites/ - Django site configuration
+
+OAuth URL patterns in Django:
+  /accounts/google/login/callback/
+  /accounts/github/login/callback/
+  /accounts/login/  - Regular login
+  /accounts/logout/  - Logout
+  /accounts/signup/  - Signup
+
+================================================================================
+                          STATUS: FIX READY
+================================================================================
+
+Expected Result After Fix:
+  ✅ Click "Sign in with Google" → Works
+  ✅ Click "Sign in with GitHub" → Works
+  ✅ User logged in successfully
+  ✅ Redirects to dashboard
+
+If still getting error after following all steps:
+  1. Check logs/django.log for detailed error
+  2. Press F12 and check Console tab for JavaScript errors
+  3. Make sure credentials are exactly correct
+  4. Make sure callback URL exactly matches (case-sensitive, trailing slash, etc.)
+
+Good luck! 🚀

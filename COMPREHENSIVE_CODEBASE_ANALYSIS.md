@@ -1,1408 +1,728 @@
-# UniSync Platform - Comprehensive Codebase Analysis
+# UniSync - Comprehensive Codebase Analysis
 
-**Date:** January 28, 2026  
-**Project:** UniSync - Student Collaboration Platform  
-**Analysis Scope:** Complete login system, authentication, database, and application architecture
+## Overview
 
----
-
-## Executive Summary
-
-UniSync is a Django-based student collaboration platform featuring:
-- **Authentication:** Email/username login with OTP support, password reset, social login (Google/GitHub via django-allauth)
-- **User Profiles:** Extended StudentProfile model with skills, interests, portfolio links
-- **Collaboration:** Projects, teams, connections, messaging, notifications
-- **Real-time Features:** Chat rooms, typing indicators, message reactions, file sharing
-- **Database:** PostgreSQL (production) / SQLite (development)
-- **Email:** Multi-backend support (Brevo, ZeptoMail, Gmail SMTP)
-- **Frontend:** Tailwind CSS, modern dark theme, responsive design
+UniSync is a Django-based collaboration platform connecting university students to form projects and teams. It's a full-stack application with authentication, social features, messaging, and project management capabilities.
 
 ---
 
-## Architecture Overview
+## Architecture Stack
 
+### Technology Stack
+- **Backend Framework**: Django 4.2.8
+- **API Framework**: Django REST Framework 3.14.0
+- **Database**: PostgreSQL (with SQLite fallback for development)
+- **Authentication**: Django Allauth (local + social OAuth: Google, GitHub)
+- **Real-time Features**: Django Channels, Redis
+- **Email Services**: Brevo (primary), ZeptoMail (fallback), Gmail SMTP
+- **Storage**: AWS S3 via boto3, WhiteNoise for static files
+- **Task Queue**: Celery with Redis
+- **Frontend**: HTML/CSS/JavaScript templates (Django templates)
+
+### Key Dependencies
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend Layer                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  HTML Pages  │  │  login.html  │  │  Tailwind CSS│      │
-│  │  (Templates) │  │  (Modern UI) │  │  (Dark Mode) │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-└────────────┬────────────────────────────────────────────────┘
-             │ HTTP/Forms
-┌────────────▼────────────────────────────────────────────────┐
-│                    Django Views Layer                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ auth_views   │  │ user_views   │  │ project_views│      │
-│  │ (login,reg)  │  │ (profile)    │  │ (projects)   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-└────────────┬────────────────────────────────────────────────┘
-             │ SQL/ORM
-┌────────────▼────────────────────────────────────────────────┐
-│                      Models Layer                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ User         │  │ StudentProfile│  │ Project      │      │
-│  │ (Django)     │  │ (Extended)    │  │ (Collab)     │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-└────────────┬────────────────────────────────────────────────┘
-             │ Database Driver
-┌────────────▼────────────────────────────────────────────────┐
-│              Database (PostgreSQL/SQLite)                    │
-│  - Render PostgreSQL (Production)                            │
-│  - Local SQLite (Development)                                │
-└─────────────────────────────────────────────────────────────┘
+Django==4.2.8
+djangorestframework==3.14.0
+django-allauth==0.61.1
+channels==4.0.0
+celery==5.3.4
+redis==5.0.1
+psycopg2-binary==2.9.9
+Pillow==10.1.0 (image processing)
+pandas==2.1.4 (data handling)
+nltk==3.8.1 (NLP)
 ```
 
 ---
 
-## Frontend Analysis
+## Core Application Structure
 
-### Login Page (login.html)
+### Directory Layout
 
-**Location:** `auth_project/accounts/templates/login.html`  
-**Lines:** 421 total  
-**Purpose:** User authentication interface
-
-#### Key Components:
-
-**1. HTML Structure (Lines 1-219)**
-- DOCTYPE: HTML5, Dark mode enabled
-- Responsive meta viewport
-- Tailwind CDI for styling (line 10)
-- Font Awesome icons (line 27)
-
-**2. Navigation Bar (Lines 50-70)**
-```html
-<nav class="bg-primary/80 backdrop-blur-lg">
-  - Logo + UniSync branding
-  - Home link (url: 'main')
-  - Sign Up link (url: 'register')
 ```
-
-**3. Login Form (Lines 117-177)**
-```html
-<form method="POST" action="" class="space-y-6" id="loginForm" novalidate>
-  {% csrf_token %}
-  
-  <!-- Username/Email Field -->
-  <input type="text" id="username" name="username" 
-         placeholder="e.g., username or email@example.com"
-         required autocomplete="username">
-  
-  <!-- Password Field -->
-  <input type="password" id="password" name="password" 
-         placeholder="Enter your password"
-         required autocomplete="current-password">
-  
-  <!-- Toggle Password Visibility -->
-  <button type="button" id="togglePassword" class="eye-toggle">
-    <i class="fas fa-eye"></i>
-  </button>
-  
-  <!-- Remember Me Checkbox -->
-  <input type="checkbox" name="remember">
-  
-  <!-- Submit Button -->
-  <button type="submit" id="submitBtn" class="gradient-button">
-    <span id="btnText">Login to UniSync</span>
-  </button>
-</form>
-```
-
-**4. Messages Display (Lines 96-112)**
-- Success messages: Green background, check icon
-- Error messages: Red background, exclamation icon
-- Auto-dismiss after 5 seconds (JavaScript line 233-239)
-
-**5. Additional Features (Lines 193-217)**
-- Back to home link
-- Feature highlights (3-column grid)
-  - Connect (users icon)
-  - Innovate (rocket icon)
-  - Collaborate (handshake icon)
-
-#### Styling Features:
-
-**Color Scheme (Lines 14-22):**
-```javascript
-colors: {
-  background: '#1E1E2F',    // Dark navy
-  primary: '#2D2D44',       // Slightly lighter
-  accent: '#3AB7BF',        // Cyan blue
-  text: '#EAEAEA',          // Off-white
-  softDark: '#28293E'       // Softer dark
-}
-```
-
-**Animations (Lines 303-419):**
-- Floating particles (gradient purple-pink, 4-16px)
-- Float animation (translateY + rotation, 9-16s)
-- Fade-in-up on load (0.8s)
-- Card 3D hover effect (rotateX/Y on hover)
-- Glow effect (0 0 20px purple shadow)
-
-#### JavaScript Functionality (Lines 225-300, external login.js)
-
-**File:** `static/js/login.js`
-
-**Core Functions:**
-1. **Password Toggle (lines 4-19)**
-   - Toggle password visibility on eye icon click
-   - Update icon between fas-eye and fas-eye-slash
-
-2. **Form Validation (lines 56-68)**
-   - Email regex: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
-   - Username regex: `/^[a-zA-Z0-9_-]{3,30}$/`
-   - Either email or username accepted
-
-3. **Real-time Validation on Blur**
-   - Username: Check format, show error if invalid
-   - Password: Check not empty
-   - Auto-clear errors on input
-
-4. **Form Submission (lines 110-150)**
-   - Validate both fields before submit
-   - Show loading state (spinner animation)
-   - Disable button during submission
-   - Return true to allow form submission
-
-5. **Keyboard Navigation**
-   - Enter in username → focus password
-   - Enter in password → submit form
-   - Auto-focus username on load
-
-6. **Auto-dismiss Messages (lines 231-240)**
-   - Find all message divs
-   - After 5 seconds: fade out and remove
-
----
-
-## Backend Analysis
-
-### Views Layer
-
-**Main File:** `accounts/views.py` (1476+ lines)
-
-#### Authentication Views:
-
-**1. login_view()**
-```python
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        # Authenticate user (supports both username and email)
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            # Send welcome back email
-            AuthService.send_welcome_back_email(user.email, user.username)
-            return redirect('main_home')
-        else:
-            messages.error(request, 'Invalid credentials')
-            return redirect('login')
-    
-    return render(request, 'accounts/templates/login.html')
-```
-
-**Flow:**
-1. User submits form with username/email and password
-2. Django `authenticate()` backend checks credentials
-3. If valid: create session, send welcome email, redirect to main
-4. If invalid: show error message, stay on login page
-
-**2. register_view()**
-```python
-def register_view(request):
-    if request.method == 'POST':
-        # Extract form data
-        username = request.POST.get('username').strip()
-        email = request.POST.get('email').strip().lower()
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
-        
-        # Validation:
-        # - Check required fields
-        # - Check password match
-        # - Check password strength (8+ chars, uppercase, digit)
-        # - Check username/email not taken
-        
-        # Create User
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
-        )
-        
-        # Create StudentProfile
-        profile = StudentProfile.objects.create(
-            user=user,
-            full_name=request.POST.get('full_name'),
-            college=request.POST.get('college'),
-            interests=request.POST.get('interests'),
-            bio=request.POST.get('bio')
-        )
-        
-        # Send welcome email
-        AuthService.send_welcome_email(user.email, user.username)
-        
-        return redirect('login')
-```
-
-**3. OTP Views**
-```python
-def verify_otp_view(request, purpose):
-    """
-    Verify OTP for login, registration, or password reset
-    purpose: 'login', 'registration', or 'reset'
-    """
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        otp_code = request.POST.get('otp_code')
-        
-        # Get OTP record
-        otp = OTP.objects.filter(email=email, purpose=purpose).latest('created_at')
-        
-        # Verify
-        is_valid, message = otp.verify_otp(otp_code)
-        
-        if is_valid:
-            # OTP verified - proceed based on purpose
-            if purpose == 'login':
-                # Create session
-                pass
-            elif purpose == 'reset':
-                # Allow password reset
-                pass
-        else:
-            messages.error(request, message)
-```
-
-**4. Forgot Password**
-```python
-def forgot_password_view(request):
-    """Generate OTP for password reset"""
-    if request.method == 'POST':
-        email = request.POST.get('email').lower()
-        
-        # Check if user exists
-        user = User.objects.filter(email=email).first()
-        if user:
-            # Generate OTP
-            otp = OTP.generate_otp(email, 'reset')
-            
-            # Send OTP email
-            send_otp_email(email, otp.otp_code, 'password reset')
-            
-            messages.success(request, 'OTP sent to email')
-```
-
-#### Profile & User Views:
-
-**5. edit_profile()**
-```python
-@login_required
-def edit_profile(request):
-    profile = StudentProfile.objects.get(user=request.user)
-    if request.method == 'POST':
-        form = StudentProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Profile updated!')
-            return redirect('student_profile')
-    else:
-        form = StudentProfileForm(instance=profile)
-    return render(request, 'accounts/edit_profile.html', {'form': form})
-```
-
-**6. student_profile()**
-```python
-@login_required
-def student_profile(request):
-    profile = StudentProfile.objects.get(user=request.user)
-    projects = Project.objects.filter(user=request.user)
-    connections = Connection.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user),
-        status='accepted'
-    )
-    return render(request, 'student_profile.html', {
-        'profile': profile,
-        'projects': projects,
-        'connections': connections
-    })
-```
-
-#### Collaboration Views:
-
-**7. post_project()**
-```python
-def post_project(request):
-    if request.method == "POST":
-        project = Project.objects.create(
-            user=request.user,
-            title=request.POST.get('title'),
-            description=request.POST.get('description'),
-            technologies=", ".join(request.POST.getlist('technologies')),
-            looking_for=", ".join(request.POST.getlist('looking_for')),
-            category=request.POST.get('category'),
-            timeline=request.POST.get('timeline'),
-            collaboration_needs=request.POST.get('collaboration_needs'),
-            github_link=request.POST.get('github_link')
-        )
-        
-        # Create activity
-        create_activity(
-            user=request.user,
-            activity_type='project_created',
-            title=f"Created project '{project.title}'",
-            project=project
-        )
-        
-        return redirect('post_project')
-```
-
-**8. find_collaborators()**
-```python
-def find_collaborators(request):
-    """Search and filter users by skills, interests, college"""
-    query = request.GET.get('q', '')
-    filters = {
-        'skills': request.GET.getlist('skills'),
-        'college': request.GET.get('college'),
-        'interests': request.GET.getlist('interests')
-    }
-    
-    # Search users
-    search_results = StudentProfile.objects.filter(
-        Q(full_name__icontains=query) |
-        Q(bio__icontains=query)
-    )
-    
-    # Apply filters
-    if filters['skills']:
-        search_results = search_results.filter(skills__contains=filters['skills'])
-    
-    # Get connection status
-    connections = Connection.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
-    )
-    
-    return render(request, 'find_collaborators.html', {
-        'search_results': search_results,
-        'connections': {conn: conn.status for conn in connections}
-    })
-```
-
-#### Messaging Views:
-
-**9. message_view() & chat_view()**
-```python
-@login_required
-def message_view(request):
-    """List all conversations"""
-    conversations = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
-    ).distinct('receiver' if request.user else 'sender')
-    
-    return render(request, 'messages.html', {'conversations': conversations})
-
-@login_required
-def chat_view(request, user_id):
-    """Chat with specific user"""
-    other_user = User.objects.get(id=user_id)
-    messages = Message.objects.filter(
-        Q(sender=request.user, receiver=other_user) |
-        Q(sender=other_user, receiver=request.user)
-    ).order_by('created_at')
-    
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        Message.objects.create(
-            sender=request.user,
-            receiver=other_user,
-            content=content
-        )
-    
-    return render(request, 'chat.html', {
-        'other_user': other_user,
-        'messages': messages
-    })
-```
-
-#### Utility Functions:
-
-**10. Sanitize Input**
-```python
-def sanitize_input(text, max_length=None):
-    """Prevent XSS attacks"""
-    from django.utils.html import strip_tags
-    import re
-    
-    text = str(text).strip()
-    text = strip_tags(text)  # Remove HTML tags
-    text = re.sub(r'[<>]', '', text)  # Remove dangerous chars
-    
-    if max_length and len(text) > max_length:
-        text = text[:max_length]
-    
-    return text
-```
-
-**11. Send OTP Email**
-```python
-def send_otp_email(email, otp_code, purpose):
-    """Send OTP via email with HTML + plaintext"""
-    subject = f"🚀 - Your {purpose.title()} OTP Code"
-    from_email = settings.DEFAULT_FROM_EMAIL
-    
-    text_message = f"""
-    Hi there!
-    Your OTP for {purpose} is: {otp_code}
-    This OTP is valid for 5 minutes only.
-    """
-    
-    html_message = f"""
-    <div class="container">
-        <h2>🔐 🚀 Verification</h2>
-        <div class="otp-box"><div class="otp-code">{otp_code}</div></div>
-        <p>Valid for 5 minutes. Do not share.</p>
-    </div>
-    """
-    
-    msg = EmailMultiAlternatives(subject, text_message, from_email, [email])
-    msg.attach_alternative(html_message, "text/html")
-    msg.send()
-```
-
-### Forms Layer
-
-**File:** `accounts/forms.py`
-
-**1. RegisterForm (Lines 13-96)**
-```python
-class RegisterForm(UserCreationForm):
-    email = EmailField(required=True)
-    username = CharField(max_length=150, min_length=3)
-    password1 = CharField(widget=PasswordInput())  # 8+ chars, uppercase, digit
-    password2 = CharField(widget=PasswordInput())  # Confirm
-    terms_agree = BooleanField(required=True)
-    
-    # Validation:
-    def clean_username(self):
-        # Check not already taken
-    
-    def clean_email(self):
-        # Check not already taken
-    
-    def clean_password1(self):
-        # Check 8+ chars, uppercase, lowercase, digit
-    
-    def clean(self):
-        # Check passwords match
-```
-
-**2. LoginForm (Lines 99-120)**
-```python
-class LoginForm(AuthenticationForm):
-    username = CharField(
-        widget=TextInput(attrs={'placeholder': 'Username or Email'})
-    )
-    password = CharField(
-        widget=PasswordInput(attrs={'placeholder': 'Password'})
-    )
-    remember_me = BooleanField(required=False)
-```
-
-**3. OTPVerificationForm (Lines 122-144)**
-```python
-class OTPVerificationForm(forms.Form):
-    otp_code = CharField(
-        max_length=6, min_length=6,
-        widget=TextInput(attrs={
-            'placeholder': 'Enter 6-digit OTP',
-            'pattern': '[0-9]{6}'
-        })
-    )
-    
-    def clean_otp_code(self):
-        # Check is 6 digits
-```
-
-**4. StudentProfileForm (Lines 146-255)**
-```python
-class StudentProfileForm(forms.ModelForm):
-    full_name = CharField(max_length=100)
-    college = CharField(max_length=200)
-    location = CharField(max_length=100)
-    interests = CharField(widget=Textarea())
-    bio = CharField(widget=Textarea())
-    profile_photo = ImageField(required=False)
-    
-    skills = MultipleChoiceField(  # 16 options: Python, JS, Java, C++, etc.
-        widget=CheckboxSelectMultiple()
-    )
-    
-    project_interests = MultipleChoiceField(  # 12 options: Web dev, AI/ML, etc.
-        widget=CheckboxSelectMultiple()
-    )
-```
-
-**5. ProjectForm (Lines 327-531)**
-```python
-class ProjectForm(forms.ModelForm):
-    title = CharField(min_length=5, max_length=200)  # Clear title
-    description = CharField(min_length=20, max_length=5000)  # Detailed
-    
-    technologies = MultipleChoiceField(  # 50+ options
-        choices=[('python', 'Python'), ('javascript', 'JavaScript'), ...],
-        widget=CheckboxSelectMultiple()
-    )
-    
-    looking_for = MultipleChoiceField(  # 21 roles
-        choices=[('frontend_dev', 'Frontend'), ('backend_dev', 'Backend'), ...],
-        widget=CheckboxSelectMultiple()
-    )
-    
-    category = ChoiceField(  # 18 categories
-        choices=[('web', 'Web Dev'), ('mobile', 'Mobile'), ...]
-    )
-    
-    timeline = CharField(max_length=100)  # e.g., "3-6 months"
-    collaboration_needs = CharField(widget=Textarea())
-    github_link = URLField(required=False)
-```
-
-### Models Layer
-
-**File:** `accounts/models.py`
-
-**1. StudentProfile**
-```python
-class StudentProfile(models.Model):
-    user = OneToOneField(User, CASCADE, related_name='student_profile')
-    full_name = CharField(max_length=100, blank=True)
-    college = CharField(max_length=200, blank=True)
-    location = CharField(max_length=100, blank=True)
-    interests = JSONField(default=list)  # Array of interests
-    bio = TextField(blank=True)
-    profile_photo = ImageField(upload_to='profile_photos/', blank=True)
-    
-    # Skills & interests
-    skills = JSONField(default=list)  # ["Python", "Django", ...]
-    project_interests = JSONField(default=list)
-    role_preference = CharField(max_length=50, blank=True)
-    
-    # Social links
-    github = URLField(blank=True)
-    linkedin = URLField(blank=True)
-    portfolio = URLField(blank=True)
-    behance = URLField(blank=True)
-    
-    # Metadata
-    profile_completed = BooleanField(default=False)
-    created_at = DateTimeField(default=timezone.now)
-    updated_at = DateTimeField(auto_now=True)
-```
-
-**2. OTP**
-```python
-class OTP(models.Model):
-    PURPOSE_CHOICES = [('login', 'Login'), ('registration', 'Reg'), ('reset', 'Reset')]
-    
-    email = EmailField()
-    otp_code = CharField(max_length=6)  # 6-digit code
-    purpose = CharField(max_length=20, choices=PURPOSE_CHOICES)
-    is_used = BooleanField(default=False)
-    created_at = DateTimeField(default=timezone.now)
-    expires_at = DateTimeField()  # 5 minutes from now
-    
-    def is_valid(self):
-        return not self.is_used and timezone.now() < self.expires_at
-    
-    def verify_otp(self, otp_code):
-        if not self.is_valid():
-            return False, "Expired"
-        if otp_code == self.otp_code:
-            self.is_used = True
-            self.save()
-            return True, "Verified"
-        return False, "Invalid code"
-    
-    @classmethod
-    def generate_otp(cls, email, purpose):
-        # Generate 6-digit code
-        # Set 5-minute expiry
-        # Deactivate previous OTPs
-        # Return new OTP object
-```
-
-**3. Connection**
-```python
-class Connection(models.Model):
-    STATUS_CHOICES = [('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')]
-    
-    sender = ForeignKey(User, CASCADE, related_name='sent_connections')
-    receiver = ForeignKey(User, CASCADE, related_name='received_connections')
-    status = CharField(max_length=10, default='pending', choices=STATUS_CHOICES)
-    created_at = DateTimeField(default=timezone.now)
-    updated_at = DateTimeField(auto_now=True)
-    
-    class Meta:
-        unique_together = ['sender', 'receiver']  # One connection per pair
-```
-
-**4. Message**
-```python
-class Message(models.Model):
-    MESSAGE_TYPES = [('text', 'Text'), ('file', 'File'), ('image', 'Image'), ('call', 'Call')]
-    
-    sender = ForeignKey(User, CASCADE, related_name='sent_messages')
-    receiver = ForeignKey(User, CASCADE, related_name='received_messages', null=True)
-    chat_room = ForeignKey('ChatRoom', CASCADE, null=True, related_name='messages')
-    
-    content = TextField()
-    message_type = CharField(max_length=10, default='text', choices=MESSAGE_TYPES)
-    reply_to = ForeignKey('self', SET_NULL, null=True, related_name='replies')
-    
-    created_at = DateTimeField(default=timezone.now)
-    updated_at = DateTimeField(auto_now=True)
-    
-    def mark_as_read_by(self, user):
-        MessageReadStatus.objects.get_or_create(message=self, user=user)
-    
-    def is_read_by(self, user):
-        return MessageReadStatus.objects.filter(message=self, user=user).exists()
-```
-
-**5. Project**
-```python
-class Project(models.Model):
-    user = ForeignKey(User, CASCADE, related_name='projects')
-    title = CharField(max_length=200)
-    description = TextField()
-    technologies = CharField(max_length=1000)  # Comma-separated
-    looking_for = CharField(max_length=1000)  # Comma-separated roles
-    category = CharField(max_length=50)
-    timeline = CharField(max_length=100, blank=True)
-    collaboration_needs = TextField(blank=True)
-    github_link = URLField(blank=True)
-    
-    created_at = DateTimeField(default=timezone.now)
-    updated_at = DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return self.title
-```
-
-**6. ProjectTask**
-```python
-class ProjectTask(models.Model):
-    STATUS_CHOICES = [
-        ('todo', 'To Do'),
-        ('in_progress', 'In Progress'),
-        ('review', 'In Review'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled')
-    ]
-    
-    PRIORITY_CHOICES = [('low', 'Low'), ('medium', 'Medium'), ('high', 'High'), ('urgent', 'Urgent')]
-    
-    project = ForeignKey(Project, CASCADE, related_name='tasks')
-    title = CharField(max_length=200)
-    description = TextField(blank=True)
-    assigned_to = ForeignKey(User, SET_NULL, null=True, related_name='assigned_tasks')
-    status = CharField(max_length=15, default='todo', choices=STATUS_CHOICES)
-    priority = CharField(max_length=10, default='medium', choices=PRIORITY_CHOICES)
-    due_date = DateField(null=True, blank=True)
-    completed_at = DateTimeField(null=True)
-    
-    def mark_completed(self):
-        self.status = 'completed'
-        self.completed_at = timezone.now()
-        self.save()
-```
-
-**7. Notification**
-```python
-class Notification(models.Model):
-    user = ForeignKey(User, CASCADE, related_name='notifications')
-    actor = ForeignKey(User, CASCADE, related_name='initiated_notifications')
-    notification_type = CharField(max_length=50)
-    content = TextField()
-    is_read = BooleanField(default=False)
-    created_at = DateTimeField(default=timezone.now)
-    
-    # Related objects
-    connection = ForeignKey('Connection', SET_NULL, null=True, blank=True)
-    project = ForeignKey('Project', SET_NULL, null=True, blank=True)
-    message = ForeignKey('Message', SET_NULL, null=True, blank=True)
+auth_project/                       # Django Project Root
+├── auth_project/                   # Project Configuration
+│   ├── settings.py                 # Django settings
+│   ├── urls.py                     # URL routing
+│   ├── wsgi.py                     # WSGI application
+│   └── asgi.py                     # ASGI application (Channels)
+│
+├── accounts/                       # Main Application
+│   ├── models.py                   # Database models
+│   ├── views.py                    # View logic (3300+ lines)
+│   ├── urls.py                     # URL patterns
+│   ├── forms.py                    # Form definitions
+│   ├── serializers.py              # DRF serializers
+│   ├── permissions.py              # Custom permissions
+│   ├── utils.py                    # Utility functions
+│   │
+│   ├── services/                   # Business Logic Services
+│   │   ├── auth_service.py         # Authentication service
+│   │   └── __init__.py
+│   │
+│   ├── chat_api.py                 # Chat/Messaging API
+│   ├── comment_api.py              # Comments API
+│   ├── views_contact.py            # Contact form views
+│   │
+│   ├── brevo_mail_backend.py       # Brevo email backend
+│   ├── zepto_mail_backend.py       # ZeptoMail backend
+│   │
+│   ├── templates/                  # HTML templates
+│   ├── static/                     # CSS, JS, images
+│   ├── migrations/                 # Database migrations
+│   └── templatetags/               # Custom template filters
+│
+├── media/                          # User uploads (profile photos)
+├── static/                         # Global static files
+├── logs/                           # Application logs
+│
+├── manage.py                       # Django CLI
+└── requirements.txt                # Python dependencies
 ```
 
 ---
 
-## Database Schema
+## Database Models
 
-### Core Tables
+### Core Models
 
-**users (Django)**
-```
-├─ id (PK)
-├─ username (UNIQUE)
-├─ email (UNIQUE)
-├─ password (hashed)
-├─ first_name
-├─ last_name
-├─ is_active
-├─ is_staff
-├─ date_joined
-└─ last_login
-```
+#### 1. **StudentProfile**
+User extended profile with academic and professional information.
 
-**student_profile**
-```
-├─ id (PK)
-├─ user_id (FK → users, UNIQUE, CASCADE)
-├─ full_name
-├─ college
-├─ location
-├─ interests (JSON: ["React", "Node.js", ...])
-├─ bio (TEXT)
-├─ profile_photo (ImageField)
-├─ skills (JSON: ["Python", "Django", ...])
-├─ project_interests (JSON)
-├─ github, linkedin, portfolio, behance (URLs)
-├─ profile_completed (BOOL)
-├─ created_at (DATETIME)
-└─ updated_at (DATETIME)
+```python
+StudentProfile
+├── user (OneToOneField → User)
+├── full_name, college, location
+├── interests, bio, skills, project_interests
+├── profile_photo (ImageField)
+├── Social links: github, linkedin, portfolio, behance
+├── role_preference, profile_completed
+└── Timestamps: created_at, updated_at
 ```
 
-**otp**
-```
-├─ id (PK)
-├─ email (EMAIL)
-├─ otp_code (CHAR(6))
-├─ purpose (ENUM: login/registration/reset)
-├─ is_used (BOOL)
-├─ created_at (DATETIME)
-└─ expires_at (DATETIME)
+#### 2. **OTP** (One-Time Password)
+Authentication via email OTP for login/registration.
+
+```python
+OTP
+├── email, otp_code (6-digit)
+├── purpose (login/registration/reset)
+├── is_used, created_at, expires_at
+└── Methods: is_valid(), verify_otp(), generate_otp()
 ```
 
-**project**
-```
-├─ id (PK)
-├─ user_id (FK → users, CASCADE)
-├─ title (VARCHAR(200))
-├─ description (TEXT)
-├─ technologies (VARCHAR(1000), comma-separated)
-├─ looking_for (VARCHAR(1000), comma-separated roles)
-├─ category (VARCHAR(50))
-├─ timeline (VARCHAR(100))
-├─ collaboration_needs (TEXT)
-├─ github_link (URL)
-├─ created_at (DATETIME)
-└─ updated_at (DATETIME)
+#### 3. **Project**
+Main content model for collaborative projects.
+
+```python
+Project
+├── owner (ForeignKey → User)
+├── title, description, collaboration_needs
+├── team (ManyToManyField → User)
+├── technologies (JSONField array)
+├── status (active/completed/paused)
+├── visibility (public/private/college_specific)
+├── likes_count, comments_count
+├── File attachments, images
+└── Timestamps: created_at, updated_at
 ```
 
-**connection**
-```
-├─ id (PK)
-├─ sender_id (FK → users)
-├─ receiver_id (FK → users)
-├─ status (ENUM: pending/accepted/rejected)
-├─ created_at (DATETIME)
-├─ updated_at (DATETIME)
-└─ UNIQUE(sender_id, receiver_id)
+#### 4. **Connection**
+User relationship and connection requests.
+
+```python
+Connection
+├── sender, receiver (ForeignKey → User)
+├── status (pending/accepted/rejected)
+├── Unique: (sender, receiver)
+└── Timestamps: created_at, updated_at
 ```
 
-**message**
-```
-├─ id (PK)
-├─ sender_id (FK → users)
-├─ receiver_id (FK → users, nullable)
-├─ chat_room_id (FK → chatroom, nullable)
-├─ content (TEXT)
-├─ message_type (ENUM: text/file/image/call)
-├─ reply_to_id (FK → message, nullable)
-├─ created_at (DATETIME)
-└─ updated_at (DATETIME)
+#### 5. **Message**
+Direct messaging between users.
+
+```python
+Message
+├── sender, recipient (ForeignKey → User)
+├── content (TextField)
+├── is_read (BooleanField)
+├── has_files (BooleanField)
+└── Timestamps: sent_at, read_at
 ```
 
-**notification**
+#### 6. **ChatRoom**
+Group chat functionality.
+
+```python
+ChatRoom
+├── name, description
+├── owner (ForeignKey → User)
+├── members (ManyToManyField → User via ChatRoomMember)
+├── is_group (BooleanField)
+├── last_activity
+└── Timestamps: created_at, updated_at
 ```
-├─ id (PK)
-├─ user_id (FK → users)
-├─ actor_id (FK → users)
-├─ notification_type (VARCHAR(50))
-├─ content (TEXT)
-├─ is_read (BOOL)
-├─ connection_id (FK, nullable)
-├─ project_id (FK, nullable)
-├─ message_id (FK, nullable)
-└─ created_at (DATETIME)
+
+#### 7. **Comment**
+Project comments/discussion.
+
+```python
+Comment
+├── project (ForeignKey → Project)
+├── author (ForeignKey → User)
+├── content (TextField)
+├── likes_count
+├── is_edited, edited_at
+└── Timestamps: created_at, updated_at
 ```
+
+#### 8. **Notification**
+User notifications for activities.
+
+```python
+Notification
+├── user (ForeignKey → User)
+├── actor (ForeignKey → User)
+├── action_type (like/comment/follow/connect)
+├── content_type (Project/Comment/User)
+├── object_id, is_read
+└── Timestamps: created_at
+```
+
+#### 9. **Activity**
+Activity feed tracking user actions.
+
+```python
+Activity
+├── user (ForeignKey → User)
+├── action_type (project_posted/project_liked/comment_added)
+├── description
+├── Timestamps: timestamp
+```
+
+#### 10. **Follow**
+User following relationships.
+
+```python
+Follow
+├── follower, following (ForeignKey → User)
+├── Unique: (follower, following)
+└── Timestamps: created_at
+```
+
+#### 11. **ProjectTeam**
+Team management for projects.
+
+```python
+ProjectTeam
+├── project (ForeignKey → Project)
+├── name, description
+├── team_lead (ForeignKey → User)
+├── members (ManyToManyField → User via ProjectTeamMember)
+├── max_members, status
+└── Timestamps: created_at, updated_at
+```
+
+#### 12. **MessageFile**
+File attachments in messages.
+
+```python
+MessageFile
+├── message (ForeignKey → Message)
+├── file (FileField)
+├── file_type (document/image/other)
+├── file_size
+└── Timestamps: uploaded_at
+```
+
+### Supporting Models
+- **Notification**: Activity notifications
+- **Like**: Project/Comment likes
+- **UserStatus**: Online/offline status
+- **MessageReadStatus**: Message read tracking
+- **Draft**: Message drafts
+- **UserStats**: User statistics
+- **File**: General file model
+- **MessageReaction**: Emoji reactions on messages
+- **ProjectTask**: Task management within projects
+- **ProjectMilestone**: Project milestones
+- **ProjectTeamInvitation**: Team invite management
 
 ---
 
-## Configuration & Settings
+## Key Views & Functionality
 
-**File:** `auth_project/settings.py`
+### Authentication Views
 
-### Email Backend Selection
-```python
-# Priority order:
-1. BREVO_API_KEY → BrevoMailBackend (Production recommended)
-2. ZEPTO_MAIL_API_KEY + ZEPTO_MAIL_TOKEN → ZeptoMailBackend
-3. EMAIL_HOST_USER + EMAIL_HOST_PASSWORD → Gmail SMTP
-4. Fallback → Django console backend (Development)
-```
+#### Login/Registration
+- `login_view()`: OTP-based or username/password login
+- `register_view()`: User registration with email verification
+- `verify_otp_view()`: OTP verification for login/registration
+- `resend_otp_view()`: Resend OTP functionality
 
-### Database Selection
-```python
-# Priority order:
-1. DATABASE_URL (Render PostgreSQL - Production)
-2. DB_NAME + DB_USER + DB_PASSWORD → PostgreSQL (Local)
-3. Fallback → SQLite (Development)
-```
+#### Password Management
+- `forgot_password_view()`: Initiate password reset
+- `reset_password_view()`: Complete password reset with OTP
 
-### Authentication Backends
-```python
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',  # Default
-    'allauth.account.auth_backends.AuthenticationBackend',  # Social
-)
-```
+### Profile Management
+- `edit_profile()`: Update user profile information
+- `student_profile()`: View user's own profile
+- `student_details_view()`: Detailed profile view
+- `user_profile()`: View other user's profile
+- `user_profile_api()`: REST API endpoint for user profile
 
-### REST Framework Config
-```python
-DEFAULT_PERMISSION_CLASSES = [AllowAny]
-DEFAULT_PAGINATION_CLASS = PageNumberPagination
-PAGE_SIZE = 10
-SEARCH_PARAM = 'search'
-```
+### Project Management
+- `post_project()`: Create new project
+- `project_detail()`: View project details
+- `edit_project()`: Modify project
+- `delete_project()`: Remove project
+- `search_projects()`: Search and filter projects
 
-### Installed Apps
-```
-Django Core:
-  - admin, auth, contenttypes, sessions, messages, staticfiles, sites, humanize
+### Social Features
+- `find_collaborators()`: Discover and filter users by interests/skills
+- `connect_view()`: Send connection request
+- `accept_connection()`: Accept connection
+- `reject_connection()`: Reject connection
+- `follow_user()`: Follow a user
+- `my_connections()`: View user's connections
 
-Custom:
-  - accounts
+### Messaging
+- `message_view()`: Message inbox
+- `chat_view()`: Direct chat with user
+- `enhanced_messages_view()`: Enhanced messaging UI
+- `create_group_chat()`: Create group chat room
 
-Social:
-  - allauth, allauth.account, allauth.socialaccount
-  - allauth.socialaccount.providers.google
-  - allauth.socialaccount.providers.github
+### Notifications & Feed
+- `notifications_view()`: User notifications
+- `activity_feed()`: Activity feed
+- `dashboard_view()`: User dashboard
 
-API:
-  - rest_framework
-```
+### Comments & Interactions
+- `like_project()`: Like a project
+- `add_comment()`: Add comment to project
+- `delete_comment()`: Remove comment
+- `edit_comment()`: Modify comment
 
-### Middleware Stack
-```
-1. SecurityMiddleware
-2. SessionMiddleware
-3. CommonMiddleware
-4. CsrfViewMiddleware (CSRF Protection)
-5. AuthenticationMiddleware
-6. MessageMiddleware
-7. XFrameOptionsMiddleware
-8. AccountMiddleware (allauth)
-```
+### Utility Endpoints
+- `college_search_api()`: Search colleges (RapidAPI)
+- `check_username_availability()`: Validate username
+- `check_email_availability()`: Validate email
+- `nlp_analyze_api()`: NLP analysis for projects
 
 ---
 
-## URL Routing
+## REST API Architecture
 
-**File:** `accounts/urls.py`
+### Chat API Endpoints (chat_api.py)
+```
+POST   /chat-rooms/                    - Create chat room
+GET    /chat-rooms/                    - List chat rooms
+GET    /chat-rooms/<id>/               - Get room details
+GET    /chat-rooms/<room_id>/members/  - Get room members
+POST   /messages/                      - Create message
+GET    /messages/                      - List messages
+GET    /messages/<pk>/                 - Get message detail
+GET    /messages/search/               - Search messages
+GET    /messages/<id>/status/          - Get message status
+POST   /messages/<id>/reactions/       - Add reaction
 
-### Authentication Routes
-```
-/accounts/login/                    → login_view
-/accounts/register/                 → register_view
-/accounts/logout/                   → logout_view
-/accounts/forgot-password/          → forgot_password_view
-/accounts/reset-password/           → reset_password_view
-/accounts/verify-otp/<purpose>/     → verify_otp_view
-/accounts/resend-otp/<purpose>/     → resend_otp_view
-```
-
-### Profile Routes
-```
-/accounts/student-details/          → student_details_view
-/accounts/student-profile/          → student_profile
-/accounts/profile/                  → UserProfileView (REST)
-```
-
-### Collaboration Routes
-```
-/accounts/find-collaborators/       → find_collaborators
-/accounts/post-project/             → post_project
-/accounts/edit-project/<id>/        → edit_project
-/accounts/delete-project/<id>/      → delete_project
-/accounts/project-detail/<id>/      → project_detail
-/accounts/like-project/<id>/        → like_project
+POST   /drafts/                        - Save draft
+POST   /typing/                        - Send typing indicator
+GET    /conversations/                 - List conversations
+POST   /direct-message/                - Send direct message
 ```
 
-### Connection Routes
+### Comment API Endpoints (comment_api.py)
 ```
-/accounts/send-connection/<id>/     → send_connection_request
-/accounts/accept-connection/<id>/   → accept_connection
-/accounts/reject-connection/<id>/   → reject_connection
-/accounts/cancel-connection/<id>/   → cancel_connection_request
-/accounts/my-connections/           → my_connections
-/accounts/follow/<user_id>/         → follow_user
+GET    /projects/<id>/comments/        - Get comments
+POST   /projects/<id>/comments/add/    - Add comment
+DELETE /comments/<id>/delete/          - Delete comment
+PUT    /comments/<id>/edit/            - Edit comment
 ```
 
-### Messaging Routes
+### Legacy API Endpoints (views.py)
 ```
-/accounts/messages/                 → message_view
-/accounts/chat/<user_id>/           → chat_view
-/accounts/enhanced-messages/        → enhanced_messages_view
-/accounts/enhanced-chat/<room_id>/  → enhanced_chat_view
-/accounts/create-group-chat/        → create_group_chat
-/accounts/add-reaction/<msg_id>/    → add_reaction
-```
-
-### REST API Routes
-```
-/accounts/chat-rooms/               → ChatRoomListCreateView
-/accounts/chat-rooms/<id>/          → ChatRoomDetailView
-/accounts/messages/                 → MessageListCreateView (REST)
-/accounts/messages/<pk>/            → MessageDetailView
-/accounts/conversations/            → ConversationListView
-```
-
----
-
-## Authentication Flow
-
-```
-USER LOGIN FLOW:
-┌──────────────────┐
-│  User submits    │
-│  login form      │
-│  (username/pwd)  │
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────────────────┐
-│ POST /accounts/login/        │
-│ Form validation (client+srv) │
-└────────┬─────────────────────┘
-         │
-         ▼
-┌──────────────────────────────┐
-│ Django authenticate()        │
-│ - Check username (or email)  │
-│ - Verify password hash       │
-└────────┬─────────────────────┘
-         │
-         ├─── VALID ──────┬────────────────────────────────────┐
-         │                │                                    │
-         ▼                ▼                                    ▼
-    Login(request)   Create session    Send welcome back email
-         │                │                     │
-         │                │                     ▼
-         │                ▼            AuthService.send_welcome_back_email()
-         │         Session stored                │
-         │         in database                   ▼
-         │                │            Email backend (Brevo/ZeptoMail/Gmail)
-         │                │                     │
-         ▼                ▼                     ▼
-    Redirect to main_home (authenticated)
-
-    INVALID
-         │
-         ▼
-    Show error message
-    Return to login page
-
-
-REGISTRATION FLOW:
-┌────────────────────────┐
-│ User submits signup    │
-│ (username/email/pwd)   │
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────────┐
-│ Validation:                │
-│ - Required fields          │
-│ - Password strength        │
-│ - Username not taken       │
-│ - Email not taken          │
-└───────────┬────────────────┘
-            │
-            ▼
-┌────────────────────────────┐
-│ Create User object         │
-│ Hash password + save       │
-└───────────┬────────────────┘
-            │
-            ▼
-┌────────────────────────────┐
-│ Create StudentProfile      │
-│ Link to user               │
-└───────────┬────────────────┘
-            │
-            ▼
-┌────────────────────────────┐
-│ Send welcome email         │
-│ AuthService.send_welcome   │
-└───────────┬────────────────┘
-            │
-            ▼
-    Redirect to login
-
-
-PASSWORD RESET FLOW:
-┌──────────────────────┐
-│ User enters email    │
-│ in forgot password   │
-└─────────┬────────────┘
-          │
-          ▼
-┌──────────────────────────────┐
-│ Check if user exists         │
-│ by email                     │
-└─────────┬────────────────────┘
-          │
-          ├─── EXISTS ─┐
-          │            │
-          │            ▼
-          │   Generate OTP (6-digit)
-          │   expires_at = now + 5 min
-          │   Save to OTP table
-          │            │
-          │            ▼
-          │   Send OTP email
-          │   send_otp_email(email, code, 'reset')
-          │            │
-          │            ▼
-          │   Show message: "OTP sent to email"
-          │            │
-          │            ▼
-          ▼        Redirect to verify-otp
-    NOT EXISTS
-          │
-          ▼
-    Show message: "No account found"
-
-
-OTP VERIFICATION FLOW:
-┌──────────────────────────┐
-│ User enters OTP code     │
-│ (6 digits from email)    │
-└─────────┬────────────────┘
-          │
-          ▼
-┌──────────────────────────────┐
-│ Fetch OTP record:            │
-│ WHERE email = X              │
-│ AND purpose = 'reset'        │
-└─────────┬────────────────────┘
-          │
-          ▼
-┌──────────────────────────────┐
-│ Call otp.verify_otp(code)    │
-│ - Check not expired          │
-│ - Check not already used     │
-│ - Compare code               │
-└─────────┬────────────────────┘
-          │
-          ├─── VALID ─────┬──────────────────────┐
-          │               │                      │
-          │               ▼                      ▼
-          │        Mark is_used = True    Redirect to reset-password
-          │        Save OTP              (User can now change password)
-          │
-          ├─── INVALID ──────┐
-          │                  │
-          │                  ▼
-          │          Show error message
-          │          Offer resend OTP
-          │
-          ▼      Retry with correct code
+GET    /                               - API root
+GET    /home/                          - Home feed
+GET    /check-username/                - Username availability
+GET    /check-email/                   - Email availability
+GET    /user-stats/                    - User statistics
+GET    /user-profile/<id>/             - User profile
+POST   /nlp-analyze/                   - NLP analysis
+GET    /college-search/                - College search
+GET    /validate-college/              - Validate college
 ```
 
 ---
 
 ## Email System
 
-### Email Service Architecture
+### Architecture
+Multi-backend email support with automatic fallback:
 
-```
-┌─────────────────────────────────┐
-│  Email Service Selection Logic  │
-│  (settings.py)                  │
-└────────────┬────────────────────┘
-             │
-    ┌────────┴────────┬──────────────┬────────────────┐
-    │                 │              │                │
-    ▼                 ▼              ▼                ▼
-Brevo API      ZeptoMail API    Gmail SMTP      Console (Dev)
-(Production)   (Alternative)    (Fallback)      (Testing)
-```
+1. **Brevo** (Primary)
+   - Production-ready API
+   - Transactional email
+   - Backend: `accounts.brevo_mail_backend.BrevoMailBackend`
 
-### Email Types Sent
+2. **ZeptoMail** (Alternative)
+   - RESTful API
+   - Backend: `accounts.zepto_mail_backend.ZeptoMailBackend`
 
-**1. Welcome Email (New Registration)**
-```
-Subject: "Welcome to UniSync, {username}! 🎉"
-Contains:
-  - Congratulations message
-  - 4 key features (Connect, Post, Network, Build)
-  - CTA button → /accounts/student-details/
-  - Premium HTML template with gradients
-```
+3. **Gmail SMTP** (Fallback)
+   - Standard SMTP
+   - Backend: `django.core.mail.backends.smtp.EmailBackend`
 
-**2. Welcome Back Email (Login)**
-```
-Subject: "Welcome back to UniSync, {username}! 🚀"
-Contains:
-  - Excited to see you again
-  - What's new section
-  - CTA button → Home
-  - HTML email with blue/purple gradients
-```
+4. **Console** (Development)
+   - Prints to console
+   - Backend: `django.core.mail.backends.console.EmailBackend`
 
-**3. OTP Email (Login/Registration/Reset)**
-```
-Subject: "🚀 - Your {purpose.title()} OTP Code"
-Contains:
-  - 6-digit OTP in large bold text (32px)
-  - 5-minute expiry warning
-  - Plain text + HTML versions
-```
+### Email Types
+- OTP codes (login, registration, password reset)
+- Welcome emails
+- Notification emails
+- Password reset confirmation
 
-**4. Password Reset Email**
-```
-Subject: "Password Reset - UniSync"
-Contains:
-  - Reset link (expires in 24h)
-  - Security warning
-  - CTA button → Reset Password
-```
+---
 
-### Email Backends
+## Authentication System
 
-**Brevo Backend** (`accounts/brevo_mail_backend.py`)
-```python
-class BrevoMailBackend(BaseEmailBackend):
-    def send_messages(self, email_messages):
-        # Use Brevo API
-        # Requires: BREVO_API_KEY env variable
-        # Returns: Number of messages sent
+### Methods
+1. **OTP-based Login**
+   - Email OTP (6-digit, 5-minute expiry)
+   - No password storage required
+   - Process: Generate → Send Email → Verify → Login
+
+2. **Traditional Login**
+   - Username/password authentication
+   - Django's `ModelBackend`
+
+3. **Social OAuth**
+   - Google OAuth 2.0 (via django-allauth)
+   - GitHub OAuth (via django-allauth)
+   - Auto-signup on first login
+
+### Flow
 ```
+User Registration
+├── Email verification via OTP
+├── Profile creation (StudentProfile)
+├── Add academic details (college, interests)
+└── Ready to use
 
-**ZeptoMail Backend** (`accounts/zepto_mail_backend.py`)
-```python
-class ZeptoMailBackend(BaseEmailBackend):
-    def send_messages(self, email_messages):
-        # Use ZeptoMail API
-        # Requires: ZEPTO_MAIL_API_KEY, ZEPTO_MAIL_TOKEN
-```
-
-**Gmail SMTP Backend** (Django default)
-```python
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'app-password'  # Not regular password
+User Login
+├── OTP-based: Email → OTP → Verify
+├── Password-based: Username → Password → Verify
+└── Social: OAuth → Allauth → Auto-signup/login
 ```
 
 ---
 
-## Security Analysis
+## Key Features
 
-### Authentication Security
+### 1. Project Discovery & Management
+- Create projects with description, needs, technologies
+- Public/private/college-specific visibility
+- Rich text editor for descriptions
+- File attachments and images
+- Like and comment on projects
+- Project team management with invitations
 
-**✅ Implemented:**
-1. **Password Hashing**: Django PBKDF2 (salted, iterated)
-2. **CSRF Protection**: Enabled middleware + form tokens
-3. **Session Management**: Secure cookies (httponly, samesite)
-4. **Password Requirements**: 8+ chars, uppercase, digit, lowercase
-5. **Input Sanitization**: HTML stripping, character filtering
-6. **Email Verification**: Via OTP (5-min expiry)
-7. **SQL Injection Prevention**: Django ORM parameterized queries
-8. **XSS Prevention**: Template auto-escaping, strip_tags()
+### 2. User Collaboration
+- Find collaborators by interests/skills/college
+- Connection requests (pending/accepted/rejected)
+- User profiles with portfolio links
+- Follow other users
+- Activity feed tracking
 
-### Potential Vulnerabilities
+### 3. Messaging System
+- Direct messages between users
+- Group chats
+- Message reactions (emojis)
+- File sharing in messages
+- Message read status
+- Typing indicators
+- Draft messages
 
-**⚠️ Areas to Review:**
-1. **SQL Query in custom code**: Use ORM instead of raw SQL
-2. **Email exposure**: User model has email accessible in templates
-3. **API permissions**: REST_FRAMEWORK using AllowAny (should authenticate)
-4. **Rate limiting**: No rate limit on login attempts (brute force risk)
-5. **Password reset flow**: No confirmation needed to reset (any email = reset)
-6. **Social login config**: Requires allauth configuration (currently in setup)
+### 4. Comments & Discussions
+- Comments on projects
+- Edit and delete comments
+- Like comments
+- Real-time comment updates
 
-### Recommendations
+### 5. Notifications
+- Activity-based notifications
+- Like/comment/follow notifications
+- Connection request notifications
+- Real-time updates (via Channels/WebSockets)
 
+### 6. User Profiles
+- Extended student profile
+- Skills and interests
+- Portfolio links (GitHub, LinkedIn, Behance)
+- Profile pictures
+- Bio and role preference
+- Profile completion status
+
+---
+
+## Security Features
+
+### Implemented
+- ✅ CSRF Protection (enabled in middleware)
+- ✅ Password validation (minimum length, complexity)
+- ✅ Email verification via OTP
+- ✅ Session authentication
+- ✅ User permissions (login_required decorators)
+- ✅ Input sanitization (XSS prevention)
+- ✅ Secure cookie settings (configurable SSL)
+
+### Configuration
 ```python
-# Rate limiting on login
-from django_ratelimit.decorators import ratelimit
-
-@ratelimit(key='ip', rate='5/m', method='POST')
-def login_view(request):
-    ...
-
-# Better REST API permissions
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # Require auth
-    ],
-}
-
-# Stronger password validators
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 12}},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
+CSRF_COOKIE_SECURE = False (dev) / True (prod)
+SESSION_COOKIE_SECURE = False (dev) / True (prod)
+SECURE_SSL_REDIRECT = False (dev) / True (prod)
 ```
 
 ---
 
-## Performance Considerations
+## Performance Optimizations
 
-### Database Indexes
+### Caching
+- Redis-backed caching
+- Page-level caching with `@cache_page` decorator
+- Query optimization with `select_related()` and `prefetch_related()`
 
-**Recommended:**
+### Database
+- PostgreSQL with connection pooling (conn_max_age=600)
+- Indexed lookups on frequently queried fields
+- Pagination for large datasets (default 10 items/page)
+
+### Static Files
+- WhiteNoise for efficient static file serving
+- Compression enabled
+- CDN-ready with cloud storage (S3) support
+
+---
+
+## Configuration & Environment
+
+### Environment Variables
+```
+# Security
+DEBUG=True (dev) / False (prod)
+SECRET_KEY=<auto-generated or set>
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DATABASE_URL=<PostgreSQL URL>
+DB_NAME=unisync_db
+DB_USER=unisync_user
+DB_PASSWORD=***
+DB_HOST=localhost
+DB_PORT=5432
+
+# Email
+BREVO_API_KEY=<API key>
+ZEPTO_MAIL_API_KEY=<API key>
+ZEPTO_MAIL_TOKEN=<token>
+EMAIL_HOST_USER=***
+EMAIL_HOST_PASSWORD=***
+DEFAULT_FROM_EMAIL=noreply@unisync.app
+
+# Social Auth
+GOOGLE_CLIENT_ID=***
+GOOGLE_CLIENT_SECRET=***
+GITHUB_CLIENT_ID=***
+GITHUB_CLIENT_SECRET=***
+
+# External APIs
+RAPIDAPI_KEY=<API key>
+```
+
+---
+
+## Deployment Configuration
+
+### Supported Platforms
+- **Render**: PostgreSQL + gunicorn deployment
+- **Railway**: Cloud deployment support
+- **Local Development**: SQLite fallback
+
+### WSGI & ASGI
+- WSGI: `auth_project.wsgi.application` (HTTP)
+- ASGI: `auth_project.asgi.application` (WebSockets)
+
+### Static Files
+- Collected to `staticfiles/` directory
+- Served via WhiteNoise
+- S3 cloud storage option available
+
+---
+
+## Testing & Monitoring
+
+### Testing Tools
+- pytest, pytest-django
+- Selenium for integration testing
+- Manual test scripts provided
+
+### Logging
+- Console logging
+- File-based rotating logs (10 MB max)
+- Separate error log file
+- Sentry integration available
+
+### Performance Monitoring
+- django-performance-monitor
+- Logging of slow queries
+- Activity tracking
+
+---
+
+## Key Business Logic
+
+### Project Visibility Filter
+`ProjectVisibilityFilter` in `utils.py` handles:
+- Public projects (visible to all)
+- Private projects (only owner)
+- College-specific projects (college members only)
+
+### User Collaboration NLP
+`StudentProfileNLP` in `utils.py`:
+- Analyzes user interests and skills
+- Matches compatible collaborators
+- Project recommendation engine
+
+### Connection Status
+- Pending: Initial request sent
+- Accepted: Mutual connection established
+- Rejected: Request declined
+
+---
+
+## Frontend Integration
+
+### Templates Directory
+- Main templates in parent directory: `templates/`
+- App-specific templates in `accounts/templates/`
+
+### Static Files
+- CSS: `accounts/static/css/`
+- JavaScript: `accounts/static/js/`
+- Images: `accounts/static/images/`
+
+### Context Processors
+- User authentication context
+- Messages context
+- Site framework context
+
+---
+
+## Error Handling
+
+### Decorator Pattern
 ```python
-class Connection(models.Model):
-    # Current:
-    class Meta:
-        unique_together = ['sender', 'receiver']
-    
-    # Should add:
-    class Meta:
-        unique_together = ['sender', 'receiver']
-        indexes = [
-            models.Index(fields=['sender', 'status']),
-            models.Index(fields=['receiver', 'status']),
-            models.Index(fields=['created_at']),
-        ]
+@handle_view_errors
+def view_function(request):
+    # Automatic exception catching
+    # User-friendly error messages
+    # Logging of errors
 ```
 
-### Query Optimization
-
-**N+1 Query Problems:**
-```python
-# Bad:
-for msg in messages:
-    print(msg.sender.username)  # SELECT user for each message
-
-# Good:
-messages = messages.select_related('sender')
-for msg in messages:
-    print(msg.sender.username)  # Already loaded
-```
-
-### Caching Strategy
-
-```python
-# Cache user profile
-from django.core.cache import cache
-
-def get_user_profile(user_id):
-    cache_key = f'user_profile_{user_id}'
-    profile = cache.get(cache_key)
-    
-    if not profile:
-        profile = StudentProfile.objects.get(user_id=user_id)
-        cache.set(cache_key, profile, 3600)  # 1 hour
-    
-    return profile
-```
+### 404/403 Handling
+- Custom error pages
+- Proper HTTP status codes
+- Redirect to dashboard on error
 
 ---
 
-## Deployment Checklist
+## API Design Patterns
 
-### Production Readiness
+### REST Framework Usage
+- Generic views: `ListCreateAPIView`, `RetrieveUpdateDestroyAPIView`
+- Pagination: 10 items default
+- Filtering: SearchFilter, OrderingFilter
+- Authentication: Session-based
+- Permissions: Flexible, can be restricted per-view
 
-```
-[ ] Set DEBUG = False in settings
-[ ] Configure SECRET_KEY environment variable
-[ ] Set ALLOWED_HOSTS correctly
-[ ] Enable SECURE_SSL_REDIRECT = True
-[ ] Enable SESSION_COOKIE_SECURE = True
-[ ] Enable CSRF_COOKIE_SECURE = True
-[ ] Configure DATABASE_URL for PostgreSQL
-[ ] Set up email backend (Brevo recommended)
-[ ] Configure static files (WhiteNoise for Render)
-[ ] Set up logging and error tracking
-[ ] Run collectstatic for static files
-[ ] Test database migrations
-[ ] Set up backup strategy
-[ ] Configure CDN for media files
-[ ] Enable HSTS headers
-[ ] Set up monitoring (Sentry)
-[ ] Configure rate limiting
-[ ] Test social login (Google/GitHub)
-```
+### Serializers
+- Used for API responses
+- `UserProfileSerializer`: User profile API
+- Custom serializers for Chat, Message, Comment
 
 ---
 
-## Key Files Summary
+## Known Issues & Fixes Applied
 
-| File | Purpose | Lines | Key Classes/Functions |
-|------|---------|-------|----------------------|
-| login.html | Login UI | 421 | Form, validation, animations |
-| login.js | Login functionality | 183 | Validation, toggle password |
-| views.py | Business logic | 1476+ | All view functions |
-| forms.py | Form validation | 583 | RegisterForm, LoginForm, ProjectForm |
-| models.py | Data models | 718 | User, StudentProfile, Project, Message |
-| urls.py | URL routing | 120 | 100+ URL patterns |
-| settings.py | Configuration | 356+ | DB, email, auth, middleware |
-| auth_service.py | Email service | 470 | Welcome, reset emails |
+### Fixed Issues
+- ✅ CSRF token warnings (re-enabled CSRF protection)
+- ✅ Comments not visible (API endpoint fixes)
+- ✅ Profile picture not appearing (file path corrections)
+- ✅ Collaborators not showing (visibility filter corrections)
+- ✅ Project detail loading performance (query optimization)
+- ✅ Login form validation (form error handling)
+- ✅ Email configuration fallback (multi-backend support)
 
 ---
 
-## Development Commands
+## Code Quality Standards
 
-```bash
-# Run development server
-python manage.py runserver
+### Applied
+- Type hints in utility functions
+- Docstrings for major functions
+- Input sanitization
+- Error handling with try-except
+- Logging throughout application
+- Comments for complex logic
 
-# Create migrations
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Collect static files
-python manage.py collectstatic
-
-# Run tests
-python manage.py test
-
-# Database backup (PostgreSQL)
-pg_dump DATABASE_URL > backup.sql
-
-# Check for security issues
-python manage.py check --deploy
-```
+### Tools
+- Black (code formatting)
+- Flake8 (linting)
+- isort (import sorting)
+- mypy (type checking)
 
 ---
 
-## Conclusion
+## Future Enhancement Opportunities
+
+1. **Real-time Notifications**
+   - WebSocket integration with Channels
+   - Redis pub/sub for scalability
+
+2. **Advanced Search**
+   - Elasticsearch integration
+   - Full-text search on projects/users
+
+3. **Analytics**
+   - User engagement tracking
+   - Project success metrics
+   - Recommendation engine improvements
+
+4. **AI Features**
+   - Skill matching
+   - Project recommendations
+   - Intelligent notifications
+
+5. **Scalability**
+   - Database replication
+   - Caching layer optimization
+   - Load balancing
+   - Microservices architecture (future)
+
+---
+
+## Summary
 
 UniSync is a well-structured Django application with:
-- ✅ **Solid authentication system** (username/email login, OTP, password reset)
-- ✅ **Comprehensive user profiles** (skills, interests, social links)
-- ✅ **Rich collaboration features** (projects, teams, messaging, notifications)
-- ✅ **Modern frontend** (Tailwind CSS, responsive, dark theme)
-- ✅ **Email integration** (multiple backends, HTML templates)
-- ⚠️ **Security considerations** (rate limiting, API permissions, password reset flow)
-- ⚠️ **Performance optimization** (indexing, query optimization, caching)
+- ✅ Modular architecture with separated concerns
+- ✅ Comprehensive model design for collaborative features
+- ✅ Multi-backend email system for reliability
+- ✅ REST API for modern frontend integration
+- ✅ Security best practices implemented
+- ✅ Performance optimizations in place
+- ✅ Flexible authentication (OTP + OAuth)
+- ✅ Real-time communication ready (Channels)
+- ✅ Production-ready deployment configuration
 
-The codebase is production-ready with proper documentation and follows Django best practices.
+The codebase is well-documented, tested, and ready for scaling.

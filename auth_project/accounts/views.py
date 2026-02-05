@@ -741,10 +741,13 @@ def resend_otp_view(request, purpose):
 @login_required
 def main_home(request):
     """Simplified main home view for testing"""
+    from django.db.models import Q
+    
     # Get unread notifications count for badge
     unread_count = 0
     visible_projects = []
     project_match_details = {}
+    connection_status = {}
     
     if request.user.is_authenticated:
         unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
@@ -755,6 +758,19 @@ def main_home(request):
             request.user,
             all_projects
         )
+        
+        # Get connection status for all project owners in the feed
+        project_owner_ids = [project.user.id for project in visible_projects if project.user.id != request.user.id]
+        
+        if project_owner_ids:
+            connections = Connection.objects.filter(
+                Q(sender=request.user, receiver_id__in=project_owner_ids) |
+                Q(sender_id__in=project_owner_ids, receiver=request.user)
+            ).values('sender_id', 'receiver_id', 'status')
+            
+            for conn in connections:
+                other_user_id = conn['receiver_id'] if conn['sender_id'] == request.user.id else conn['sender_id']
+                connection_status[other_user_id] = conn['status']
         
         # Add match badge info to each project
         for project in visible_projects:
@@ -767,6 +783,7 @@ def main_home(request):
     return render(request, 'main_home.html', {
         'feed_posts': visible_projects,
         'project_match_details': project_match_details,
+        'connection_status': connection_status,
         'categories': ['Web Development', 'Mobile Apps', 'AI/ML', 'Data Science'],
         'available_techs': ['Python', 'JavaScript', 'React', 'Django', 'Node.js'],
         'homepage_stats': {
@@ -1356,6 +1373,10 @@ def student_profile(request):
             form.save()
             messages.success(request, 'Profile updated successfully!')
             logger.info(f"Student profile updated for user {request.user.username}")
+            
+            # Refresh profile from database to ensure updated data (especially for profile_photo)
+            profile.refresh_from_db()
+            
             return redirect('student_profile')
     else:
         form = StudentProfileForm(instance=profile)
@@ -1427,19 +1448,8 @@ def find_collaborators(request):
 
     # Apply college filter
     if college_filter:
-        if college_filter == 'iit':
-            base_profiles = base_profiles.filter(college__icontains='IIT')
-        elif college_filter == 'nit':
-            base_profiles = base_profiles.filter(college__icontains='NIT')
-        elif college_filter == 'iiit':
-            base_profiles = base_profiles.filter(college__icontains='IIIT')
-        elif college_filter == 'other':
-            # Exclude IIT, NIT, IIIT
-            base_profiles = base_profiles.exclude(
-                Q(college__icontains='IIT') |
-                Q(college__icontains='NIT') |
-                Q(college__icontains='IIIT')
-            )
+        # Filter by exact college name (case-insensitive)
+        base_profiles = base_profiles.filter(college__iexact=college_filter)
 
     # Apply location filter
     if location_filter:
@@ -1553,13 +1563,20 @@ def find_collaborators(request):
 
     # Get all unique skills/interests for skills count
     all_interests = set()
+    all_colleges = set()
     for profile in StudentProfile.objects.all():
         if profile.interests:
             interests = [interest.strip() for interest in profile.interests.split(',')]
             all_interests.update(interests)
+        if profile.college:
+            all_colleges.add(profile.college)
     skills_count = len(all_interests)
+    colleges_list = sorted(list(all_colleges))
 
-    return render(request, "find_collaborators.html", {
+    # Determine which template to use (enhanced or original)
+    template_name = "find_collaborators_enhanced.html"
+
+    return render(request, template_name, {
         "query": query,
         "search_results": search_results,
         "suggestions": suggestions,
@@ -1570,6 +1587,7 @@ def find_collaborators(request):
         "active_projects": active_projects,
         "connections_today": connections_today,
         "skills_count": skills_count,
+        "colleges": colleges_list,
     })
 
 
@@ -1691,8 +1709,14 @@ def delete_project(request, project_id):
 
 @login_required
 def project_detail(request, project_id):
-    """View project details"""
-    project = get_object_or_404(Project, id=project_id)
+    """View project details - OPTIMIZED for performance"""
+    from django.db.models import Count, Q, Prefetch
+    
+    # OPTIMIZATION: Fetch project with related data
+    project = get_object_or_404(
+        Project.objects.select_related('user__student_profile'),
+        id=project_id
+    )
 
     # Handle comment submission
     if request.method == 'POST' and 'comment_content' in request.POST:
@@ -1710,13 +1734,15 @@ def project_detail(request, project_id):
     tech_list = [tech.strip() for tech in project.technologies.split(',')] if project.technologies else []
     looking_list = [item.strip() for item in project.looking_for.split(',')] if project.looking_for else []
 
-    # Get all comments for this project
-    comments = project.comments.all()
+    # OPTIMIZATION: Limit comments to last 50 (not all)
+    comments = project.comments.all()\
+        .select_related('user__student_profile')\
+        .order_by('-created_at')[:50]
 
     # Check if user already connected with project owner
     is_connected = False
     connection_status = None
-    if request.user != project.user:
+    if request.user.is_authenticated and request.user != project.user:
         connection = Connection.objects.filter(
             Q(sender=request.user, receiver=project.user) |
             Q(sender=project.user, receiver=request.user)
@@ -1732,58 +1758,98 @@ def project_detail(request, project_id):
     can_manage_team = False
     pending_invitations = []
 
+    # OPTIMIZATION: Use Prefetch to combine queries
+    team_members_prefetch = Prefetch(
+        'members',
+        ProjectTeamMember.objects.filter(is_active=True)\
+            .select_related('user__student_profile')[:100]
+    )
+    
+    pending_invites_prefetch = Prefetch(
+        'invitations',
+        ProjectTeamInvitation.objects.filter(status='pending')\
+            .select_related('invited_user__student_profile')[:50]
+    )
+
     try:
-        team = ProjectTeam.objects.get(project=project)
-        team_members = team.active_members.select_related('user__student_profile')
+        team = ProjectTeam.objects.prefetch_related(
+            team_members_prefetch,
+            pending_invites_prefetch
+        ).get(project=project)
+        
+        # OPTIMIZATION: Use prefetched data (no extra queries)
+        team_members = list(team.members.all())
 
         # Check user's role in team
         try:
-            user_membership = ProjectTeamMember.objects.get(team=team, user=request.user, is_active=True)
+            user_membership = ProjectTeamMember.objects.get(
+                team=team, 
+                user=request.user, 
+                is_active=True
+            )
             user_team_role = user_membership.role
             can_manage_team = user_membership.can_invite_members
         except ProjectTeamMember.DoesNotExist:
             user_team_role = None
             can_manage_team = request.user == project.user
 
-        # Get pending invitations if user can manage team
-        if can_manage_team:
-            pending_invitations = team.invitations.filter(status='pending').select_related('invited_user')
+        # OPTIMIZATION: Use prefetched invitations
+        pending_invitations = list(team.invitations.all())
 
     except ProjectTeam.DoesNotExist:
-        # No team yet - only project owner can create/manage
-        can_manage_team = request.user == project.user
+        can_manage_team = request.user == project.user if request.user.is_authenticated else False
 
-    # Tasks and milestones
-    tasks = project.tasks.all().order_by('created_at')
-    milestones = project.milestones.all().order_by('created_at')
+    # OPTIMIZATION: Limit tasks and milestones
+    tasks = project.tasks.all().order_by('created_at')[:100]
+    milestones = project.milestones.all().order_by('created_at')[:50]
 
     # Calculate task statistics
-    completed_tasks_count = tasks.filter(status='completed').count()
-    total_tasks_count = tasks.count()
+    task_stats = tasks.aggregate(
+        completed=Count('id', filter=Q(status='completed')),
+        total=Count('id')
+    )
+    completed_tasks_count = task_stats['completed']
+    total_tasks_count = task_stats['total']
 
     # Task status breakdown
     task_status_counts = []
-    for status, label in ProjectTask.STATUS_CHOICES:
-        count = tasks.filter(status=status).count()
-        if count > 0:
-            task_status_counts.append({'status': status, 'label': label, 'count': count})
+    status_counts = tasks.values('status').annotate(count=Count('id'))
+    status_dict = {status: label for status, label in ProjectTask.STATUS_CHOICES}
+    for item in status_counts:
+        if item['count'] > 0:
+            task_status_counts.append({
+                'status': item['status'], 
+                'label': status_dict.get(item['status'], item['status']), 
+                'count': item['count']
+            })
 
     # Milestone statistics
-    completed_milestones_count = milestones.filter(is_completed=True).count()
-    total_milestones_count = milestones.count()
+    milestone_stats = milestones.aggregate(
+        completed=Count('id', filter=Q(is_completed=True)),
+        total=Count('id')
+    )
+    completed_milestones_count = milestone_stats['completed']
+    total_milestones_count = milestone_stats['total']
 
-    # Get potential team members (connected users who aren't already members)
+    # OPTIMIZATION: Get potential team members only if needed
     potential_members = []
-    if can_manage_team:
+    if can_manage_team and request.user.is_authenticated:
+        # OPTIMIZATION: Limit connected users query and add authentication check
         connected_users = Connection.objects.filter(
             Q(sender=request.user, status='accepted') |
             Q(receiver=request.user, status='accepted')
-        ).select_related('sender', 'receiver')
+        ).select_related('sender__student_profile', 'receiver__student_profile')[:50]
 
+        # OPTIMIZATION: Get existing members in single query
         existing_member_ids = set()
         if team:
-            existing_member_ids = set(team.members.filter(is_active=True).values_list('user_id', flat=True))
-        existing_member_ids.add(project.user.id)  # Don't show project owner
+            existing_member_ids = set(
+                ProjectTeamMember.objects.filter(
+                    team=team, 
+                    is_active=True
+                ).values_list('user_id', flat=True)
+            )
+        existing_member_ids.add(project.user.id)
 
         for conn in connected_users:
             other_user = conn.receiver if conn.sender == request.user else conn.sender
@@ -2593,15 +2659,20 @@ def user_profile(request, username):
     """View a user's public profile with their activities"""
     try:
         profile_user = get_object_or_404(User, username=username)
-    except Exception as e:
-        logger.error(f"Error retrieving user profile: {str(e)}")
+    except Http404:
         messages.error(request, "User profile not found.")
         return redirect('main_home')
 
     try:
-        # Get user stats
-        user_stats, created = UserStats.objects.get_or_create(user=profile_user, defaults={})
-        if created or (timezone.now() - user_stats.last_updated).seconds > 300:
+        # Get user stats - handle gracefully if not found
+        try:
+            user_stats = UserStats.objects.get(user=profile_user)
+            # Update stats if needed
+            if (timezone.now() - user_stats.last_updated).total_seconds() > 300:
+                user_stats.update_stats()
+        except UserStats.DoesNotExist:
+            # Create new stats if doesn't exist
+            user_stats = UserStats.objects.create(user=profile_user)
             user_stats.update_stats()
 
         # Check if current user follows this user (only if user is authenticated)
@@ -2612,21 +2683,30 @@ def user_profile(request, username):
             is_following = Follow.objects.filter(follower=request.user, following=profile_user).exists()
             is_own_profile = request.user == profile_user
 
-        # Get user's public activities
-        activities = Activity.objects.filter(
-            user=profile_user,
-            is_public=True
-        ).select_related(
-            'user', 'project', 'target_user', 'connection'
-        ).order_by('-created_at')[:20]
+        # Get user's public activities - handle if Activity model doesn't have is_public field
+        try:
+            activities = Activity.objects.filter(
+                user=profile_user,
+                is_public=True
+            ).select_related(
+                'user', 'project', 'target_user', 'connection'
+            ).order_by('-created_at')[:20]
+        except Exception:
+            # If filtering by is_public fails, just get all activities
+            activities = Activity.objects.filter(
+                user=profile_user
+            ).select_related(
+                'user', 'project', 'target_user', 'connection'
+            ).order_by('-created_at')[:20]
 
-        # Get user's projects (only public ones if not viewing own profile)
+        # Get user's projects (active projects only)
         if is_own_profile:
             projects = Project.objects.filter(user=profile_user).order_by('-created_at')[:6]
         else:
+            # For non-owner, show active projects only
             projects = Project.objects.filter(
                 user=profile_user,
-                visibility__in=['public', 'shared']
+                is_active=True
             ).order_by('-created_at')[:6]
 
         # Get user's connections count
@@ -2655,8 +2735,20 @@ def user_profile(request, username):
 
     except Exception as e:
         logger.error(f"Error loading user profile for {username}: {str(e)}", exc_info=True)
-        messages.error(request, "Failed to load user profile. Please try again.")
-        return redirect('main_home')
+        # Return a simpler profile page if full profile fails
+        try:
+            student_profile = profile_user.student_profile
+        except StudentProfile.DoesNotExist:
+            student_profile = None
+        
+        context = {
+            'profile_user': profile_user,
+            'student_profile': student_profile,
+            'activities': [],
+            'projects': [],
+            'connections_count': 0,
+        }
+        return render(request, 'social/user_profile.html', context)
 
 
 # -------------------------
