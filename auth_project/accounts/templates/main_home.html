@@ -28,10 +28,10 @@
     {% csrf_token %}
     <!-- Navbar -->
     <nav class="bg-primary shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <a href="{% url 'main_home' %}" class="flex items-center">
-                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
+                    <img src="{% static 'images/unisync_logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 rounded-full object-cover shadow-md">
                     <span class="text-white font-bold text-xl ml-2">UniSync</span>
                 </a>
             </div>
@@ -1303,7 +1303,7 @@
                     </div>
                     <!-- Like Button -->
                     <button class="p-2 hover:bg-gray-700 rounded-lg transition-colors group/like" onclick="toggleLike({{ post.id }}, this)">
-                        <svg class="w-5 h-5 text-gray-400 group-hover/like:text-red-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 {% if post.id in liked_project_ids %}text-red-400{% else %}text-gray-400 group-hover/like:text-red-400{% endif %} transition-colors" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
                         </svg>
                     </button>

@@ -1,728 +1,646 @@
-# UniSync - Comprehensive Codebase Analysis
+# COMPREHENSIVE CODEBASE ANALYSIS - UniSync Project
 
-## Overview
-
-UniSync is a Django-based collaboration platform connecting university students to form projects and teams. It's a full-stack application with authentication, social features, messaging, and project management capabilities.
-
----
-
-## Architecture Stack
-
-### Technology Stack
-- **Backend Framework**: Django 4.2.8
-- **API Framework**: Django REST Framework 3.14.0
-- **Database**: PostgreSQL (with SQLite fallback for development)
-- **Authentication**: Django Allauth (local + social OAuth: Google, GitHub)
-- **Real-time Features**: Django Channels, Redis
-- **Email Services**: Brevo (primary), ZeptoMail (fallback), Gmail SMTP
-- **Storage**: AWS S3 via boto3, WhiteNoise for static files
-- **Task Queue**: Celery with Redis
-- **Frontend**: HTML/CSS/JavaScript templates (Django templates)
-
-### Key Dependencies
-```
-Django==4.2.8
-djangorestframework==3.14.0
-django-allauth==0.61.1
-channels==4.0.0
-celery==5.3.4
-redis==5.0.1
-psycopg2-binary==2.9.9
-Pillow==10.1.0 (image processing)
-pandas==2.1.4 (data handling)
-nltk==3.8.1 (NLP)
-```
+## Project Overview
+**Project Name**: UniSync (University Collaboration & Project Management Platform)  
+**Type**: Full-stack Django + JavaScript Web Application  
+**Purpose**: Connect students across colleges for collaborative projects  
+**Tech Stack**: Django, PostgreSQL, JavaScript, HTML/CSS  
+**Repository**: https://github.com/Goku0090/uni  
 
 ---
 
-## Core Application Structure
+## 1. ARCHITECTURE OVERVIEW
 
-### Directory Layout
-
+### High-Level Architecture
 ```
-auth_project/                       # Django Project Root
-├── auth_project/                   # Project Configuration
-│   ├── settings.py                 # Django settings
-│   ├── urls.py                     # URL routing
-│   ├── wsgi.py                     # WSGI application
-│   └── asgi.py                     # ASGI application (Channels)
-│
-├── accounts/                       # Main Application
-│   ├── models.py                   # Database models
-│   ├── views.py                    # View logic (3300+ lines)
-│   ├── urls.py                     # URL patterns
-│   ├── forms.py                    # Form definitions
-│   ├── serializers.py              # DRF serializers
-│   ├── permissions.py              # Custom permissions
-│   ├── utils.py                    # Utility functions
-│   │
-│   ├── services/                   # Business Logic Services
-│   │   ├── auth_service.py         # Authentication service
-│   │   └── __init__.py
-│   │
-│   ├── chat_api.py                 # Chat/Messaging API
-│   ├── comment_api.py              # Comments API
-│   ├── views_contact.py            # Contact form views
-│   │
-│   ├── brevo_mail_backend.py       # Brevo email backend
-│   ├── zepto_mail_backend.py       # ZeptoMail backend
-│   │
-│   ├── templates/                  # HTML templates
-│   ├── static/                     # CSS, JS, images
-│   ├── migrations/                 # Database migrations
-│   └── templatetags/               # Custom template filters
-│
-├── media/                          # User uploads (profile photos)
-├── static/                         # Global static files
-├── logs/                           # Application logs
-│
-├── manage.py                       # Django CLI
-└── requirements.txt                # Python dependencies
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend Layer                           │
+│  (HTML Templates, JavaScript, CSS, Bootstrap)              │
+│  - Dashboard                                                │
+│  - Project Pages                                            │
+│  - User Profiles                                            │
+│  - Messaging & Notifications                               │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Django Backend                            │
+│  ├─ Views & ViewSets (REST & Template-based)              │
+│  ├─ Models (Database Layer)                                │
+│  ├─ Serializers (REST API)                                 │
+│  ├─ URLs & Routing                                         │
+│  └─ Authentication & Permissions                           │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Database Layer                             │
+│  - PostgreSQL / SQLite (Development)                       │
+│  - Student Profiles, Projects, Messages, Notifications     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Database Models
+## 2. CORE MODELS & DATABASE SCHEMA
 
-### Core Models
+### Primary Models
 
-#### 1. **StudentProfile**
-User extended profile with academic and professional information.
+#### A. **StudentProfile**
+- **Purpose**: Extended user profile for students
+- **Key Fields**:
+  - `user` (OneToOne to User)
+  - `full_name`, `college`, `location`
+  - `interests`, `skills`, `project_interests` (JSON arrays)
+  - `profile_photo` (ImageField)
+  - `bio`, `role_preference`
+  - `github`, `linkedin`, `portfolio`, `behance` (social links)
+  - `profile_completed` (Boolean)
+  - `created_at`, `updated_at` (Timestamps)
+- **Methods**:
+  - `get_display_name()`: Returns full_name or username
+- **Relationships**: One-to-One with Django User
 
-```python
-StudentProfile
-├── user (OneToOneField → User)
-├── full_name, college, location
-├── interests, bio, skills, project_interests
-├── profile_photo (ImageField)
-├── Social links: github, linkedin, portfolio, behance
-├── role_preference, profile_completed
-└── Timestamps: created_at, updated_at
-```
+#### B. **Project**
+- **Purpose**: User-created collaborative projects
+- **Key Fields**:
+  - `title`, `description`, `category`
+  - `owner` (ForeignKey to User)
+  - `members` (ManyToMany to User)
+  - `collaboration_needs` (JSON array)
+  - `skills_required` (JSON array)
+  - `visibility` (public/private)
+  - `project_type` (collaborative/research/internship)
+  - `status` (planning/active/completed)
+  - `created_at`, `updated_at`
+  - `likes_count`, `comments_count`
+- **Methods**:
+  - `add_member()`, `remove_member()`, `is_member()`
+  - `get_collaboration_needs()`, `get_skills_required()`
+- **Visibility**: Filtered via ProjectVisibilityFilter utility
 
-#### 2. **OTP** (One-Time Password)
-Authentication via email OTP for login/registration.
+#### C. **Connection** (Networking)
+- **Purpose**: Track follower relationships between users
+- **Key Fields**:
+  - `from_user`, `to_user` (ForeignKey to User)
+  - `is_following` (Boolean)
+  - `created_at`
+- **Purpose**: Enable user networking and collaboration discovery
 
-```python
-OTP
-├── email, otp_code (6-digit)
-├── purpose (login/registration/reset)
-├── is_used, created_at, expires_at
-└── Methods: is_valid(), verify_otp(), generate_otp()
-```
+#### D. **Message & Chat System**
+Models: `Message`, `MessageFile`, `MessageReaction`, `MessageReadStatus`
+- **Message**: Direct messages between users
+  - `from_user`, `to_user`
+  - `content`
+  - `created_at`, `read_at`
+  - Supports file attachments and reactions
+- **Features**: File sharing, message reactions, read status tracking
 
-#### 3. **Project**
-Main content model for collaborative projects.
+#### E. **Notification System**
+- **Model**: `Notification`
+- **Fields**:
+  - `user` (recipient)
+  - `type` (message, like, comment, connection)
+  - `related_object_id`, `related_object_type`
+  - `is_read`
+  - `created_at`
+- **Purpose**: Alert users to important activities
 
-```python
-Project
-├── owner (ForeignKey → User)
-├── title, description, collaboration_needs
-├── team (ManyToManyField → User)
-├── technologies (JSONField array)
-├── status (active/completed/paused)
-├── visibility (public/private/college_specific)
-├── likes_count, comments_count
-├── File attachments, images
-└── Timestamps: created_at, updated_at
-```
+#### F. **Comments & Interactions**
+- **Model**: `Comment`
+- **Fields**:
+  - `project` (ForeignKey)
+  - `user` (author)
+  - `text` (comment content)
+  - `created_at`, `updated_at`
+- **Features**: Comments on projects with nested replies support
 
-#### 4. **Connection**
-User relationship and connection requests.
+#### G. **Project Team Management**
+Models: `ProjectTeam`, `ProjectTeamMember`, `ProjectTeamInvitation`
+- **ProjectTeam**: Team for a specific project
+- **ProjectTeamMember**: Team member with role assignment
+- **ProjectTeamInvitation**: Invitation to join a team
+- **Purpose**: Manage project team composition and roles
 
-```python
-Connection
-├── sender, receiver (ForeignKey → User)
-├── status (pending/accepted/rejected)
-├── Unique: (sender, receiver)
-└── Timestamps: created_at, updated_at
-```
+#### H. **Activity & Stats Tracking**
+- **Models**: `Activity`, `UserStats`, `Like`
+- **Activity**: Tracks all user actions (project creation, comments, etc.)
+- **UserStats**: User engagement metrics
+- **Like**: Track likes on projects/comments
+- **Purpose**: Analytics and engagement tracking
 
-#### 5. **Message**
-Direct messaging between users.
+#### I. **Chat & Real-time Communication**
+- **Models**: `ChatRoom`, `ChatRoomMember`
+- **Purpose**: Real-time messaging between users and groups
+- **Features**: Room-based chat with member management
 
-```python
-Message
-├── sender, recipient (ForeignKey → User)
-├── content (TextField)
-├── is_read (BooleanField)
-├── has_files (BooleanField)
-└── Timestamps: sent_at, read_at
-```
-
-#### 6. **ChatRoom**
-Group chat functionality.
-
-```python
-ChatRoom
-├── name, description
-├── owner (ForeignKey → User)
-├── members (ManyToManyField → User via ChatRoomMember)
-├── is_group (BooleanField)
-├── last_activity
-└── Timestamps: created_at, updated_at
-```
-
-#### 7. **Comment**
-Project comments/discussion.
-
-```python
-Comment
-├── project (ForeignKey → Project)
-├── author (ForeignKey → User)
-├── content (TextField)
-├── likes_count
-├── is_edited, edited_at
-└── Timestamps: created_at, updated_at
-```
-
-#### 8. **Notification**
-User notifications for activities.
-
-```python
-Notification
-├── user (ForeignKey → User)
-├── actor (ForeignKey → User)
-├── action_type (like/comment/follow/connect)
-├── content_type (Project/Comment/User)
-├── object_id, is_read
-└── Timestamps: created_at
-```
-
-#### 9. **Activity**
-Activity feed tracking user actions.
-
-```python
-Activity
-├── user (ForeignKey → User)
-├── action_type (project_posted/project_liked/comment_added)
-├── description
-├── Timestamps: timestamp
-```
-
-#### 10. **Follow**
-User following relationships.
-
-```python
-Follow
-├── follower, following (ForeignKey → User)
-├── Unique: (follower, following)
-└── Timestamps: created_at
-```
-
-#### 11. **ProjectTeam**
-Team management for projects.
-
-```python
-ProjectTeam
-├── project (ForeignKey → Project)
-├── name, description
-├── team_lead (ForeignKey → User)
-├── members (ManyToManyField → User via ProjectTeamMember)
-├── max_members, status
-└── Timestamps: created_at, updated_at
-```
-
-#### 12. **MessageFile**
-File attachments in messages.
-
-```python
-MessageFile
-├── message (ForeignKey → Message)
-├── file (FileField)
-├── file_type (document/image/other)
-├── file_size
-└── Timestamps: uploaded_at
-```
-
-### Supporting Models
-- **Notification**: Activity notifications
-- **Like**: Project/Comment likes
-- **UserStatus**: Online/offline status
-- **MessageReadStatus**: Message read tracking
-- **Draft**: Message drafts
-- **UserStats**: User statistics
-- **File**: General file model
-- **MessageReaction**: Emoji reactions on messages
+#### J. **Additional Models**
+- **Follow**: Social following mechanism
+- **UserStatus**: User online/offline status
+- **File**: File upload tracking
 - **ProjectTask**: Task management within projects
-- **ProjectMilestone**: Project milestones
-- **ProjectTeamInvitation**: Team invite management
+- **ProjectMilestone**: Project milestone tracking
+- **OTP**: One-time password authentication
 
 ---
 
-## Key Views & Functionality
+## 3. VIEWS & ENDPOINTS
 
-### Authentication Views
-
-#### Login/Registration
-- `login_view()`: OTP-based or username/password login
-- `register_view()`: User registration with email verification
-- `verify_otp_view()`: OTP verification for login/registration
-- `resend_otp_view()`: Resend OTP functionality
-
-#### Password Management
-- `forgot_password_view()`: Initiate password reset
-- `reset_password_view()`: Complete password reset with OTP
-
-### Profile Management
-- `edit_profile()`: Update user profile information
-- `student_profile()`: View user's own profile
-- `student_details_view()`: Detailed profile view
-- `user_profile()`: View other user's profile
-- `user_profile_api()`: REST API endpoint for user profile
+### Authentication & User Management
+- `login_view()` - User login with OTP verification
+- `register_view()` - User registration
+- `logout_view()` - User logout
+- `edit_profile()` - Profile editing with avatar upload
+- `student_profile()` - View user profile
+- `user_profile_api()` - API endpoint for user profile
+- `view_other_profile()` - View other user profiles
 
 ### Project Management
-- `post_project()`: Create new project
-- `project_detail()`: View project details
-- `edit_project()`: Modify project
-- `delete_project()`: Remove project
-- `search_projects()`: Search and filter projects
+- `create_project()` - Create new project
+- `edit_project()` - Edit project details
+- `delete_project()` - Delete project
+- `project_detail()` - View project details
+- `project_feed()` - Paginated project listing
+- `search_projects()` - Search & filter projects
+- `add_collaborator()` - Add team member
+- `remove_collaborator()` - Remove team member
+- `find_collaborators()` - Find potential collaborators with advanced filtering
 
-### Social Features
-- `find_collaborators()`: Discover and filter users by interests/skills
-- `connect_view()`: Send connection request
-- `accept_connection()`: Accept connection
-- `reject_connection()`: Reject connection
-- `follow_user()`: Follow a user
-- `my_connections()`: View user's connections
+### Collaboration & Networking
+- `connect_user()` - Follow another user
+- `disconnect_user()` - Unfollow user
+- `get_connections()` - List user connections
+- `get_suggested_collaborators()` - Recommend collaborators
 
-### Messaging
-- `message_view()`: Message inbox
-- `chat_view()`: Direct chat with user
-- `enhanced_messages_view()`: Enhanced messaging UI
-- `create_group_chat()`: Create group chat room
-
-### Notifications & Feed
-- `notifications_view()`: User notifications
-- `activity_feed()`: Activity feed
-- `dashboard_view()`: User dashboard
+### Messaging & Notifications
+- `send_message()` - Send direct message
+- `view_messages()` - View message thread
+- `get_notifications()` - Fetch user notifications
+- `mark_notification_read()` - Mark notification as read
 
 ### Comments & Interactions
-- `like_project()`: Like a project
-- `add_comment()`: Add comment to project
-- `delete_comment()`: Remove comment
-- `edit_comment()`: Modify comment
+- `post_comment()` - Post comment on project
+- `edit_comment()` - Edit existing comment
+- `delete_comment()` - Delete comment
+- `like_project()` - Like a project
+- `unlike_project()` - Unlike a project
 
-### Utility Endpoints
-- `college_search_api()`: Search colleges (RapidAPI)
-- `check_username_availability()`: Validate username
-- `check_email_availability()`: Validate email
-- `nlp_analyze_api()`: NLP analysis for projects
-
----
-
-## REST API Architecture
-
-### Chat API Endpoints (chat_api.py)
-```
-POST   /chat-rooms/                    - Create chat room
-GET    /chat-rooms/                    - List chat rooms
-GET    /chat-rooms/<id>/               - Get room details
-GET    /chat-rooms/<room_id>/members/  - Get room members
-POST   /messages/                      - Create message
-GET    /messages/                      - List messages
-GET    /messages/<pk>/                 - Get message detail
-GET    /messages/search/               - Search messages
-GET    /messages/<id>/status/          - Get message status
-POST   /messages/<id>/reactions/       - Add reaction
-
-POST   /drafts/                        - Save draft
-POST   /typing/                        - Send typing indicator
-GET    /conversations/                 - List conversations
-POST   /direct-message/                - Send direct message
-```
-
-### Comment API Endpoints (comment_api.py)
-```
-GET    /projects/<id>/comments/        - Get comments
-POST   /projects/<id>/comments/add/    - Add comment
-DELETE /comments/<id>/delete/          - Delete comment
-PUT    /comments/<id>/edit/            - Edit comment
-```
-
-### Legacy API Endpoints (views.py)
-```
-GET    /                               - API root
-GET    /home/                          - Home feed
-GET    /check-username/                - Username availability
-GET    /check-email/                   - Email availability
-GET    /user-stats/                    - User statistics
-GET    /user-profile/<id>/             - User profile
-POST   /nlp-analyze/                   - NLP analysis
-GET    /college-search/                - College search
-GET    /validate-college/              - Validate college
-```
+### API Endpoints (REST Framework)
+- `/api/users/` - User list/create
+- `/api/projects/` - Project list/create
+- `/api/projects/<id>/` - Project detail
+- `/api/messages/` - Message operations
+- `/api/comments/` - Comment operations
+- `/api/notifications/` - Notification management
+- `/api/connections/` - Connection management
 
 ---
 
-## Email System
+## 4. KEY UTILITIES & SERVICES
 
-### Architecture
-Multi-backend email support with automatic fallback:
+### A. **StudentProfileNLP** (accounts/utils.py)
+- **Purpose**: NLP-based profile matching and recommendations
+- **Features**:
+  - Profile similarity scoring
+  - Skill matching algorithm
+  - Interest intersection calculation
+  - Recommendation engine
+- **Usage**: Recommend collaborators, suggest projects
 
-1. **Brevo** (Primary)
-   - Production-ready API
-   - Transactional email
-   - Backend: `accounts.brevo_mail_backend.BrevoMailBackend`
+### B. **ProjectVisibilityFilter** (accounts/utils.py)
+- **Purpose**: Filter projects based on visibility rules
+- **Logic**:
+  - Public projects visible to all
+  - Private projects only to owner
+  - Team members can see team projects
+- **Integration**: Used in project feed and search
 
-2. **ZeptoMail** (Alternative)
-   - RESTful API
-   - Backend: `accounts.zepto_mail_backend.ZeptoMailBackend`
+### C. **Email Backends**
+- **Files**: `brevo_mail_backend.py`, `zepto_mail_backend.py`
+- **Purpose**: Send emails via third-party services
+- **Features**:
+  - OTP emails with HTML formatting
+  - Rich email templates
+  - Error handling & logging
+- **Default**: Uses Django's default email backend (configurable in settings)
 
-3. **Gmail SMTP** (Fallback)
-   - Standard SMTP
-   - Backend: `django.core.mail.backends.smtp.EmailBackend`
+### D. **Chat API**
+- **Files**: `chat_api.py`, `chat_api_improved.py`
+- **Features**:
+  - Real-time messaging endpoints
+  - WebSocket support (optional)
+  - Message history
+  - Read receipts
 
-4. **Console** (Development)
-   - Prints to console
-   - Backend: `django.core.mail.backends.console.EmailBackend`
-
-### Email Types
-- OTP codes (login, registration, password reset)
-- Welcome emails
-- Notification emails
-- Password reset confirmation
+### E. **Comment API** (comment_api.py)
+- **Features**:
+  - Post, edit, delete comments
+  - Comment count tracking
+  - Nested reply support
+  - Notification on mentions
 
 ---
 
-## Authentication System
+## 5. AUTHENTICATION & AUTHORIZATION
 
-### Methods
-1. **OTP-based Login**
-   - Email OTP (6-digit, 5-minute expiry)
-   - No password storage required
-   - Process: Generate → Send Email → Verify → Login
+### Authentication Methods
+1. **Email OTP Login** (Primary)
+   - User enters email
+   - OTP sent via email
+   - User enters OTP code
+   - Session created if valid
 
-2. **Traditional Login**
-   - Username/password authentication
-   - Django's `ModelBackend`
+2. **Traditional Username/Password** (Alternative)
+   - Supported but not primary
+   - Uses Django's built-in authentication
 
-3. **Social OAuth**
-   - Google OAuth 2.0 (via django-allauth)
-   - GitHub OAuth (via django-allauth)
-   - Auto-signup on first login
+3. **Social OAuth** (Optional)
+   - Google OAuth integration
+   - GitHub OAuth integration (setup provided)
 
-### Flow
+### Authorization Mechanisms
+- **Django Permissions**: Role-based access control
+- **Custom Decorators**:
+  - `@login_required` - Require authentication
+  - `@handle_view_errors` - Error handling wrapper
+- **DRF Permissions**: 
+  - `IsAuthenticated`
+  - `IsOwnerOrReadOnly`
+  - Custom permission classes
+
+### Roles & Permissions
+- **Regular User**: Standard access
+- **Project Owner**: Full project control
+- **Team Member**: Limited project access
+- **Admin**: Full system access
+
+---
+
+## 6. FORMS & VALIDATION
+
+### Key Forms (accounts/forms.py)
+
+#### A. **RegisterForm**
+- Fields: email, password, password_confirm
+- Validation: Unique email, password strength
+
+#### B. **LoginForm**
+- Fields: email/username, password (or otp)
+- Validation: User existence, OTP validity
+
+#### C. **OTPVerificationForm**
+- Field: otp_code (6 digits)
+- Validation: OTP format, expiration, usage
+
+#### D. **StudentProfileForm**
+- Fields: full_name, college, interests, skills, profile_photo, etc.
+- Validation: Image file type, field lengths
+
+#### E. **ProjectForm**
+- Fields: title, description, category, visibility, collaboration_needs
+- Validation: Required fields, category choices
+
+---
+
+## 7. STATIC & MEDIA FILES
+
+### Directory Structure
 ```
-User Registration
-├── Email verification via OTP
-├── Profile creation (StudentProfile)
-├── Add academic details (college, interests)
-└── Ready to use
+auth_project/
+├── static/
+│   ├── css/
+│   │   ├── style.css          # Main stylesheet
+│   │   ├── dashboard.css      # Dashboard styles
+│   │   ├── project_detail.css # Project page styles
+│   │   └── responsive.css     # Responsive design
+│   ├── js/
+│   │   ├── main.js            # Global JavaScript
+│   │   ├── projects.js        # Project handling
+│   │   ├── messages.js        # Messaging logic
+│   │   ├── notifications.js   # Notification handling
+│   │   └── live-feed.js       # Live feed updates
+│   └── images/
+│       ├── logo.png
+│       ├── icons/
+│       └── backgrounds/
+├── media/
+│   └── profile_photos/        # User profile pictures
+└── staticfiles/              # Collected static files
+```
 
-User Login
-├── OTP-based: Email → OTP → Verify
-├── Password-based: Username → Password → Verify
-└── Social: OAuth → Allauth → Auto-signup/login
+### Key CSS Features
+- Bootstrap framework for responsive design
+- Custom CSS variables for theming
+- Mobile-first approach
+- Dark mode support (optional)
+
+### Key JavaScript Features
+- AJAX for dynamic content loading
+- Real-time notifications via WebSocket/polling
+- Form validation
+- Live project filtering
+- Comment system with AJAX submission
+
+---
+
+## 8. TEMPLATES STRUCTURE
+
+### Template Hierarchy
+```
+templates/
+├── base.html               # Base layout
+├── accounts/
+│   ├── login.html
+│   ├── register.html
+│   ├── edit_profile.html
+│   ├── student_profile.html
+│   ├── view_other_profile.html
+│   └── find_collaborators.html
+├── projects/
+│   ├── project_feed.html   # Main project listing
+│   ├── project_detail.html # Project details page
+│   ├── create_project.html
+│   └── edit_project.html
+├── messages/
+│   ├── messages_list.html
+│   └── message_detail.html
+├── notifications/
+│   ├── notifications.html
+│   └── notification_detail.html
+└── common/
+    ├── navbar.html
+    ├── sidebar.html
+    ├── footer.html
+    └── pagination.html
+```
+
+### Template Features
+- Django template inheritance (base.html)
+- CSRF token handling
+- Context data rendering
+- Conditional content (login_required)
+- Form rendering with error messages
+
+---
+
+## 9. KEY FEATURES & WORKFLOWS
+
+### A. User Registration & Authentication Flow
+```
+1. User visits /register
+2. Fills registration form (email, password)
+3. Account created in User model
+4. StudentProfile auto-created via signal
+5. Redirect to login page
+6. User enters email on login
+7. OTP sent via email
+8. User enters OTP code
+9. Session created, redirect to dashboard
+```
+
+### B. Project Creation & Collaboration Flow
+```
+1. User creates project (title, description, needs)
+2. Project stored in database
+3. User appears as owner
+4. Other users can view/discover project
+5. Collaborators can request to join
+6. Owner approves/rejects requests
+7. Approved members can:
+   - Edit project details
+   - Post comments
+   - Manage tasks/milestones
+```
+
+### C. Messaging Flow
+```
+1. User sends message to another user
+2. Message stored in database
+3. Recipient notified
+4. Recipient can read and reply
+5. Read status tracked
+6. Optional: Real-time updates via WebSocket
+```
+
+### D. Notification Flow
+```
+1. Action triggered (like, comment, follow)
+2. Notification created in database
+3. Notification fetched by recipient
+4. Mark as read on view
+5. Optional: Real-time push via WebSocket
+```
+
+### E. Collaborator Discovery Flow
+```
+1. User visits "Find Collaborators"
+2. Filters applied (skills, interests, college)
+3. Profile matching algorithm runs
+4. Results sorted by relevance
+5. User can view profiles and connect
+6. Mutual follow creates connection
 ```
 
 ---
 
-## Key Features
+## 10. CONFIGURATION & SETTINGS
 
-### 1. Project Discovery & Management
-- Create projects with description, needs, technologies
-- Public/private/college-specific visibility
-- Rich text editor for descriptions
-- File attachments and images
-- Like and comment on projects
-- Project team management with invitations
+### Key Settings (auth_project/settings.py)
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **Authentication Backend**: Email OTP + Django Auth
+- **Email**: Brevo/ZeptoMail or default backend
+- **Static Files**: WhiteNoise for production
+- **CORS**: For API calls
+- **Session**: Django default session framework
+- **Cache**: Redis (optional) or database
 
-### 2. User Collaboration
-- Find collaborators by interests/skills/college
-- Connection requests (pending/accepted/rejected)
-- User profiles with portfolio links
-- Follow other users
-- Activity feed tracking
-
-### 3. Messaging System
-- Direct messages between users
-- Group chats
-- Message reactions (emojis)
-- File sharing in messages
-- Message read status
-- Typing indicators
-- Draft messages
-
-### 4. Comments & Discussions
-- Comments on projects
-- Edit and delete comments
-- Like comments
-- Real-time comment updates
-
-### 5. Notifications
-- Activity-based notifications
-- Like/comment/follow notifications
-- Connection request notifications
-- Real-time updates (via Channels/WebSockets)
-
-### 6. User Profiles
-- Extended student profile
-- Skills and interests
-- Portfolio links (GitHub, LinkedIn, Behance)
-- Profile pictures
-- Bio and role preference
-- Profile completion status
+### Environment Variables (.env)
+- `DEBUG` - Development mode
+- `SECRET_KEY` - Django secret
+- `DATABASE_URL` - Database connection
+- `EMAIL_BACKEND` - Email service choice
+- `GOOGLE_OAUTH_ID`, `GOOGLE_OAUTH_SECRET` - OAuth config
+- `ALLOWED_HOSTS` - Allowed domain
 
 ---
 
-## Security Features
+## 11. COMMON ISSUES & FIXES
 
-### Implemented
-- ✅ CSRF Protection (enabled in middleware)
-- ✅ Password validation (minimum length, complexity)
-- ✅ Email verification via OTP
-- ✅ Session authentication
-- ✅ User permissions (login_required decorators)
-- ✅ Input sanitization (XSS prevention)
-- ✅ Secure cookie settings (configurable SSL)
+### Issue #1: Comments Not Visible
+- **Cause**: Template not rendering comments correctly
+- **Fix**: Ensure comment template is included in project detail
+- **Files**: `project_detail.html`, `comment_api.py`
 
-### Configuration
-```python
-CSRF_COOKIE_SECURE = False (dev) / True (prod)
-SESSION_COOKIE_SECURE = False (dev) / True (prod)
-SECURE_SSL_REDIRECT = False (dev) / True (prod)
+### Issue #2: CSRF Token Errors
+- **Cause**: Missing CSRF token in forms
+- **Fix**: Add `{% csrf_token %}` to all POST forms
+- **Files**: All templates with forms
+
+### Issue #3: Profile Photos Not Uploading
+- **Cause**: Missing MEDIA_URL/MEDIA_ROOT configuration
+- **Fix**: Configure in settings.py, ensure nginx/server serves media
+- **Files**: `settings.py`, web server config
+
+### Issue #4: Collaborators Not Showing
+- **Cause**: Visibility filter excluding valid users
+- **Fix**: Debug filter logic in `find_collaborators()`
+- **Files**: `accounts/utils.py`, `views.py`
+
+### Issue #5: OTP Not Sending
+- **Cause**: Email backend misconfiguration
+- **Fix**: Verify email credentials, check email logs
+- **Files**: `settings.py`, email backend files
+
+### Issue #6: Project Detail Loading Slow
+- **Cause**: N+1 query problem
+- **Fix**: Use `select_related()` and `prefetch_related()`
+- **Files**: `views.py`, model queries
+
+---
+
+## 12. DEPLOYMENT CONSIDERATIONS
+
+### Production Setup
+1. **Database**: Use PostgreSQL
+2. **Static Files**: Collect with `python manage.py collectstatic`
+3. **Media Files**: Serve via CDN or web server
+4. **Email**: Configure production email service
+5. **Security**:
+   - Set `DEBUG=False`
+   - Configure `ALLOWED_HOSTS`
+   - Use HTTPS only
+   - Set secure cookie flags
+   - Enable CSRF protection
+
+### Deployment Platforms
+- **Render**: Recommended (PostgreSQL support)
+- **Railway**: Alternative option
+- **Heroku**: Legacy option
+- **Self-hosted**: Linux + Nginx + Gunicorn
+
+---
+
+## 13. DEVELOPMENT QUICK REFERENCE
+
+### Running Locally
+```bash
+# Setup
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py collectstatic
+
+# Run
+python manage.py runserver
+
+# Access
+Browser: http://localhost:8000
+Admin: http://localhost:8000/admin
+```
+
+### Key Management Commands
+```bash
+python manage.py makemigrations     # Create migrations
+python manage.py migrate            # Apply migrations
+python manage.py createsuperuser    # Create admin user
+python manage.py shell              # Django shell
+python manage.py dbshell            # Database shell
+python manage.py test               # Run tests
+python manage.py runserver          # Development server
 ```
 
 ---
 
-## Performance Optimizations
+## 14. TECHNOLOGY STACK SUMMARY
 
-### Caching
-- Redis-backed caching
-- Page-level caching with `@cache_page` decorator
-- Query optimization with `select_related()` and `prefetch_related()`
+| Component | Technology | Version |
+|-----------|-----------|---------|
+| Backend | Django | 4.x |
+| Database | PostgreSQL/SQLite | Latest |
+| Frontend | HTML/CSS/JavaScript | ES6+ |
+| CSS Framework | Bootstrap | 5.x |
+| REST API | Django REST Framework | 3.x |
+| Authentication | Django Auth + OTP | Custom |
+| Email | Brevo/ZeptoMail | Latest |
+| Social Auth | django-allauth | Latest |
+| Hosting | Render/Railway | Latest |
+| VCS | Git/GitHub | Latest |
+
+---
+
+## 15. KEY FILES SUMMARY
+
+| File | Purpose | Lines |
+|------|---------|-------|
+| models.py | Database models | 718+ |
+| views.py | View logic & endpoints | 3387+ |
+| urls.py | URL routing | - |
+| serializers.py | DRF serializers | - |
+| forms.py | Form definitions | - |
+| utils.py | Utility functions | - |
+| settings.py | Django configuration | - |
+| manage.py | Django CLI | - |
+
+---
+
+## 16. PERFORMANCE OPTIMIZATIONS
 
 ### Database
-- PostgreSQL with connection pooling (conn_max_age=600)
-- Indexed lookups on frequently queried fields
-- Pagination for large datasets (default 10 items/page)
+- Use `select_related()` for ForeignKey
+- Use `prefetch_related()` for M2M
+- Add indexes on frequently queried fields
+- Cache user profiles with Redis
+- Use database query pagination
 
-### Static Files
-- WhiteNoise for efficient static file serving
-- Compression enabled
-- CDN-ready with cloud storage (S3) support
+### Frontend
+- Lazy load images
+- Minify CSS/JavaScript
+- Use CDN for static files
+- Implement infinite scroll for feeds
+- Cache AJAX responses
 
----
-
-## Configuration & Environment
-
-### Environment Variables
-```
-# Security
-DEBUG=True (dev) / False (prod)
-SECRET_KEY=<auto-generated or set>
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Database
-DATABASE_URL=<PostgreSQL URL>
-DB_NAME=unisync_db
-DB_USER=unisync_user
-DB_PASSWORD=***
-DB_HOST=localhost
-DB_PORT=5432
-
-# Email
-BREVO_API_KEY=<API key>
-ZEPTO_MAIL_API_KEY=<API key>
-ZEPTO_MAIL_TOKEN=<token>
-EMAIL_HOST_USER=***
-EMAIL_HOST_PASSWORD=***
-DEFAULT_FROM_EMAIL=noreply@unisync.app
-
-# Social Auth
-GOOGLE_CLIENT_ID=***
-GOOGLE_CLIENT_SECRET=***
-GITHUB_CLIENT_ID=***
-GITHUB_CLIENT_SECRET=***
-
-# External APIs
-RAPIDAPI_KEY=<API key>
-```
+### API
+- Return only needed fields in serializers
+- Implement pagination (10-20 items/page)
+- Use HTTP caching headers
+- Compress responses (gzip)
 
 ---
 
-## Deployment Configuration
+## 17. NEXT STEPS & IMPROVEMENTS
 
-### Supported Platforms
-- **Render**: PostgreSQL + gunicorn deployment
-- **Railway**: Cloud deployment support
-- **Local Development**: SQLite fallback
+### Short-term
+1. Fix remaining bugs (comments, notifications)
+2. Optimize database queries
+3. Improve mobile responsiveness
+4. Add comprehensive error handling
 
-### WSGI & ASGI
-- WSGI: `auth_project.wsgi.application` (HTTP)
-- ASGI: `auth_project.asgi.application` (WebSockets)
+### Medium-term
+1. Implement WebSocket for real-time updates
+2. Add project analytics dashboard
+3. Implement recommendation engine
+4. Add video/screen sharing
+5. Build mobile app
 
-### Static Files
-- Collected to `staticfiles/` directory
-- Served via WhiteNoise
-- S3 cloud storage option available
-
----
-
-## Testing & Monitoring
-
-### Testing Tools
-- pytest, pytest-django
-- Selenium for integration testing
-- Manual test scripts provided
-
-### Logging
-- Console logging
-- File-based rotating logs (10 MB max)
-- Separate error log file
-- Sentry integration available
-
-### Performance Monitoring
-- django-performance-monitor
-- Logging of slow queries
-- Activity tracking
+### Long-term
+1. AI-powered skill matching
+2. Project marketplace
+3. Payment integration
+4. Global collaboration features
+5. Mobile apps (iOS/Android)
 
 ---
 
-## Key Business Logic
+## CONCLUSION
 
-### Project Visibility Filter
-`ProjectVisibilityFilter` in `utils.py` handles:
-- Public projects (visible to all)
-- Private projects (only owner)
-- College-specific projects (college members only)
+UniSync is a comprehensive Django-based collaboration platform with:
+- **Core Features**: User authentication, project management, messaging, notifications
+- **Advanced Features**: Profile matching, team management, activity tracking
+- **Scalable Architecture**: REST API, modular design, database-driven
+- **Production-Ready**: Configured for deployment on Render/Railway
 
-### User Collaboration NLP
-`StudentProfileNLP` in `utils.py`:
-- Analyzes user interests and skills
-- Matches compatible collaborators
-- Project recommendation engine
-
-### Connection Status
-- Pending: Initial request sent
-- Accepted: Mutual connection established
-- Rejected: Request declined
+The codebase is well-structured with clear separation of concerns, making it easy to maintain and extend.
 
 ---
 
-## Frontend Integration
-
-### Templates Directory
-- Main templates in parent directory: `templates/`
-- App-specific templates in `accounts/templates/`
-
-### Static Files
-- CSS: `accounts/static/css/`
-- JavaScript: `accounts/static/js/`
-- Images: `accounts/static/images/`
-
-### Context Processors
-- User authentication context
-- Messages context
-- Site framework context
-
----
-
-## Error Handling
-
-### Decorator Pattern
-```python
-@handle_view_errors
-def view_function(request):
-    # Automatic exception catching
-    # User-friendly error messages
-    # Logging of errors
-```
-
-### 404/403 Handling
-- Custom error pages
-- Proper HTTP status codes
-- Redirect to dashboard on error
-
----
-
-## API Design Patterns
-
-### REST Framework Usage
-- Generic views: `ListCreateAPIView`, `RetrieveUpdateDestroyAPIView`
-- Pagination: 10 items default
-- Filtering: SearchFilter, OrderingFilter
-- Authentication: Session-based
-- Permissions: Flexible, can be restricted per-view
-
-### Serializers
-- Used for API responses
-- `UserProfileSerializer`: User profile API
-- Custom serializers for Chat, Message, Comment
-
----
-
-## Known Issues & Fixes Applied
-
-### Fixed Issues
-- ✅ CSRF token warnings (re-enabled CSRF protection)
-- ✅ Comments not visible (API endpoint fixes)
-- ✅ Profile picture not appearing (file path corrections)
-- ✅ Collaborators not showing (visibility filter corrections)
-- ✅ Project detail loading performance (query optimization)
-- ✅ Login form validation (form error handling)
-- ✅ Email configuration fallback (multi-backend support)
-
----
-
-## Code Quality Standards
-
-### Applied
-- Type hints in utility functions
-- Docstrings for major functions
-- Input sanitization
-- Error handling with try-except
-- Logging throughout application
-- Comments for complex logic
-
-### Tools
-- Black (code formatting)
-- Flake8 (linting)
-- isort (import sorting)
-- mypy (type checking)
-
----
-
-## Future Enhancement Opportunities
-
-1. **Real-time Notifications**
-   - WebSocket integration with Channels
-   - Redis pub/sub for scalability
-
-2. **Advanced Search**
-   - Elasticsearch integration
-   - Full-text search on projects/users
-
-3. **Analytics**
-   - User engagement tracking
-   - Project success metrics
-   - Recommendation engine improvements
-
-4. **AI Features**
-   - Skill matching
-   - Project recommendations
-   - Intelligent notifications
-
-5. **Scalability**
-   - Database replication
-   - Caching layer optimization
-   - Load balancing
-   - Microservices architecture (future)
-
----
-
-## Summary
-
-UniSync is a well-structured Django application with:
-- ✅ Modular architecture with separated concerns
-- ✅ Comprehensive model design for collaborative features
-- ✅ Multi-backend email system for reliability
-- ✅ REST API for modern frontend integration
-- ✅ Security best practices implemented
-- ✅ Performance optimizations in place
-- ✅ Flexible authentication (OTP + OAuth)
-- ✅ Real-time communication ready (Channels)
-- ✅ Production-ready deployment configuration
-
-The codebase is well-documented, tested, and ready for scaling.
+*Last Updated: February 6, 2026*
+*Repository: https://github.com/Goku0090/uni*

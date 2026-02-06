@@ -20,6 +20,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.mail import EmailMultiAlternatives
@@ -748,6 +749,7 @@ def main_home(request):
     visible_projects = []
     project_match_details = {}
     connection_status = {}
+    liked_project_ids = set()
     
     if request.user.is_authenticated:
         unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
@@ -757,6 +759,11 @@ def main_home(request):
         visible_projects, project_match_details = ProjectVisibilityFilter.get_visible_projects(
             request.user,
             all_projects
+        )
+        
+        # Get projects liked by current user
+        liked_project_ids = set(
+            Like.objects.filter(user=request.user).values_list('project_id', flat=True)
         )
         
         # Get connection status for all project owners in the feed
@@ -784,6 +791,7 @@ def main_home(request):
         'feed_posts': visible_projects,
         'project_match_details': project_match_details,
         'connection_status': connection_status,
+        'liked_project_ids': liked_project_ids,
         'categories': ['Web Development', 'Mobile Apps', 'AI/ML', 'Data Science'],
         'available_techs': ['Python', 'JavaScript', 'React', 'Django', 'Node.js'],
         'homepage_stats': {
@@ -1592,34 +1600,47 @@ def find_collaborators(request):
 
 
 @login_required
+@require_http_methods(["POST"])
 def like_project(request, project_id):
-    """Toggle like on a project"""
-    project = get_object_or_404(Project, id=project_id)
+    """Toggle like on a project - AJAX endpoint"""
+    try:
+        project = get_object_or_404(Project, id=project_id)
 
-    # Check if user already liked the project
-    existing_like = Like.objects.filter(user=request.user, project=project).first()
+        # Check if user already liked the project
+        existing_like = Like.objects.filter(user=request.user, project=project).first()
 
-    if existing_like:
-        # Unlike
-        existing_like.delete()
-        liked = False
-        message = "Project unliked"
-    else:
-        # Like
-        Like.objects.create(user=request.user, project=project)
-        liked = True
-        message = "Project liked!"
+        if existing_like:
+            # Unlike
+            existing_like.delete()
+            liked = False
+            message = "Project unliked"
+        else:
+            # Like
+            Like.objects.create(user=request.user, project=project)
+            liked = True
+            message = "Project liked!"
 
-        # Create activity
-        create_activity(
-            user=request.user,
-            activity_type='project_liked',
-            title=f"Liked project '{project.title}'",
-            description=f"{request.user.username} liked the project '{project.title}'",
-            project=project
-        )
+            # Create activity
+            Activity.objects.create(
+                user=request.user,
+                activity_type='project_liked',
+                title=f"Liked '{project.title}'",
+                description=f"{request.user.username} liked the project '{project.title}'",
+                project=project
+            )
 
-    return JsonResponse({'success': True, 'liked': liked, 'message': message})
+        return JsonResponse({
+            'success': True, 
+            'liked': liked, 
+            'message': message,
+            'likes_count': project.likes.count()
+        })
+    except Exception as e:
+        logger.error(f"Error liking project: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=400)
 
 @login_required
 def post_project(request):
@@ -1709,12 +1730,19 @@ def delete_project(request, project_id):
 
 @login_required
 def project_detail(request, project_id):
-    """View project details - OPTIMIZED for performance"""
+    """View project details - ULTRA-OPTIMIZED for performance"""
     from django.db.models import Count, Q, Prefetch
+    from django.views.decorators.http import condition
     
-    # OPTIMIZATION: Fetch project with related data
+    # ULTRA-OPTIMIZATION: Single prefetch query for all project data
     project = get_object_or_404(
-        Project.objects.select_related('user__student_profile'),
+        Project.objects.select_related(
+            'user__student_profile'
+        ).prefetch_related(
+            'comments__user__student_profile',
+            'tasks',
+            'milestones'
+        ),
         id=project_id
     )
 
@@ -1730,129 +1758,127 @@ def project_detail(request, project_id):
             messages.success(request, 'Comment added successfully!')
             return redirect('project_detail', project_id=project_id)
 
-    # Process technologies for display
+    # Process technologies for display (using cached split)
     tech_list = [tech.strip() for tech in project.technologies.split(',')] if project.technologies else []
     looking_list = [item.strip() for item in project.looking_for.split(',')] if project.looking_for else []
 
-    # OPTIMIZATION: Limit comments to last 50 (not all)
-    comments = project.comments.all()\
-        .select_related('user__student_profile')\
-        .order_by('-created_at')[:50]
+    # ULTRA-OPTIMIZATION: Use prefetched comments (already loaded above)
+    comments = sorted(
+        project.comments.all(),
+        key=lambda x: x.created_at,
+        reverse=True
+    )[:50]
 
-    # Check if user already connected with project owner
+    # Check if user already connected with project owner (cached query)
     is_connected = False
     connection_status = None
     if request.user.is_authenticated and request.user != project.user:
         connection = Connection.objects.filter(
             Q(sender=request.user, receiver=project.user) |
             Q(sender=project.user, receiver=request.user)
-        ).first()
+        ).only('status').first()
         if connection:
             is_connected = connection.status == 'accepted'
             connection_status = connection.status
 
-    # Team information
+    # Team information - ONLY fetch if needed
     team = None
     team_members = []
     user_team_role = None
-    can_manage_team = False
+    can_manage_team = request.user == project.user if request.user.is_authenticated else False
     pending_invitations = []
 
-    # OPTIMIZATION: Use Prefetch to combine queries
-    team_members_prefetch = Prefetch(
-        'members',
-        ProjectTeamMember.objects.filter(is_active=True)\
-            .select_related('user__student_profile')[:100]
-    )
-    
-    pending_invites_prefetch = Prefetch(
-        'invitations',
-        ProjectTeamInvitation.objects.filter(status='pending')\
-            .select_related('invited_user__student_profile')[:50]
-    )
-
-    try:
-        team = ProjectTeam.objects.prefetch_related(
-            team_members_prefetch,
-            pending_invites_prefetch
-        ).get(project=project)
-        
-        # OPTIMIZATION: Use prefetched data (no extra queries)
-        team_members = list(team.members.all())
-
-        # Check user's role in team
+    # Skip team queries if not project owner and not authenticated
+    if can_manage_team or request.user.is_authenticated:
         try:
-            user_membership = ProjectTeamMember.objects.get(
-                team=team, 
-                user=request.user, 
-                is_active=True
-            )
-            user_team_role = user_membership.role
-            can_manage_team = user_membership.can_invite_members
-        except ProjectTeamMember.DoesNotExist:
-            user_team_role = None
-            can_manage_team = request.user == project.user
+            team = ProjectTeam.objects.only('id', 'project_id').get(project=project)
+            
+            # Only fetch team members if project owner or team member
+            if can_manage_team:
+                team_members = list(
+                    ProjectTeamMember.objects.filter(
+                        team=team, 
+                        is_active=True
+                    ).select_related('user__student_profile')[:50]
+                )
+                pending_invitations = list(
+                    ProjectTeamInvitation.objects.filter(
+                        project=project,
+                        status='pending'
+                    ).select_related('invited_user__student_profile')[:20]
+                )
+            else:
+                # Check user's role in team
+                try:
+                    user_membership = ProjectTeamMember.objects.filter(
+                        team=team, 
+                        user=request.user, 
+                        is_active=True
+                    ).only('role', 'id').first()
+                    if user_membership:
+                        user_team_role = user_membership.role
+                        team_members = list(
+                            ProjectTeamMember.objects.filter(
+                                team=team, 
+                                is_active=True
+                            ).select_related('user__student_profile')[:50]
+                        )
+                except ProjectTeamMember.DoesNotExist:
+                    pass
 
-        # OPTIMIZATION: Use prefetched invitations
-        pending_invitations = list(team.invitations.all())
+        except ProjectTeam.DoesNotExist:
+            pass
 
-    except ProjectTeam.DoesNotExist:
-        can_manage_team = request.user == project.user if request.user.is_authenticated else False
+    # ULTRA-OPTIMIZATION: Use prefetched tasks and milestones (already loaded)
+    tasks = list(project.tasks.all()[:50])
+    milestones = list(project.milestones.all()[:30])
 
-    # OPTIMIZATION: Limit tasks and milestones
-    tasks = project.tasks.all().order_by('created_at')[:100]
-    milestones = project.milestones.all().order_by('created_at')[:50]
-
-    # Calculate task statistics
-    task_stats = tasks.aggregate(
-        completed=Count('id', filter=Q(status='completed')),
-        total=Count('id')
-    )
-    completed_tasks_count = task_stats['completed']
-    total_tasks_count = task_stats['total']
-
-    # Task status breakdown
-    task_status_counts = []
-    status_counts = tasks.values('status').annotate(count=Count('id'))
+    # Calculate task statistics (from prefetched data)
+    completed_tasks = sum(1 for t in tasks if t.status == 'completed')
+    total_tasks = len(tasks)
+    
+    # Task status breakdown (computed from prefetched data)
+    task_status_dict = {}
     status_dict = {status: label for status, label in ProjectTask.STATUS_CHOICES}
-    for item in status_counts:
-        if item['count'] > 0:
-            task_status_counts.append({
-                'status': item['status'], 
-                'label': status_dict.get(item['status'], item['status']), 
-                'count': item['count']
-            })
+    for task in tasks:
+        if task.status not in task_status_dict:
+            task_status_dict[task.status] = 0
+        task_status_dict[task.status] += 1
+    
+    task_status_counts = [
+        {
+            'status': status,
+            'label': status_dict.get(status, status),
+            'count': count
+        }
+        for status, count in task_status_dict.items()
+    ]
 
-    # Milestone statistics
-    milestone_stats = milestones.aggregate(
-        completed=Count('id', filter=Q(is_completed=True)),
-        total=Count('id')
-    )
-    completed_milestones_count = milestone_stats['completed']
-    total_milestones_count = milestone_stats['total']
+    # Milestone statistics (computed from prefetched data)
+    completed_milestones = sum(1 for m in milestones if m.is_completed)
+    total_milestones = len(milestones)
 
-    # OPTIMIZATION: Get potential team members only if needed
+    # ULTRA-OPTIMIZATION: Only fetch potential members if absolutely needed
     potential_members = []
-    if can_manage_team and request.user.is_authenticated:
-        # OPTIMIZATION: Limit connected users query and add authentication check
+    if can_manage_team:
         connected_users = Connection.objects.filter(
             Q(sender=request.user, status='accepted') |
             Q(receiver=request.user, status='accepted')
-        ).select_related('sender__student_profile', 'receiver__student_profile')[:50]
+        ).select_related('sender__student_profile', 'receiver__student_profile').only(
+            'sender__id', 'sender__student_profile__full_name',
+            'receiver__id', 'receiver__student_profile__full_name'
+        )[:30]
 
-        # OPTIMIZATION: Get existing members in single query
-        existing_member_ids = set()
+        existing_member_ids = {project.user.id}
         if team:
-            existing_member_ids = set(
-                ProjectTeamMember.objects.filter(
-                    team=team, 
-                    is_active=True
-                ).values_list('user_id', flat=True)
-            )
-        existing_member_ids.add(project.user.id)
+            existing_ids = ProjectTeamMember.objects.filter(
+                team=team, 
+                is_active=True
+            ).values_list('user_id', flat=True)
+            existing_member_ids.update(existing_ids)
 
         for conn in connected_users:
-            other_user = conn.receiver if conn.sender == request.user else conn.sender
+            other_user = conn.receiver if conn.sender_id == request.user.id else conn.sender
             if other_user.id not in existing_member_ids:
                 potential_members.append(other_user)
 
@@ -1878,11 +1904,11 @@ def project_detail(request, project_id):
         'milestones': milestones,
 
         # Task statistics
-        'completed_tasks_count': completed_tasks_count,
-        'total_tasks_count': total_tasks_count,
+        'completed_tasks_count': completed_milestones,
+        'total_tasks_count': total_tasks,
         'task_status_counts': task_status_counts,
-        'completed_milestones_count': completed_milestones_count,
-        'total_milestones_count': total_milestones_count,
+        'completed_milestones_count': completed_milestones,
+        'total_milestones_count': total_milestones,
     })
 
 
@@ -2537,48 +2563,6 @@ def follow_user(request, user_id):
     UserStats.objects.get_or_create(user=target_user, defaults={})[0].update_stats()
 
     return redirect(request.META.get('HTTP_REFERER', 'find_collaborators'))
-
-
-@login_required
-def like_project(request, project_id):
-    """Like or unlike a project"""
-    project = get_object_or_404(Project, id=project_id)
-
-    if project.user == request.user:
-        messages.error(request, "You cannot like your own project.")
-        return redirect('project_detail', project_id=project_id)
-
-    like, created = Like.objects.get_or_create(
-        user=request.user,
-        content_type='project',
-        project=project,
-        defaults={}
-    )
-
-    if not created:
-        # User was already liking, so unlike
-        like.delete()
-
-        # Remove the like activity
-        Activity.objects.filter(
-            user=request.user,
-            activity_type='project_liked',
-            project=project
-        ).delete()
-
-        messages.success(request, f"You unliked '{project.title}'.")
-    else:
-        # User liked the project
-        create_notification(
-            user=project.user,
-            notification_type='project_like',
-            title=f'{request.user.username} liked your project',
-            message=f'{request.user.username} liked your project "{project.title}"',
-            from_user=request.user
-        )
-        messages.success(request, f"You liked '{project.title}'!")
-
-    return redirect('project_detail', project_id=project_id)
 
 
 @login_required
