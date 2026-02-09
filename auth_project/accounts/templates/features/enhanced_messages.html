@@ -741,16 +741,6 @@
                                     <i data-lucide="search" class="w-5 h-5"></i>
                                 </button>
 
-                                <!-- Voice Call -->
-                                <button onclick="startVoiceCall()" class="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition" title="Voice call">
-                                    <i data-lucide="phone" class="w-5 h-5"></i>
-                                </button>
-
-                                <!-- Video Call -->
-                                <button onclick="startVideoCall()" class="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Video call">
-                                    <i data-lucide="video" class="w-5 h-5"></i>
-                                </button>
-
                                 <!-- Chat Menu -->
                                 <button onclick="toggleChatMenu()" class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="More options">
                                     <i data-lucide="more-vertical" class="w-5 h-5"></i>
@@ -1543,21 +1533,6 @@
             // Clear search highlights (simulated)
         }
 
-        // Voice/Video call functionality (simulated)
-        function startVoiceCall() {
-            showNotification('Starting voice call...', 'info');
-            setTimeout(() => {
-                showNotification('Voice call connected! 📞', 'success');
-            }, 2000);
-        }
-
-        function startVideoCall() {
-            showNotification('Starting video call...', 'info');
-            setTimeout(() => {
-                showNotification('Video call connected! 📹', 'success');
-            }, 2000);
-        }
-
         function toggleChatMenu() {
             // Show chat options menu (simulated)
             showNotification('Chat menu opened', 'info');
@@ -2154,8 +2129,6 @@
         window.showMessageMenu = showMessageMenu;
         window.toggleChatSearch = toggleChatSearch;
         window.clearChatSearch = clearChatSearch;
-        window.startVoiceCall = startVoiceCall;
-        window.startVideoCall = startVideoCall;
         window.toggleChatMenu = toggleChatMenu;
         window.downloadFile = downloadFile;
         window.showNotification = showNotification;

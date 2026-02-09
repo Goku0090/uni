@@ -9,6 +9,13 @@ from .chat_api import (
     MessageReactionView, ConversationListView
 )
 from .comment_api import add_comment, get_comments, delete_comment, edit_comment
+# Template functionality temporarily disabled
+# from .template_api import (
+#     templates_list_view, template_detail_view, use_template_view,
+#     quick_create_from_template, rate_template, get_user_template_rating,
+#     ProjectTemplateListView, ProjectTemplateDetailView,
+#     api_create_from_template, api_rate_template, get_template_json
+# )
 
 urlpatterns = [
     # Main pages
@@ -70,7 +77,6 @@ urlpatterns = [
     path('enhanced-chat/<int:room_id>/', views.enhanced_chat_view, name='enhanced_chat'),
     path('create-group-chat/', views.create_group_chat, name='create_group_chat'),
     path('add-reaction/<int:message_id>/', views.add_reaction, name='add_reaction'),
-    path('start-call/<int:room_id>/', views.start_call, name='start_call'),
 
     # File handling
     path('download-file/<int:file_id>/', views.download_file, name='download_file'),
@@ -126,4 +132,10 @@ urlpatterns = [
     path('projects/<int:project_id>/comments/add/', add_comment, name='add-comment'),
     path('comments/<int:comment_id>/delete/', delete_comment, name='delete-comment'),
     path('comments/<int:comment_id>/edit/', edit_comment, name='edit-comment'),
+
+    # =============================================
+    # TEMPLATE ROUTES TEMPORARILY DISABLED
+    # =============================================
+    # All template routes removed for now
+    # To re-enable, uncomment template_api imports and re-add these routes
 ]

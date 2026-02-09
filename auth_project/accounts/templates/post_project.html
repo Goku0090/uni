@@ -23,6 +23,57 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <!-- Template styles -->
+  <style>
+    .template-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .template-card:hover {
+      border-color: rgba(102, 126, 234, 0.6);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .template-card.selected {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+      border-color: rgba(102, 126, 234, 0.8);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    }
+    
+    .template-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .template-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #EAEAEA;
+      margin-bottom: 4px;
+    }
+    
+    .template-desc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.3;
+    }
+    
+    .template-rating {
+      font-size: 10px;
+      color: var(--success);
+      margin-top: 6px;
+    }
+  </style>
+
   <style>
     :root{
       --accent-1: #667eea;
@@ -367,17 +418,37 @@
   <!-- Notification container -->
   <div class="notification-container" id="notificationContainer" aria-live="polite" aria-atomic="true"></div>
 
-  <nav class="glass sticky top-4 mx-6 p-3 page" role="navigation" aria-label="Main navigation">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <a href="{% url 'main_home' %}" class="logo-link text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400" title="Back to Home">
-          <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-8 w-8 object-contain">
-          <span>UniSinq</span>
+  <nav class="glass sticky top-4 mx-6 p-4 page" role="navigation" aria-label="Main navigation" style="backdrop-filter: blur(12px); background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+    <div class="flex items-center justify-between" style="gap: 24px;">
+      <!-- Logo Section -->
+      <div class="flex items-center gap-4" style="flex: 1;">
+        <a href="{% url 'main_home' %}" class="logo-link" title="Back to Home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; transition: transform 0.3s ease; transform-origin: left;">
+          <!-- UniSync Logo Image -->
+          <img src="{% static 'image/WhatsApp Image 2025-11-05 at 13.35.52_c3e25622.jpg' %}" alt="UniSync Logo" style="height: 45px; width: auto; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+          <!-- Brand Text -->
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 16px; font-weight: 800; background: linear-gradient(90deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px;">UNISYNC</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 500;">Post a Project</div>
+          </div>
         </a>
-        <div class="text-sm muted">Create a project & find collaborators</div>
       </div>
-      <div class="flex items-center gap-3">
-        <button class="btn-primary" onclick="showProjectPreview()" title="Preview project"><i data-lucide="eye" class="w-4 h-4 mr-2 inline"></i>Preview</button>
+      
+      <!-- Center Status -->
+      <div style="display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center;">
+        <div style="font-size: 13px; color: rgba(255,255,255,0.6); padding: 8px 14px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          📝 Create a project & find collaborators
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex items-center gap-3" style="flex: 1; justify-content: flex-end;">
+        <button class="btn-primary" onclick="showProjectPreview()" title="Preview project" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600;">
+          <i data-lucide="eye" class="w-4 h-4"></i>
+          <span>Preview</span>
+        </button>
+        <a href="{% url 'main_home' %}" title="Cancel and go home" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); transition: all 0.2s ease; text-decoration: none;">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </a>
       </div>
     </div>
   </nav>
@@ -425,6 +496,8 @@
 
         <form id="projectForm" method="POST" enctype="multipart/form-data" novalidate>
           {% csrf_token %}
+          
+
 
           <!-- Step 1 -->
           <div id="step1" class="panel visible" role="tabpanel" aria-labelledby="step1-indicator">
@@ -1055,6 +1128,144 @@
     if(currentStep>1) showStepCompletion();
   }
 
+  // ============================================================================
+  // TEMPLATE SELECTION & AUTO-FILL
+  // ============================================================================
+  
+  // Template auto-fill mappings
+  const templateMappings = {
+    // Web Development
+    'web-app': {
+      category: 'web-development',
+      technologies: ['React', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
+      looking_for: ['Frontend Developer', 'Backend Developer', 'DevOps Engineer']
+    },
+    // Mobile Development
+    'mobile-app': {
+      category: 'mobile-app',
+      technologies: ['React Native', 'Firebase', 'Kotlin', 'Swift'],
+      looking_for: ['Mobile Developer', 'UI/UX Designer', 'QA Tester']
+    },
+    // AI/ML
+    'ai-ml': {
+      category: 'ai-ml',
+      technologies: ['Python', 'TensorFlow', 'PyTorch', 'Jupyter'],
+      looking_for: ['ML Engineer', 'Data Scientist', 'Python Developer']
+    },
+    // Data Science
+    'data-science': {
+      category: 'data-science',
+      technologies: ['Python', 'Pandas', 'SQL', 'Tableau'],
+      looking_for: ['Data Analyst', 'Database Admin', 'Data Scientist']
+    },
+    // Blockchain
+    'blockchain': {
+      category: 'blockchain',
+      technologies: ['Solidity', 'Web3.js', 'Ethereum', 'Smart Contracts'],
+      looking_for: ['Smart Contract Dev', 'Blockchain Dev', 'Security Auditor']
+    }
+  };
+  
+  // Template functionality temporarily disabled
+  /*
+  function selectTemplate(templateId, event) {
+    // Template auto-fill temporarily disabled
+  }
+  
+  function fetchAndFillTemplate(templateId) {
+    // Template fetching temporarily disabled
+  }
+  
+  function fillFormFromTemplate(template) {
+    // Template form filling temporarily disabled
+    
+    // Fill short description
+    if(template.template_description && document.getElementById('shortDescription')) {
+      document.getElementById('shortDescription').value = template.template_description;
+      updateCharCount();
+    }
+    
+    // Fill category
+    if(template.category && document.getElementById('projectCategory')) {
+      document.getElementById('projectCategory').value = template.category;
+      document.getElementById('projectCategory').dispatchEvent(new Event('change'));
+    }
+    
+    // Fill technologies
+    if(template.template_technologies && Array.isArray(template.template_technologies)) {
+      const techSelect = document.querySelector('#technologies');
+      if(techSelect && techSelect.tomselect) {
+        const tom = techSelect.tomselect;
+        template.template_technologies.forEach(tech => {
+          if(!tom.items.includes(tech)) {
+            tom.addItem(tech);
+          }
+        });
+      }
+    }
+    
+    // Fill looking_for roles
+    if(template.template_looking_for && Array.isArray(template.template_looking_for)) {
+      const rolesSelect = document.querySelector('#looking_for');
+      if(rolesSelect && rolesSelect.tomselect) {
+        const tom = rolesSelect.tomselect;
+        template.template_looking_for.forEach(role => {
+          if(!tom.items.includes(role)) {
+            tom.addItem(role);
+          }
+        });
+      }
+    }
+    
+    // Fill collaboration needs if exists
+    if(template.template_collaboration_needs && document.getElementById('collaborationNeeds')) {
+      document.getElementById('collaborationNeeds').value = template.template_collaboration_needs;
+    }
+    
+    // Fill timeline if exists
+    if(template.suggested_timeline && document.getElementById('timeline')) {
+      document.getElementById('timeline').value = template.suggested_timeline;
+    }
+    
+    showNotification('Template fields pre-filled!', 'success', 1500);
+  }
+  
+  function clearTemplateFields() {
+    // Clear template-filled fields when switching to "from scratch"
+    // Keep user's manual edits, just reset to empty
+    if(document.getElementById('projectTitle')) {
+      document.getElementById('projectTitle').value = '';
+    }
+  }
+  
+  function autoFillFromTemplate(templateKey) {
+    const mapping = templateMappings[templateKey];
+    if(!mapping) return;
+    
+    // Set category
+    if(mapping.category && document.getElementById('projectCategory')) {
+      document.getElementById('projectCategory').value = mapping.category;
+      document.getElementById('projectCategory').dispatchEvent(new Event('change'));
+    }
+    
+    // Set technologies
+    if(mapping.technologies && document.querySelector('#technologies')?.tomselect) {
+      const tom = document.querySelector('#technologies').tomselect;
+      mapping.technologies.forEach(t => {
+        if(!tom.items.includes(t)) tom.addItem(t);
+      });
+    }
+    
+    // Set looking_for roles
+    if(mapping.looking_for && document.querySelector('#looking_for')?.tomselect) {
+      const tom = document.querySelector('#looking_for').tomselect;
+      mapping.looking_for.forEach(r => {
+        if(!tom.items.includes(r)) tom.addItem(r);
+      });
+    }
+    }
+    */
+
   // Utility: small delayed initialization for TomSelect addOption suggestions
   // Suggest technologies based on category
   document.getElementById('projectCategory').addEventListener('change', function(){
@@ -1081,6 +1292,9 @@
   window.openAISuggestions = openAISuggestions;
   window.suggestTitle = suggestTitle;
   window.applySuggestion = applySuggestion;
+  // Template functions temporarily disabled
+  // window.selectTemplate = selectTemplate;
+  // window.autoFillFromTemplate = autoFillFromTemplate;
 
 </script>
 

@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ template.template_title }} | UniSinq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    {% csrf_token %}
+
+    <!-- Navbar -->
+    <nav class="bg-black/30 backdrop-blur-lg shadow-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'main_home' %}" class="flex items-center space-x-2 hover:opacity-90 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 rounded-full object-cover shadow-lg">
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">UniSinq</span>
+                </a>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'templates_list' %}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-full transition font-semibold">⬅ Back to Templates</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="max-w-5xl mx-auto px-6 py-12">
+            
+            <!-- Template Header -->
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 mb-8">
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div class="col-span-2">
+                        <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
+                            {{ template.template_title }}
+                        </h1>
+                        <p class="text-gray-300 text-lg leading-relaxed mb-4">
+                            {{ template.template_description }}
+                        </p>
+                        
+                        <!-- Metadata -->
+                        <div class="flex flex-wrap gap-6 text-sm mb-6">
+                            <div>
+                                <span class="text-gray-400">Category:</span>
+                                <span class="ml-2 px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
+                                    {{ template.get_category_display }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Difficulty:</span>
+                                <span class="ml-2 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full">
+                                    {{ template.get_difficulty_level_display }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Timeline:</span>
+                                <span class="ml-2 text-gray-300">{{ template.suggested_timeline }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="flex items-center">
+                                {% for i in "12345" %}
+                                    <span class="text-yellow-400">★</span>
+                                {% endfor %}
+                                <span class="ml-2 text-xl font-bold">{{ template.rating|floatformat:1 }}</span>
+                                <span class="ml-2 text-gray-400">({{ template.rating_count }} ratings)</span>
+                            </div>
+                            <div class="text-gray-400 ml-4">
+                                📊 Used {{ template.usage_count }} times
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Card -->
+                    <div class="bg-white/10 border border-purple-500/30 rounded-2xl p-6 h-fit">
+                        <div class="text-center mb-6">
+                            <p class="text-gray-400 text-sm mb-2">Ready to start?</p>
+                            <a href="{% url 'use_template' template.id %}" 
+                               class="block w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-bold transition transform hover:scale-105">
+                                Use This Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technologies & Requirements -->
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <!-- Technologies -->
+                    <div>
+                        <h3 class="text-lg font-bold text-purple-300 mb-4">💻 Technologies</h3>
+                        {% if template.template_technologies %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for tech in template.template_technologies %}
+                                    <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm border border-blue-500/30">
+                                        {{ tech }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-gray-400">No specific technologies required</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Looking For -->
+                    <div>
+                        <h3 class="text-lg font-bold text-pink-300 mb-4">👥 Looking For</h3>
+                        {% if template.template_looking_for %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for role in template.template_looking_for %}
+                                    <span class="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-sm border border-pink-500/30">
+                                        {{ role }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-gray-400">Various team members welcome</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Collaboration Needs -->
+                {% if template.template_collaboration_needs %}
+                <div class="bg-white/5 rounded-xl p-6 mb-8">
+                    <h3 class="text-lg font-bold text-green-300 mb-3">🤝 Collaboration Needs</h3>
+                    <p class="text-gray-300">{{ template.template_collaboration_needs }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Rating Section -->
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 mb-8">
+                <h2 class="text-2xl font-bold text-purple-300 mb-6">⭐ Community Ratings</h2>
+                
+                <!-- Rating Stats -->
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-4">Rating Distribution</h3>
+                        <div class="space-y-3">
+                            {% for stars, data in rating_distribution.items %}
+                                <div class="flex items-center gap-3">
+                                    <span class="w-12 text-right text-gray-400">{{ stars }} ★</span>
+                                    <div class="flex-1 h-6 bg-gray-700 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-yellow-500 to-orange-500" 
+                                             style="width: {{ data.percentage }}%"></div>
+                                    </div>
+                                    <span class="w-12 text-right text-gray-400">{{ data.count }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- User Rating Form -->
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-4">Your Rating</h3>
+                        {% if user_rating %}
+                            <div class="bg-white/10 rounded-xl p-4 mb-4">
+                                <p class="text-gray-400 text-sm mb-2">Your rating:</p>
+                                <div class="flex items-center gap-2 mb-4">
+                                    {% for i in "12345" %}
+                                        <button class="text-2xl rating-star transition" data-rating="{{ i }}" 
+                                                style="color: {% if i <= user_rating.rating %}#FBBF24{% else %}#6B7280{% endif %}">★</button>
+                                    {% endfor %}
+                                </div>
+                                {% if user_rating.review %}
+                                    <p class="text-gray-400 text-sm italic">{{ user_rating.review }}</p>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="bg-white/10 rounded-xl p-4">
+                                <p class="text-gray-400 text-sm mb-3">Rate this template</p>
+                                <div class="flex gap-2 mb-4">
+                                    {% for i in "12345" %}
+                                        <button class="text-3xl rating-star transition hover:scale-125" data-rating="{{ i }}" 
+                                                style="color: #6B7280;">★</button>
+                                    {% endfor %}
+                                </div>
+                                <textarea class="w-full bg-gray-800 text-white rounded px-3 py-2 text-sm" 
+                                          id="review-text" placeholder="Share your thoughts..."></textarea>
+                                <button onclick="submitRating()" 
+                                        class="mt-3 w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition">
+                                    Submit Rating
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Ratings -->
+                {% if ratings %}
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4">Recent Ratings</h3>
+                    <div class="space-y-4">
+                        {% for rating in ratings|slice:":5" %}
+                            <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <p class="text-white font-semibold">{{ rating.user.student_profile.full_name|default:rating.user.username }}</p>
+                                        <p class="text-gray-400 text-sm">{{ rating.created_at|timesince }} ago</p>
+                                    </div>
+                                    <div class="text-yellow-400 text-lg">
+                                        {% for i in "12345" %}
+                                            {% if i <= rating.rating %}★{% else %}☆{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% if rating.review %}
+                                    <p class="text-gray-300 text-sm">{{ rating.review }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Projects Using This Template -->
+            {% if recent_usages %}
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                <h2 class="text-2xl font-bold text-purple-300 mb-6">🚀 Recent Projects Using This Template</h2>
+                <div class="space-y-4">
+                    {% for usage in recent_usages %}
+                        <div class="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-purple-500/50 transition">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="text-white font-bold mb-1">{{ usage.project.title }}</h4>
+                                    <p class="text-gray-400 text-sm">Started by {{ usage.user.student_profile.full_name|default:usage.user.username }}</p>
+                                    <p class="text-gray-500 text-xs">{{ usage.created_at|timesince }} ago</p>
+                                </div>
+                                <a href="{% url 'project_detail' usage.project.id %}" 
+                                   class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-semibold transition">
+                                    View Project
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 border-t border-white/10 mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="text-center text-gray-400 text-sm">
+                <p>&copy; 2026 UniSinq. All rights reserved. | <a href="#" class="hover:text-white">Privacy Policy</a> | <a href="#" class="hover:text-white">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentRating = 0;
+
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = this.dataset.rating;
+                updateStarDisplay();
+            });
+            star.addEventListener('mouseover', function() {
+                updateStarDisplayForHover(this.dataset.rating);
+            });
+        });
+
+        document.addEventListener('mouseleave', () => {
+            updateStarDisplay();
+        });
+
+        function updateStarDisplay() {
+            document.querySelectorAll('.rating-star').forEach(star => {
+                star.style.color = star.dataset.rating <= currentRating ? '#FBBF24' : '#6B7280';
+            });
+        }
+
+        function updateStarDisplayForHover(hoverRating) {
+            document.querySelectorAll('.rating-star').forEach(star => {
+                star.style.color = star.dataset.rating <= hoverRating ? '#FBBF24' : '#6B7280';
+            });
+        }
+
+        function submitRating() {
+            const review = document.getElementById('review-text').value;
+            if (currentRating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+
+            fetch('{% url "rate_template" template.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    rating: currentRating,
+                    review: review
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Rating submitted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

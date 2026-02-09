@@ -4,7 +4,10 @@ Provides API serialization for models
 """
 
 from rest_framework import serializers
-from .models import StudentProfile, Project, Message, Connection, Notification
+from .models import (
+    StudentProfile, Project, Message, Connection, Notification,
+    ProjectTemplate, TemplateRating
+)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -104,3 +107,59 @@ class NotificationSerializer(serializers.ModelSerializer):
             'from_user', 'created_at', 'is_read'
         ]
         read_only_fields = ['id', 'created_at']
+
+
+class ProjectTemplateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for ProjectTemplate model
+    """
+    rating_distribution = serializers.SerializerMethodField()
+    user_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectTemplate
+        fields = [
+            'id', 'name', 'category', 'description', 'icon',
+            'template_title', 'template_description', 'template_technologies',
+            'template_looking_for', 'template_collaboration_needs', 'suggested_timeline', 'suggested_team_size',
+            'difficulty_level', 'example_projects', 'learning_resources',
+            'rating', 'rating_count', 'usage_count',
+            'is_featured', 'rating_distribution', 'user_rating'
+        ]
+        read_only_fields = ['id', 'rating', 'rating_count', 'usage_count']
+
+    def get_rating_distribution(self, obj):
+        """Get distribution of ratings"""
+        distribution = {str(i): 0 for i in range(1, 6)}
+        ratings = obj.user_ratings.values('rating')
+        for r in ratings:
+            distribution[str(r['rating'])] += 1
+        return distribution
+
+    def get_user_rating(self, obj):
+        """Get current user's rating if authenticated"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            rating = obj.user_ratings.filter(user=request.user).first()
+            if rating:
+                return {
+                    'rating': rating.rating,
+                    'review': rating.review
+                }
+        return None
+
+
+class TemplateRatingSerializer(serializers.ModelSerializer):
+    """
+    Serializer for TemplateRating model
+    """
+    user = serializers.StringRelatedField(read_only=True)
+    template_name = serializers.CharField(source='template.name', read_only=True)
+
+    class Meta:
+        model = TemplateRating
+        fields = [
+            'id', 'template_name', 'user', 'rating', 'review',
+            'helpful_count', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'helpful_count']

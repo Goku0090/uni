@@ -298,16 +298,6 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="startVoiceCall()"
-                        class="p-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl transition-all duration-300 transform hover:scale-110 shadow-lg"
-                        title="Voice Call">
-                    <i data-lucide="phone" class="w-5 h-5 text-white"></i>
-                </button>
-                <button onclick="startVideoCall()"
-                        class="p-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl transition-all duration-300 transform hover:scale-110 shadow-lg"
-                        title="Video Call">
-                    <i data-lucide="video" class="w-5 h-5 text-white"></i>
-                </button>
                 <button onclick="showRoomSettings()"
                         class="p-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-all duration-300"
                         title="Room Settings">
@@ -1071,75 +1061,7 @@
             alert('Full thread view coming soon! 📄');
         }
 
-        // Call functionality
-        async function startVoiceCall() {
-            await startCall('voice');
-        }
 
-        async function startVideoCall() {
-            await startCall('video');
-        }
-
-        async function startCall(callType) {
-            try {
-                const response = await fetch(`/start-call/{{ chat_room.id }}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: `call_type=${callType}`
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    // Show call interface
-                    showCallInterface(callType, data.call_id);
-
-                    // Here you would integrate with WebRTC for actual calling
-                    showSuccessNotification(`${callType.charAt(0).toUpperCase() + callType.slice(1)} call started!`);
-                } else {
-                    showErrorNotification(data.error || 'Failed to start call');
-                }
-            } catch (error) {
-                console.error('Error starting call:', error);
-                showErrorNotification('Failed to start call');
-            }
-        }
-
-        function showCallInterface(callType, callId) {
-            const callInterface = document.createElement('div');
-            callInterface.id = 'call-interface';
-            callInterface.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center';
-            callInterface.innerHTML = `
-                <div class="bg-gray-800 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
-                    <div class="text-center">
-                        <div class="w-20 h-20 bg-gradient-to-r from-${callType === 'video' ? 'blue' : 'green'}-500 to-${callType === 'video' ? 'cyan' : 'emerald'}-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                            <i data-lucide="${callType === 'video' ? 'video' : 'phone'}" class="w-10 h-10 text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-white mb-2">${callType.charAt(0).toUpperCase() + callType.slice(1)} Call</h3>
-                        <p class="text-gray-400 mb-6">Connecting...</p>
-                        <div class="flex gap-4 justify-center">
-                            <button onclick="endCall()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition">
-                                <i data-lucide="phone-off" class="w-5 h-5 inline mr-2"></i>
-                                End Call
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(callInterface);
-            lucide.createIcons();
-        }
-
-        function endCall() {
-            const callInterface = document.getElementById('call-interface');
-            if (callInterface) {
-                callInterface.remove();
-            }
-            showSuccessNotification('Call ended');
-        }
 
         function showSuccessNotification(message) {
             const notification = document.createElement('div');

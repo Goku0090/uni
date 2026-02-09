@@ -1,0 +1,70 @@
+name: Django Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r auth_project/requirements.txt
+    
+    - name: Set up environment
+      run: |
+        cp auth_project/.env.template auth_project/.env
+        sed -i 's/DATABASE_URL=.*/DATABASE_URL=postgresql:\/\/postgres:postgres@localhost:5432\/test_db/' auth_project/.env
+    
+    - name: Run migrations
+      run: |
+        cd auth_project
+        python manage.py migrate
+    
+    - name: Run Django tests
+      run: |
+        cd auth_project
+        python manage.py test --verbosity 2
+    
+    - name: Check code style with flake8
+      if: always()
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 auth_project --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 auth_project --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics

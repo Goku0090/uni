@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project from {{ template.template_title }} | UniSinq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    {% csrf_token %}
+
+    <!-- Navbar -->
+    <nav class="bg-black/30 backdrop-blur-lg shadow-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'main_home' %}" class="flex items-center space-x-2 hover:opacity-90 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 rounded-full object-cover shadow-lg">
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">UniSinq</span>
+                </a>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'template_detail' template.id %}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-full transition font-semibold">⬅ Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2">
+                    Create Project from Template
+                </h1>
+                <p class="text-gray-300">
+                    Using: <span class="text-purple-300 font-bold">{{ template.template_title }}</span>
+                </p>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Template Preview (Left) -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 sticky top-20">
+                        <h3 class="text-lg font-bold text-purple-300 mb-4">Template Overview</h3>
+                        
+                        <div class="space-y-6">
+                            <!-- Category -->
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Category</p>
+                                <p class="text-white font-semibold">{{ template.get_category_display }}</p>
+                            </div>
+
+                            <!-- Difficulty -->
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Difficulty</p>
+                                <p class="text-white font-semibold">{{ template.get_difficulty_level_display }}</p>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Suggested Timeline</p>
+                                <p class="text-white font-semibold">{{ template.suggested_timeline }}</p>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Description</p>
+                                <p class="text-gray-300 text-sm">{{ template.template_description }}</p>
+                            </div>
+
+                            <!-- Technologies -->
+                            {% if template.template_technologies %}
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Technologies</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for tech in template.template_technologies %}
+                                        <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs border border-blue-500/30">
+                                            {{ tech }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Looking For -->
+                            {% if template.template_looking_for %}
+                            <div>
+                                <p class="text-gray-400 text-xs uppercase tracking-wide mb-2">Team Roles Needed</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for role in template.template_looking_for %}
+                                        <span class="px-2 py-1 bg-pink-500/20 text-pink-300 rounded text-xs border border-pink-500/30">
+                                            {{ role }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form (Right) -->
+                <div class="lg:col-span-2">
+                    <form method="post" class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8">
+                        {% csrf_token %}
+
+                        <!-- Project Title -->
+                        <div class="mb-6">
+                            <label for="title" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Project Title *
+                            </label>
+                            <input type="text" 
+                                   id="title" 
+                                   name="title" 
+                                   value="{{ template.template_title }}"
+                                   placeholder="Enter your project title"
+                                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                   required>
+                            <p class="text-gray-400 text-xs mt-1">You can customize the title from the template</p>
+                        </div>
+
+                        <!-- Project Description -->
+                        <div class="mb-6">
+                            <label for="description" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Project Description *
+                            </label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      rows="5"
+                                      placeholder="Provide details about your project"
+                                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{{ template.template_description }}</textarea>
+                            <p class="text-gray-400 text-xs mt-1">Describe what you're building and why</p>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-6">
+                            <label for="category" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Category *
+                            </label>
+                            <select id="category" 
+                                    name="category"
+                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                    required>
+                                <option value="{{ template.category }}" selected>{{ template.get_category_display }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Technologies -->
+                        <div class="mb-6">
+                            <label for="technologies" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Technologies (comma-separated)
+                            </label>
+                            <textarea id="technologies" 
+                                      name="technologies"
+                                      rows="3"
+                                      placeholder="e.g., Python, React, PostgreSQL"
+                                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{% if template.template_technologies %}{{ template.template_technologies|join:", " }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- Looking For -->
+                        <div class="mb-6">
+                            <label for="looking_for" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Team Members Needed (comma-separated)
+                            </label>
+                            <textarea id="looking_for" 
+                                      name="looking_for"
+                                      rows="3"
+                                      placeholder="e.g., Frontend Developer, UI/UX Designer, Backend Developer"
+                                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{% if template.template_looking_for %}{{ template.template_looking_for|join:", " }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- Collaboration Needs -->
+                        <div class="mb-6">
+                            <label for="collaboration_needs" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Collaboration Details
+                            </label>
+                            <textarea id="collaboration_needs" 
+                                      name="collaboration_needs"
+                                      rows="3"
+                                      placeholder="Describe how you want to work with your team"
+                                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500">{{ template.template_collaboration_needs }}</textarea>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="mb-8">
+                            <label for="timeline" class="block text-sm font-semibold text-gray-300 mb-2">
+                                Project Timeline
+                            </label>
+                            <input type="text" 
+                                   id="timeline" 
+                                   name="timeline"
+                                   value="{{ template.suggested_timeline }}"
+                                   placeholder="e.g., 3 months, 6 months"
+                                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex gap-4">
+                            <button type="submit" 
+                                    class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold transition transform hover:scale-105">
+                                Create Project
+                            </button>
+                            <a href="{% url 'template_detail' template.id %}" 
+                               class="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold text-center transition">
+                                Cancel
+                            </a>
+                        </div>
+
+                        <!-- Info Text -->
+                        <p class="text-gray-400 text-xs mt-6 text-center">
+                            💡 After creating the project, you can further customize it and invite team members to collaborate.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 border-t border-white/10 mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="text-center text-gray-400 text-sm">
+                <p>&copy; 2026 UniSinq. All rights reserved. | <a href="#" class="hover:text-white">Privacy Policy</a> | <a href="#" class="hover:text-white">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Auto-update form fields based on template
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
+            
+            // Focus on title for user to customize
+            titleInput.focus();
+            titleInput.select();
+        });
+    </script>
+</body>
+</html>

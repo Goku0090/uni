@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Templates | UniSinq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    {% csrf_token %}
+
+    <!-- Navbar -->
+    <nav class="bg-black/30 backdrop-blur-lg shadow-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'main_home' %}" class="flex items-center space-x-2 hover:opacity-90 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 rounded-full object-cover shadow-lg">
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">UniSinq</span>
+                </a>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'main_home' %}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-full transition font-semibold">⬅ Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            
+            <!-- Header -->
+            <div class="mb-12">
+                <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
+                    Project Templates
+                </h1>
+                <p class="text-gray-300 text-lg">
+                    Kickstart your project with professionally designed templates. Choose from a variety of categories and get started in minutes!
+                </p>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Category Filter -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Category</label>
+                        <select id="category-filter" onchange="updateFilters()" 
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white">
+                            <option value="">All Categories</option>
+                            {% for value, label in categories %}
+                                <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Sort Filter -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Sort By</label>
+                        <select id="sort-filter" onchange="updateFilters()"
+                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white">
+                            <option value="-rating" {% if selected_sort == '-rating' %}selected{% endif %}>Highest Rated</option>
+                            <option value="usage_count" {% if selected_sort == 'usage_count' %}selected{% endif %}>Most Used</option>
+                            <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Search</label>
+                        <input type="text" id="search-filter" placeholder="Search templates..."
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for template in templates %}
+                <div class="group bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-2xl transition transform hover:-translate-y-1">
+                    <!-- Featured Badge -->
+                    {% if template.is_featured %}
+                        <div class="absolute top-4 right-4 px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs font-bold border border-yellow-500/30">
+                            ⭐ Featured
+                        </div>
+                    {% endif %}
+
+                    <!-- Template Info -->
+                    <div class="mb-4">
+                        <h3 class="text-xl font-bold text-purple-300 mb-2 line-clamp-2">
+                            {{ template.template_title }}
+                        </h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">
+                            {{ template.template_description }}
+                        </p>
+                    </div>
+
+                    <!-- Category & Difficulty -->
+                    <div class="flex gap-2 mb-4">
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs border border-purple-500/30">
+                            {{ template.get_category_display }}
+                        </span>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs border border-blue-500/30">
+                            {{ template.get_difficulty_level_display }}
+                        </span>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="flex justify-between items-center mb-4 text-sm text-gray-400">
+                        <div class="flex items-center gap-1">
+                            <span class="text-yellow-400">★</span>
+                            <span>{{ template.rating|floatformat:1 }} ({{ template.rating_count }})</span>
+                        </div>
+                        <div>📊 {{ template.usage_count }} used</div>
+                    </div>
+
+                    <!-- Technologies -->
+                    {% if template.template_technologies %}
+                    <div class="mb-4">
+                        <div class="flex flex-wrap gap-1">
+                            {% for tech in template.template_technologies|slice:":3" %}
+                                <span class="px-2 py-1 bg-gray-700/50 text-gray-300 rounded text-xs">
+                                    {{ tech }}
+                                </span>
+                            {% endfor %}
+                            {% if template.template_technologies|length > 3 %}
+                                <span class="px-2 py-1 bg-gray-700/50 text-gray-300 rounded text-xs">
+                                    +{{ template.template_technologies|length|add:"-3" }} more
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Buttons -->
+                    <div class="flex gap-2">
+                        <a href="{% url 'template_detail' template.id %}" 
+                           class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-center font-semibold transition">
+                            View Details
+                        </a>
+                        <a href="{% url 'use_template' template.id %}" 
+                           class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-center font-semibold transition">
+                            Use Template
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <p class="text-gray-400 text-lg">No templates found. Try adjusting your filters.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/50 border-t border-white/10 mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="text-center text-gray-400 text-sm">
+                <p>&copy; 2026 UniSinq. All rights reserved. | <a href="#" class="hover:text-white">Privacy Policy</a> | <a href="#" class="hover:text-white">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function updateFilters() {
+            const category = document.getElementById('category-filter').value;
+            const sort = document.getElementById('sort-filter').value;
+            const search = document.getElementById('search-filter').value;
+            
+            let url = '{% url "templates_list" %}?';
+            if (category) url += `category=${category}&`;
+            if (sort) url += `sort=${sort}&`;
+            if (search) url += `search=${search}&`;
+            
+            window.location.href = url;
+        }
+
+        // Live search
+        let searchTimeout;
+        document.getElementById('search-filter').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                updateFilters();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

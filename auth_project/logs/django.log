@@ -134067,3 +134067,516 @@ django.core.exceptions.FieldError: Unsupported lookup 'ne' for ForeignKey or joi
 [INFO] 2026-02-09 15:46:07 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\views.py changed, reloading.
 [INFO] 2026-02-09 15:46:12 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
 [INFO] 2026-02-09 15:46:14 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 15:47:38 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 155537
+[INFO] 2026-02-09 15:48:07 django.server log_message:213 - "GET /messages/ HTTP/1.1" 200 92460
+[INFO] 2026-02-09 15:48:26 django.server log_message:213 - "GET /api/activity-feed/ HTTP/1.1" 200 151543
+[INFO] 2026-02-09 15:49:00 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 155537
+[INFO] 2026-02-09 17:45:34 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 17:45:35 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 17:45:36 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 17:48:01 django.server log_message:213 - "GET / HTTP/1.1" 200 58511
+[INFO] 2026-02-09 17:48:01 django.server log_message:213 - "GET /static/images/189046-884476411_small.mp4 HTTP/1.1" 304 0
+[INFO] 2026-02-09 17:48:22 django.server log_message:213 - "GET /login/ HTTP/1.1" 200 32889
+[ERROR] 2026-02-09 17:48:27 django.request log_response:253 - Internal Server Error: /accounts/google/login/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\providers\oauth2\views.py", line 102, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\providers\base\views.py", line 15, in dispatch
+    provider = self.get_provider()
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\providers\oauth2\views.py", line 111, in get_provider
+    return self.adapter.get_provider()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\providers\oauth2\views.py", line 45, in get_provider
+    return get_adapter(self.request).get_provider(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.request, provider=self.provider_id
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\adapter.py", line 212, in get_provider
+    app = self.get_app(request, provider=provider, client_id=client_id)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\socialaccount\adapter.py", line 299, in get_app
+    raise MultipleObjectsReturned
+django.core.exceptions.MultipleObjectsReturned
+[ERROR] 2026-02-09 17:48:27 django.server log_message:213 - "GET /accounts/google/login/ HTTP/1.1" 500 100202
+[INFO] 2026-02-09 17:48:39 accounts.brevo_mail_backend __init__:56 - Brevo backend initialized successfully
+[INFO] 2026-02-09 17:48:40 accounts.brevo_mail_backend send_messages:90 - Email sent successfully to ['gautamnair94@gmail.com'] via Brevo
+[INFO] 2026-02-09 17:48:40 accounts.views send_otp_email:184 - OTP email sent successfully to gautamnair94@gmail.com for login
+[INFO] 2026-02-09 17:48:40 accounts.views login_view:352 - OTP generated and sent to gautamnair94@gmail.com for user Goku
+[INFO] 2026-02-09 17:48:42 django.server log_message:213 - "POST /login/ HTTP/1.1" 302 0
+[INFO] 2026-02-09 17:48:42 django.server log_message:213 - "GET /verify-otp/login/ HTTP/1.1" 200 3403
+[WARNING] 2026-02-09 17:48:42 django.server log_message:213 - "GET /static/css/style.css HTTP/1.1" 404 1966
+[INFO] 2026-02-09 17:48:53 accounts.brevo_mail_backend __init__:56 - Brevo backend initialized successfully
+[INFO] 2026-02-09 17:48:53 accounts.brevo_mail_backend send_messages:90 - Email sent successfully to ['gautamnair94@gmail.com'] via Brevo
+[INFO] 2026-02-09 17:48:53 accounts.services.auth_service send_welcome_back_email:202 - Welcome back email sent successfully to gautamnair94@gmail.com
+[INFO] 2026-02-09 17:48:53 accounts.views verify_otp_view:516 - User logged in successfully: Goku
+[INFO] 2026-02-09 17:48:54 django.server log_message:213 - "POST /verify-otp/login/ HTTP/1.1" 302 0
+[INFO] 2026-02-09 17:49:05 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 155526
+[INFO] 2026-02-09 17:56:53 django.server log_message:213 - "GET /messages/ HTTP/1.1" 200 92460
+[INFO] 2026-02-09 17:57:16 django.server log_message:213 - "GET /api/enhanced-chat/1/ HTTP/1.1" 200 82551
+[WARNING] 2026-02-09 17:57:23 django.request log_response:253 - Not Found: /start-call/1/
+[WARNING] 2026-02-09 17:57:23 django.server log_message:213 - "POST /start-call/1/ HTTP/1.1" 404 9204
+[WARNING] 2026-02-09 17:57:28 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 17:57:28 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[WARNING] 2026-02-09 17:57:36 django.request log_response:253 - Not Found: /start-call/1/
+[WARNING] 2026-02-09 17:57:36 django.server log_message:213 - "POST /start-call/1/ HTTP/1.1" 404 9204
+[INFO] 2026-02-09 18:06:13 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\views.py changed, reloading.
+[INFO] 2026-02-09 18:06:19 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:06:20 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:08:12 django.server log_message:213 - "GET /api/enhanced-chat/1/ HTTP/1.1" 200 84600
+[WARNING] 2026-02-09 18:08:13 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:08:13 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[WARNING] 2026-02-09 18:08:17 django.request log_response:253 - Not Found: /start-call/1/
+[WARNING] 2026-02-09 18:08:17 django.server log_message:213 - "POST /start-call/1/ HTTP/1.1" 404 9204
+[WARNING] 2026-02-09 18:08:34 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:08:34 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 18:09:11 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 18:09:13 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:09:13 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:13:20 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\models.py changed, reloading.
+[INFO] 2026-02-09 18:13:26 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:13:28 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:13:55 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\serializers.py changed, reloading.
+[INFO] 2026-02-09 18:13:56 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:13:57 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:14:07 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 18:14:08 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:14:08 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:19:17 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 155526
+[INFO] 2026-02-09 18:19:23 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 47372
+[INFO] 2026-02-09 18:20:51 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 155526
+[INFO] 2026-02-09 18:21:13 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 47280
+[INFO] 2026-02-09 18:26:36 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\views.py changed, reloading.
+[INFO] 2026-02-09 18:26:39 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:26:40 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[ERROR] 2026-02-09 18:28:20 django.request log_response:253 - Internal Server Error: /post-project/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "accounts_projecttemplate" does not exist
+LINE 1: ...at", "accounts_projecttemplate"."updated_at" FROM "accounts_...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\views.py", line 1706, in post_project
+        'projects': projects,
+           ^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    
+    
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 326, in render
+    if match:
+       ^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 398, in __bool__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "accounts_projecttemplate" does not exist
+LINE 1: ...at", "accounts_projecttemplate"."updated_at" FROM "accounts_...
+                                                             ^
+
+[ERROR] 2026-02-09 18:28:20 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 500 195579
+[INFO] 2026-02-09 18:29:24 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:29:32 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:30:07 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\views.py changed, reloading.
+[INFO] 2026-02-09 18:30:08 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:30:09 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:30:37 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:30:52 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:31:41 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:31:48 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:35:26 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 55868
+[WARNING] 2026-02-09 18:36:02 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:36:02 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 18:39:02 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:39:26 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\serializers.py changed, reloading.
+[INFO] 2026-02-09 18:39:27 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:39:28 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:42:29 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 60712
+[ERROR] 2026-02-09 18:42:50 django.request log_response:253 - Internal Server Error: /api/templates/1/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: accounts/template_detail.html
+[ERROR] 2026-02-09 18:42:50 django.server log_message:213 - "GET /api/templates/1/ HTTP/1.1" 500 100506
+[INFO] 2026-02-09 18:43:13 django.server log_message:213 - "POST /post-project/ HTTP/1.1" 302 0
+[INFO] 2026-02-09 18:43:14 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 61315
+[ERROR] 2026-02-09 18:43:26 django.request log_response:253 - Internal Server Error: /api/templates/2/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: accounts/template_detail.html
+[ERROR] 2026-02-09 18:43:26 django.server log_message:213 - "GET /api/templates/2/ HTTP/1.1" 500 100510
+[ERROR] 2026-02-09 18:43:49 django.request log_response:253 - Internal Server Error: /api/templates/3/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: accounts/template_detail.html
+[ERROR] 2026-02-09 18:43:49 django.server log_message:213 - "GET /api/templates/3/ HTTP/1.1" 500 100458
+[WARNING] 2026-02-09 18:43:50 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:43:50 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[ERROR] 2026-02-09 18:44:00 django.request log_response:253 - Internal Server Error: /api/templates/5/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: accounts/template_detail.html
+[ERROR] 2026-02-09 18:44:00 django.server log_message:213 - "GET /api/templates/5/ HTTP/1.1" 500 100024
+[ERROR] 2026-02-09 18:46:42 django.request log_response:253 - Internal Server Error: /api/templates/6/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: accounts/template_detail.html
+[ERROR] 2026-02-09 18:46:42 django.server log_message:213 - "GET /api/templates/6/ HTTP/1.1" 500 99964
+[INFO] 2026-02-09 18:49:01 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 61097
+[WARNING] 2026-02-09 18:49:01 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:49:01 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[ERROR] 2026-02-09 18:49:11 django.request log_response:253 - Internal Server Error: /api/templates/2/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 609, in compile_filter
+    return FilterExpression(token, self)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 705, in __init__
+    filter_func = parser.find_filter(filter_name)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 615, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'multiply'
+[ERROR] 2026-02-09 18:49:11 django.server log_message:213 - "GET /api/templates/2/ HTTP/1.1" 500 270971
+[ERROR] 2026-02-09 18:49:52 django.request log_response:253 - Internal Server Error: /api/templates/5/
+Traceback (most recent call last):
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "E:\login\auth_project\accounts\template_api.py", line 93, in template_detail_view
+    return render(request, 'accounts/template_detail.html', context)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 609, in compile_filter
+    return FilterExpression(token, self)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 705, in __init__
+    filter_func = parser.find_filter(filter_name)
+  File "C:\Users\GAUTAM\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 615, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'multiply'
+[ERROR] 2026-02-09 18:49:52 django.server log_message:213 - "GET /api/templates/5/ HTTP/1.1" 500 270995
+[INFO] 2026-02-09 18:50:40 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\template_api.py changed, reloading.
+[INFO] 2026-02-09 18:50:41 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:50:42 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 18:52:19 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 61097
+[WARNING] 2026-02-09 18:52:19 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:52:19 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 18:52:26 django.server log_message:213 - "GET /api/templates/2/ HTTP/1.1" 200 17357
+[INFO] 2026-02-09 18:54:42 django.server log_message:213 - "GET /api/templates/3/ HTTP/1.1" 200 17612
+[WARNING] 2026-02-09 18:54:52 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 18:54:52 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 18:55:26 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 18:55:27 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 18:55:27 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:12:15 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 61510
+[INFO] 2026-02-09 19:12:19 django.server log_message:213 - "GET /api/templates/6/ HTTP/1.1" 200 17607
+[INFO] 2026-02-09 19:12:27 django.server log_message:213 - "GET /api/templates/2/ HTTP/1.1" 200 17357
+[WARNING] 2026-02-09 19:12:33 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 19:12:33 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 19:13:01 django.server log_message:213 - "GET /api/templates/3/ HTTP/1.1" 200 17612
+[INFO] 2026-02-09 19:13:35 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\template_api.py changed, reloading.
+[INFO] 2026-02-09 19:13:36 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:13:36 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:13:41 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\template_api.py changed, reloading.
+[INFO] 2026-02-09 19:13:42 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:13:42 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:13:47 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 19:13:48 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:13:48 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:22:14 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 61748
+[WARNING] 2026-02-09 19:22:14 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 19:22:14 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[WARNING] 2026-02-09 19:22:19 django.request log_response:253 - Not Found: /api/template/1/json/
+[WARNING] 2026-02-09 19:22:19 django.server log_message:213 - "GET /api/template/1/json/ HTTP/1.1" 404 32104
+[INFO] 2026-02-09 19:29:47 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 62239
+[WARNING] 2026-02-09 19:29:47 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 19:29:47 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 19:29:51 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 62239
+[WARNING] 2026-02-09 19:29:51 django.request log_response:253 - Not Found: /favicon.ico
+[WARNING] 2026-02-09 19:29:51 django.server log_message:213 - "GET /favicon.ico HTTP/1.1" 404 9197
+[INFO] 2026-02-09 19:29:55 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 62239
+[WARNING] 2026-02-09 19:29:56 django.request log_response:253 - Not Found: /favicon.ico
+[WARNING] 2026-02-09 19:29:56 django.server log_message:213 - "GET /favicon.ico HTTP/1.1" 404 9197
+[WARNING] 2026-02-09 19:29:57 django.request log_response:253 - Not Found: /api/template/2/json/
+[WARNING] 2026-02-09 19:29:57 django.server log_message:213 - "GET /api/template/2/json/ HTTP/1.1" 404 32104
+[INFO] 2026-02-09 19:29:59 django.server log_message:213 - "GET /api/templates/2/ HTTP/1.1" 200 17357
+[WARNING] 2026-02-09 19:30:04 django.request log_response:253 - Not Found: /api/template/3/json/
+[WARNING] 2026-02-09 19:30:04 django.server log_message:213 - "GET /api/template/3/json/ HTTP/1.1" 404 32104
+[INFO] 2026-02-09 19:30:06 django.server log_message:213 - "GET /api/templates/3/ HTTP/1.1" 200 17612
+[WARNING] 2026-02-09 19:30:12 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 19:30:12 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[INFO] 2026-02-09 19:30:43 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\template_api.py changed, reloading.
+[INFO] 2026-02-09 19:30:44 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:30:45 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:30:50 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 19:30:51 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:30:51 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:31:00 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 62566
+[WARNING] 2026-02-09 19:31:00 django.request log_response:253 - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[WARNING] 2026-02-09 19:31:00 django.server log_message:213 - "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 9308
+[WARNING] 2026-02-09 19:31:03 django.request log_response:253 - Not Found: /api/template/2/json/
+[WARNING] 2026-02-09 19:31:03 django.server log_message:213 - "GET /api/template/2/json/ HTTP/1.1" 404 32104
+[WARNING] 2026-02-09 19:31:10 django.request log_response:253 - Not Found: /api/template/3/json/
+[WARNING] 2026-02-09 19:31:10 django.server log_message:213 - "GET /api/template/3/json/ HTTP/1.1" 404 32104
+[INFO] 2026-02-09 19:31:55 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 62566
+[WARNING] 2026-02-09 19:31:57 django.request log_response:253 - Not Found: /api/template/5/json/
+[WARNING] 2026-02-09 19:31:57 django.server log_message:213 - "GET /api/template/5/json/ HTTP/1.1" 404 32104
+[INFO] 2026-02-09 19:32:12 django.utils.autoreload trigger_reload:265 - E:\login\auth_project\accounts\urls.py changed, reloading.
+[INFO] 2026-02-09 19:32:13 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:32:14 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:44:08 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:44:29 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:53:24 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:56:13 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:56:14 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-09 19:56:14 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
+[INFO] 2026-02-09 19:56:20 django.server log_message:213 - "GET / HTTP/1.1" 200 58511
+[INFO] 2026-02-09 19:56:29 django.server log_message:213 - "GET /login/ HTTP/1.1" 200 31855
+[INFO] 2026-02-09 19:56:39 accounts.brevo_mail_backend __init__:56 - Brevo backend initialized successfully
+[INFO] 2026-02-09 19:56:40 accounts.brevo_mail_backend send_messages:90 - Email sent successfully to ['gautamnair94@gmail.com'] via Brevo
+[INFO] 2026-02-09 19:56:40 accounts.views send_otp_email:184 - OTP email sent successfully to gautamnair94@gmail.com for login
+[INFO] 2026-02-09 19:56:40 accounts.views login_view:352 - OTP generated and sent to gautamnair94@gmail.com for user Goku
+[INFO] 2026-02-09 19:56:41 django.server log_message:213 - "POST /login/ HTTP/1.1" 302 0
+[INFO] 2026-02-09 19:56:41 django.server log_message:213 - "GET /verify-otp/login/ HTTP/1.1" 200 3403
+[WARNING] 2026-02-09 19:56:41 django.server log_message:213 - "GET /static/css/style.css HTTP/1.1" 404 1966
+[INFO] 2026-02-09 19:56:52 accounts.brevo_mail_backend __init__:56 - Brevo backend initialized successfully
+[INFO] 2026-02-09 19:56:53 accounts.brevo_mail_backend send_messages:90 - Email sent successfully to ['gautamnair94@gmail.com'] via Brevo
+[INFO] 2026-02-09 19:56:53 accounts.services.auth_service send_welcome_back_email:202 - Welcome back email sent successfully to gautamnair94@gmail.com
+[INFO] 2026-02-09 19:56:53 accounts.views verify_otp_view:516 - User logged in successfully: Goku
+[INFO] 2026-02-09 19:56:53 django.server log_message:213 - "POST /verify-otp/login/ HTTP/1.1" 302 0
+[INFO] 2026-02-09 19:57:05 django.server log_message:213 - "GET /main_home/ HTTP/1.1" 200 162152
+[INFO] 2026-02-09 19:57:10 django.server log_message:213 - "GET /post-project/ HTTP/1.1" 200 55875
+[INFO] 2026-02-09 19:59:14 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully

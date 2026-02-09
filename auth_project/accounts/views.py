@@ -1310,50 +1310,6 @@ def add_reaction(request, message_id):
 
 
 @login_required
-def start_call(request, room_id):
-    """Start a voice/video call in a chat room"""
-    chat_room = get_object_or_404(ChatRoom, id=room_id)
-
-    # Check membership
-    if not ChatRoomMember.objects.filter(
-        chat_room=chat_room,
-        user=request.user,
-        is_active=True
-    ).exists():
-        return JsonResponse({'error': 'Not a member of this chat'}, status=403)
-
-    call_type = request.POST.get('call_type', 'voice')
-    if call_type not in ['voice', 'video']:
-        return JsonResponse({'error': 'Invalid call type'}, status=400)
-
-    # Create call message
-    message = Message.objects.create(
-        chat_room=chat_room,
-        sender=request.user,
-        content=f"📞 Started a {call_type} call",
-        message_type='call',
-        call_type=call_type
-    )
-
-    # Notify other members
-    for member in chat_room.members.filter(is_active=True).exclude(user=request.user):
-        create_notification(
-            user=member.user,
-            notification_type='message',
-            title=f'{call_type.title()} call in {chat_room.display_name}',
-            message=f'{request.user.username} started a {call_type} call',
-            from_user=request.user,
-            message_obj=message
-        )
-
-    return JsonResponse({
-        'success': True,
-        'call_id': f"call_{message.id}",
-        'call_type': call_type,
-        'room_name': f'call_{chat_room.id}_{message.id}'
-    })
-
-@login_required
 def notifications_view(request):
     """View all notifications"""
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
@@ -1685,7 +1641,20 @@ def like_project(request, project_id):
 
 @login_required
 def post_project(request):
+    """Create a new project - with optional template selection"""
+    from .models import ProjectTemplate, TemplateUsageLog
+    
+    # Get templates for quick-start options (with error handling)
+    templates = []
+    try:
+        templates = ProjectTemplate.objects.filter(is_active=True).order_by('-is_featured', '-rating')[:6]
+    except Exception as e:
+        logger.warning(f"Could not load templates: {str(e)}")
+        templates = []
+    
     if request.method == "POST":
+        # Check if using template
+        template_id = request.POST.get('template_id')
         title = request.POST.get('title')
         description = request.POST.get('description')
         techs = request.POST.getlist('technologies')
@@ -1703,11 +1672,25 @@ def post_project(request):
                 description=description,
                 technologies=", ".join(techs) if techs else "",
                 looking_for=", ".join(looking) if looking else "",
-                category=category
-                , timeline=timeline if timeline else None,
+                category=category,
+                timeline=timeline if timeline else None,
                 collaboration_needs=collaboration if collaboration else None,
                 github_link=github_link if github_link else None
             )
+
+            # Log template usage if template was used
+            if template_id and template_id.strip():
+                try:
+                    template = ProjectTemplate.objects.get(id=template_id)
+                    TemplateUsageLog.objects.create(
+                        template=template,
+                        user=request.user,
+                        project=project
+                    )
+                    template.increment_usage()
+                    messages.info(request, f'Project created from template: {template.name}')
+                except Exception as e:
+                    logger.warning(f"Could not log template usage: {str(e)}")
 
             # Create activity
             create_activity(
@@ -1725,6 +1708,7 @@ def post_project(request):
     
     return render(request, 'post_project.html', {
         'projects': projects,
+        'templates': templates,
     })
 
 

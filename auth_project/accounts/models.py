@@ -708,6 +708,118 @@ class ProjectMilestone(models.Model):
 
 
 # ============================================================================
+# Project Templates & Examples
+# ============================================================================
+
+class ProjectTemplate(models.Model):
+    """Pre-made project templates to help new users"""
+
+    TEMPLATE_CATEGORIES = [
+        ('web', 'Web Development'),
+        ('mobile', 'Mobile Apps'),
+        ('ai', 'AI/ML'),
+        ('data', 'Data Science'),
+        ('blockchain', 'Blockchain'),
+        ('iot', 'IoT'),
+        ('game', 'Game Development'),
+        ('other', 'Other'),
+    ]
+
+    # Template metadata
+    name = models.CharField(max_length=100, unique=True)
+    category = models.CharField(max_length=20, choices=TEMPLATE_CATEGORIES)
+    description = models.TextField()
+    icon = models.CharField(max_length=50, default='📁')  # Emoji or icon name
+    
+    # Pre-filled fields for projects created from this template
+    template_title = models.CharField(max_length=200, help_text="Template for project title")
+    template_description = models.TextField(help_text="Template for project description")
+    template_technologies = models.JSONField(default=list, help_text="Suggested technologies")
+    template_looking_for = models.JSONField(default=list, help_text="Suggested roles needed")
+    template_collaboration_needs = models.TextField(blank=True, null=True)
+    
+    # Timeline and details
+    suggested_timeline = models.CharField(max_length=100, blank=True, null=True)
+    suggested_team_size = models.CharField(max_length=100, blank=True, null=True, 
+                                          help_text="e.g., '2-3 people', 'solo', '5+ people'")
+    difficulty_level = models.CharField(
+        max_length=20,
+        choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('advanced', 'Advanced')],
+        default='intermediate'
+    )
+    
+    # Example/learning resources
+    example_projects = models.TextField(blank=True, null=True, help_text="Links to example projects")
+    learning_resources = models.TextField(blank=True, null=True, help_text="Links to tutorials/docs")
+    
+    # Rating and popularity
+    rating = models.FloatField(default=0, help_text="Average rating from 0-5")
+    rating_count = models.PositiveIntegerField(default=0, help_text="Number of ratings")
+    usage_count = models.PositiveIntegerField(default=0, help_text="Times this template was used")
+    
+    # Admin controls
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.icon} {self.name} ({self.category})"
+
+    def increment_usage(self):
+        """Increment usage count when template is used"""
+        self.usage_count += 1
+        self.save(update_fields=['usage_count'])
+
+    def update_rating(self, new_rating):
+        """Update rating based on new user rating"""
+        if new_rating < 0 or new_rating > 5:
+            return
+        
+        total_rating = (self.rating * self.rating_count) + new_rating
+        self.rating_count += 1
+        self.rating = total_rating / self.rating_count
+        self.save(update_fields=['rating', 'rating_count'])
+
+    class Meta:
+        ordering = ['-is_featured', '-rating', '-usage_count']
+
+
+class TemplateRating(models.Model):
+    """User ratings for project templates"""
+
+    template = models.ForeignKey(ProjectTemplate, on_delete=models.CASCADE, related_name='user_ratings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=[(i, str(i)) for i in range(1, 6)])  # 1-5 stars
+    review = models.TextField(blank=True, null=True, max_length=500)
+    helpful_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} rated {self.template.name} - {self.rating}⭐"
+
+    class Meta:
+        unique_together = ['template', 'user']
+        ordering = ['-created_at']
+
+
+class TemplateUsageLog(models.Model):
+    """Track when templates are used to create projects"""
+
+    template = models.ForeignKey(ProjectTemplate, on_delete=models.CASCADE, related_name='usage_logs')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='template_usages')
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.username} used {self.template.name} template on {self.created_at.date()}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ============================================================================
 # Model Aliases for Backward Compatibility
 # ============================================================================
 # Some views.py code references old model names
