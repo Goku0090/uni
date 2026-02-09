@@ -1,0 +1,156 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                                   ║
+║              🔧 QUICK FIX: MultipleObjectsReturned at /login/                    ║
+║                                                                                   ║
+║              ⚡ Time to Fix: 2 minutes ⚡                                        ║
+║                                                                                   ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+PROBLEM
+═══════════════════════════════════════════════════════════════════════════════════
+
+❌ Error when visiting: http://127.0.0.1:8000/login/
+
+Error Message:
+  MultipleObjectsReturned at /login/
+  No exception message supplied
+
+Root Cause:
+  You have MULTIPLE OAuth apps configured for the same provider
+  (Google or GitHub appears 2+ times in database)
+
+
+SOLUTION (2 STEPS)
+═══════════════════════════════════════════════════════════════════════════════════
+
+STEP 1️⃣  RUN THE FIX SCRIPT
+─────────────────────────────────────────────────────────────────────────────────
+
+Open Command Prompt and type:
+
+  cd auth_project
+  python cleanup_social_apps_now.py
+
+You'll see:
+
+  REMOVING DUPLICATE SOCIAL APPS - AUTO-FIX
+  ⚠️ Found 2 google apps
+    🗑️  Deleting: ID=2, Name=...
+    ✅ Kept: ID=1, Name=...
+  ✅ CLEANUP COMPLETE
+
+
+STEP 2️⃣  TEST
+─────────────────────────────────────────────────────────────────────────────────
+
+Open Command Prompt and type:
+
+  python manage.py runserver
+
+Then visit:
+
+  http://127.0.0.1:8000/login/
+
+✅ Login page should now load WITHOUT error!
+
+
+WHAT HAPPENED?
+═══════════════════════════════════════════════════════════════════════════════════
+
+Before (Broken):
+┌──────────────────────┐
+│ Database:            │
+│ ├─ Google App #1     │  ← Duplicate!
+│ ├─ Google App #2     │  ← Duplicate!
+│ ├─ GitHub App #1     │  ← Duplicate!
+│ └─ GitHub App #2     │  ← Duplicate!
+└──────────────────────┘
+     ↓ Django gets confused!
+     ❌ MultipleObjectsReturned Error
+
+
+After (Fixed):
+┌──────────────────────┐
+│ Database:            │
+│ ├─ Google App #1     │  ✅ Kept
+│ └─ GitHub App #1     │  ✅ Kept
+└──────────────────────┘
+     ↓ Django knows which app to use
+     ✅ Works perfectly!
+
+
+WHY DID THIS HAPPEN?
+═══════════════════════════════════════════════════════════════════════════════════
+
+You probably ran OAuth setup scripts multiple times:
+
+  1. First run → Created Google & GitHub apps ✅
+  2. Second run → Created DUPLICATE Google & GitHub apps ❌
+  3. Django gets confused → Error!
+
+
+IF IT STILL DOESN'T WORK
+═══════════════════════════════════════════════════════════════════════════════════
+
+Try this:
+
+  python manage.py shell
+
+Then copy-paste this code:
+
+  from allauth.socialaccount.models import SocialApp
+  
+  # See all apps
+  for app in SocialApp.objects.all():
+      print(f"ID: {app.id}, Provider: {app.provider}, Name: {app.name}")
+  
+  # Delete duplicate Google app (if ID=2)
+  SocialApp.objects.get(id=2).delete()
+  
+  # Delete duplicate GitHub app (if ID=4)
+  SocialApp.objects.get(id=4).delete()
+  
+  # Verify
+  SocialApp.objects.all().count()  # Should show: 2
+
+
+VERIFICATION
+═══════════════════════════════════════════════════════════════════════════════════
+
+After running the fix, verify:
+
+  ✅ /login/ page loads without error
+  ✅ Google login button visible
+  ✅ GitHub login button visible
+  ✅ Console has no errors (F12)
+
+
+CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════════
+
+Before fix:
+  ❌ /login/ shows error
+  ❌ Google button might show or not
+  ❌ GitHub button might show or not
+
+After fix:
+  ✅ /login/ loads perfectly
+  ✅ Google button visible
+  ✅ GitHub button visible
+  ✅ No console errors
+
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+Ready? Run this NOW:
+
+  cd auth_project
+  python cleanup_social_apps_now.py
+  python manage.py runserver
+
+Then visit: http://127.0.0.1:8000/login/
+
+✅ DONE!
+
+═══════════════════════════════════════════════════════════════════════════════════

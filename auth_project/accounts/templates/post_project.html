@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>🚀 UniSync | Create Amazing Projects</title>
+  <title>🚀 UniSinq | Create Amazing Projects</title>
   <meta name="description" content="Post your innovative project and find the perfect collaborators to bring your ideas to life.">
   <meta name="keywords" content="project collaboration, team building, innovation, startup, development">
 
@@ -371,8 +371,8 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
         <a href="{% url 'main_home' %}" class="logo-link text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400" title="Back to Home">
-          <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
-          <span>UniSync</span>
+          <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-8 w-8 object-contain">
+          <span>UniSinq</span>
         </a>
         <div class="text-sm muted">Create a project & find collaborators</div>
       </div>
@@ -887,12 +887,12 @@
       timestamp: new Date().toISOString(),
       step: currentStep
     };
-    localStorage.setItem('unisync_draft_v2', JSON.stringify(data));
+    localStorage.setItem('unisinq_draft_v2', JSON.stringify(data));
     showNotification('Draft saved locally','success',1200);
   }
   function loadDraft(){
     try{
-      const raw = localStorage.getItem('unisync_draft_v2'); if(!raw) return;
+      const raw = localStorage.getItem('unisinq_draft_v2'); if(!raw) return;
       const d = JSON.parse(raw);
       if(d.title) document.getElementById('projectTitle').value = d.title;
       if(d.short_description) document.getElementById('shortDescription').value = d.short_description;
@@ -1027,7 +1027,7 @@
       });
       showNotification('Project published! 🎉','success',5000);
       // clear local draft
-      localStorage.removeItem('unisync_draft_v2');
+      localStorage.removeItem('unisinq_draft_v2');
       // optional: redirect or reset form
     }, 800);
   });

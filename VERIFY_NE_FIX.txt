@@ -1,0 +1,138 @@
+================================================================================
+                    VERIFY NE LOOKUP FIX - Quick Test
+================================================================================
+
+ISSUE FIXED: FieldError - Unsupported lookup 'ne' for ForeignKey
+
+LOCATION: /api/enhanced-messages/ endpoint
+FILE: accounts/views.py, line 1044
+
+================================================================================
+                              3-STEP TEST
+================================================================================
+
+STEP 1: Reload API Endpoint
+────────────────────────────
+1. Go to: http://127.0.0.1:8000/api/enhanced-messages/
+2. Look for status code:
+   SUCCESS: 200 OK = Fix working
+   FAIL: 500 Error = Fix not applied
+3. Look in response:
+   SUCCESS: Should have JSON with messages
+   FAIL: Should NOT have "FieldError"
+
+STEP 2: Check Messages Page
+─────────────────────────────
+1. Go to: http://localhost:8000/accounts/messages/
+2. Look for:
+   SUCCESS: Conversations list loads
+   SUCCESS: Unread badges display numbers
+   SUCCESS: Browser console has no red errors
+   FAIL: Page doesn't load or shows FieldError
+
+STEP 3: Browser Console Check
+───────────────────────────────
+1. Press F12 to open DevTools
+2. Go to Console tab
+3. Look for errors:
+   SUCCESS: No red error messages
+   SUCCESS: No FieldError mentioned
+   FAIL: See "FieldError" or "ne"
+
+================================================================================
+                            EXPECTED RESULTS
+================================================================================
+
+If fix is working:
+
+SUCCESS: /api/enhanced-messages/ returns 200
+SUCCESS: Messages page loads without errors  
+SUCCESS: Unread counts display correctly
+SUCCESS: Browser console is clean
+SUCCESS: No "FieldError" anywhere
+
+================================================================================
+                          WHAT WAS CHANGED
+================================================================================
+
+File: accounts/views.py
+Line: 1044
+
+BEFORE:
+    MessageReadStatus.objects.filter(
+        message__chat_room=room,
+        message__sender__ne=request.user,  # INVALID lookup!
+        user=request.user
+    ).count()
+
+AFTER:
+    MessageReadStatus.objects.filter(
+        message__chat_room=room,
+        user=request.user
+    ).exclude(
+        message__sender=request.user  # CORRECT way!
+    ).count()
+
+================================================================================
+                           QUICK REFERENCE
+================================================================================
+
+The Problem:
+  - Django ORM doesn't support __ne (not equal) operator
+  - Tried to use: message__sender__ne=user
+  - Result: FieldError
+
+The Solution:
+  - Use exclude() instead
+  - Changed: .filter(..., field__ne=value)
+  - To: .filter(...).exclude(field=value)
+
+Why It Works:
+  - exclude() removes items from results
+  - Achieves "not equal" with proper Django syntax
+  - Works with all field types including ForeignKey
+
+================================================================================
+                           TROUBLESHOOTING
+================================================================================
+
+If still seeing error:
+
+1. Hard refresh browser
+   Windows: Ctrl+Shift+R
+   Mac: Cmd+Shift+R
+
+2. Restart Django server
+   Ctrl+C to stop
+   Start again
+
+3. Clear cache
+   python manage.py shell
+   from django.core.cache import cache
+   cache.clear()
+
+4. Check file was saved
+   Open accounts/views.py line 1044
+   Should see: .exclude(message__sender=request.user)
+   NOT: message__sender__ne=request.user
+
+================================================================================
+                             SUCCESS INDICATORS
+================================================================================
+
+BEFORE FIX:
+  Error: FieldError at /api/enhanced-messages/
+  Message: Unsupported lookup 'ne' for ForeignKey
+  Status: 500 Internal Server Error
+
+AFTER FIX:
+  No error
+  Status: 200 OK
+  Data: Returns JSON with messages normally
+
+================================================================================
+
+Ready to verify? Open your browser and test step 1 above!
+
+Generated: February 9, 2026
+Status: Fix Applied and Ready to Test

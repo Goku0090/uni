@@ -59,7 +59,7 @@ def contact_submit(request):
                 }, status=400)
 
             # Send email to support
-            email_subject = f"UniSync Contact Form: {subject}"
+            email_subject = f"UniSinq Contact Form: {subject}"
             email_body = f"""
 New Contact Form Submission:
 
@@ -81,7 +81,7 @@ Timestamp: {timezone.now()}
                 email_subject,
                 email_body,
                 settings.DEFAULT_FROM_EMAIL,
-                ['support@unisync.com'],
+                ['support@unisinq.com'],
                 fail_silently=False,
             )
 
@@ -89,7 +89,7 @@ Timestamp: {timezone.now()}
             confirmation_body = f"""
 Hi {name},
 
-Thank you for reaching out to UniSync! We've received your message and will get back to you within 24 hours.
+Thank you for reaching out to UniSinq! We've received your message and will get back to you within 24 hours.
 
 Message Details:
 - Subject: {subject}
@@ -98,11 +98,11 @@ Message Details:
 If you need immediate assistance, please reply to this email or visit our support page.
 
 Best regards,
-UniSync Team
+UniSinq Team
             """
 
             send_mail(
-                'We received your message - UniSync Support',
+                'We received your message - UniSinq Support',
                 confirmation_body,
                 settings.DEFAULT_FROM_EMAIL,
                 [email],

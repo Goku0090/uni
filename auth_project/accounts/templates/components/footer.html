@@ -1,30 +1,37 @@
 {% load static %}
-<!-- Professional Footer Component -->
-<footer class="bg-[#0d1117] border-t border-[#30363d] py-16 mt-20">
+<!-- Professional Footer Component with UniSinq Theme -->
+<footer class="bg-gradient-to-b from-[#0d1117] to-[#161b22] border-t-2 border-purple-500/30 py-16 mt-20">
     <div class="container mx-auto px-6">
         <!-- Footer Grid -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
             <!-- Brand Section -->
             <div class="md:col-span-1">
-                <div class="flex items-center space-x-2 mb-4">
-                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg">
-                    <h3 class="unisync-logo text-lg text-white font-semibold">UniSync</h3>
+                <!-- Logo with Glow Effect -->
+                <div class="flex items-center space-x-3 mb-4 group">
+                    <div class="relative">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
+                        <img src="{% static 'images/unisinq-logo.png' %}" alt="UniSinq Logo" class="relative h-12 w-12 object-cover rounded-lg shadow-lg border border-purple-500/50">
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">UniSinq</h3>
+                        <p class="text-[10px] text-purple-400">v1.0</p>
+                    </div>
                 </div>
-                <p class="text-[#8b949e] text-sm mb-6">
-                    Connecting students worldwide for collaborative innovation and project excellence.
+                <p class="text-[#8b949e] text-sm mb-6 leading-relaxed">
+                    🚀 Connecting students worldwide for collaborative innovation and project excellence.
                 </p>
                 <!-- Social Links -->
-                <div class="flex space-x-4">
-                    <a href="https://github.com/Goku0090/unisync" target="_blank" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-lg" title="GitHub">
+                <div class="flex space-x-3">
+                    <a href="https://github.com/Goku0090/unisinq" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-purple-600 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="GitHub">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://twitter.com" target="_blank" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-lg" title="Twitter">
+                    <a href="https://twitter.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-blue-500 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-lg" title="LinkedIn">
+                    <a href="https://linkedin.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-blue-700 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="LinkedIn">
                         <i class="fab fa-linkedin"></i>
                     </a>
-                    <a href="https://instagram.com" target="_blank" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-lg" title="Instagram">
+                    <a href="https://instagram.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-pink-500 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="Instagram">
                         <i class="fab fa-instagram"></i>
                     </a>
                 </div>
@@ -32,65 +39,83 @@
 
             <!-- Product -->
             <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Product</h4>
+                <h4 class="text-white font-bold mb-4 text-sm flex items-center gap-2">
+                    <span class="text-purple-400">📦</span>
+                    Product
+                </h4>
                 <ul class="space-y-3">
-                    <li><a href="/#features" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Features</a></li>
-                    <li><a href="/#how-it-works" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">How It Works</a></li>
-                    <li><a href="/home/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Dashboard</a></li>
-                    <li><a href="/find-collaborators/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Find Collaborators</a></li>
+                    <li><a href="/#features" class="text-[#8b949e] hover:text-purple-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Features</a></li>
+                    <li><a href="/#how-it-works" class="text-[#8b949e] hover:text-purple-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> How It Works</a></li>
+                    <li><a href="/home/" class="text-[#8b949e] hover:text-purple-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Dashboard</a></li>
+                    <li><a href="/find-collaborators/" class="text-[#8b949e] hover:text-purple-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Find Collaborators</a></li>
                 </ul>
             </div>
 
             <!-- Resources -->
             <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Resources</h4>
+                <h4 class="text-white font-bold mb-4 text-sm flex items-center gap-2">
+                    <span class="text-pink-400">📚</span>
+                    Resources
+                </h4>
                 <ul class="space-y-3">
-                    <li><a href="/about/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">About Us</a></li>
-                    <li><a href="/accounts/help/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Help Center</a></li>
-                    <li><a href="/accounts/contact/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Contact Support</a></li>
+                    <li><a href="/about/" class="text-[#8b949e] hover:text-pink-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> About Us</a></li>
+                    <li><a href="/accounts/help/" class="text-[#8b949e] hover:text-pink-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Help Center</a></li>
+                    <li><a href="/accounts/contact/" class="text-[#8b949e] hover:text-pink-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Contact Support</a></li>
                 </ul>
             </div>
 
             <!-- Legal & Support -->
             <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Legal & Support</h4>
+                <h4 class="text-white font-bold mb-4 text-sm flex items-center gap-2">
+                    <span class="text-cyan-400">⚖️</span>
+                    Legal & Support
+                </h4>
                 <ul class="space-y-3">
-                    <li><a href="/accounts/privacy/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Privacy Policy</a></li>
-                    <li><a href="/accounts/terms/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Terms of Service</a></li>
-                    <li><a href="/accounts/contact/" class="text-[#8b949e] hover:text-[#58a6ff] transition-colors text-sm">Contact Us</a></li>
+                    <li><a href="/accounts/privacy/" class="text-[#8b949e] hover:text-cyan-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Privacy Policy</a></li>
+                    <li><a href="/accounts/terms/" class="text-[#8b949e] hover:text-cyan-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Terms of Service</a></li>
+                    <li><a href="/accounts/contact/" class="text-[#8b949e] hover:text-cyan-400 transition-colors text-sm flex items-center gap-2 group"><span class="group-hover:translate-x-1 transition">→</span> Contact Us</a></li>
                 </ul>
             </div>
         </div>
 
-        <!-- Divider -->
-        <div class="border-t border-[#30363d] py-8">
+        <!-- Divider with Gradient -->
+        <div class="border-t border-gradient-to-r from-transparent via-purple-500/50 to-transparent py-8">
             <!-- Newsletter Signup -->
-            <div class="max-w-md mx-auto mb-8">
-                <h4 class="text-white font-semibold text-sm mb-3">Stay Updated</h4>
+            <div class="max-w-md mx-auto mb-8 bg-white/5 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6">
+                <h4 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                    <span class="text-yellow-400">✉️</span>
+                    Stay Updated
+                </h4>
                 <p class="text-[#8b949e] text-xs mb-4">Get the latest updates on new features and announcements.</p>
                 <form class="flex gap-2" onsubmit="return handleNewsletterSignup(event)">
                     <input type="email" 
                            placeholder="Enter your email" 
-                           class="flex-1 bg-[#161b22] border border-[#30363d] rounded px-3 py-2 text-[#c9d1d9] text-sm placeholder-[#8b949e] focus:border-[#58a6ff] focus:outline-none transition-colors" 
+                           class="flex-1 bg-[#1a1f26] border border-purple-500/30 rounded-lg px-3 py-2 text-[#c9d1d9] text-sm placeholder-[#8b949e] focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400/50 transition-all" 
                            required>
                     <button type="submit" 
-                            class="bg-[#58a6ff] hover:bg-[#388bfd] text-[#0d1117] font-semibold px-4 py-2 rounded text-sm transition-colors">
+                            class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all transform hover:scale-105 shadow-lg">
                         Subscribe
                     </button>
                 </form>
-                <p class="text-[#8b949e] text-[10px] mt-2">We respect your privacy. Unsubscribe at any time.</p>
+                <p class="text-[#8b949e] text-[10px] mt-2">💜 We respect your privacy. Unsubscribe at any time.</p>
             </div>
 
             <!-- Bottom Footer -->
-            <div class="border-t border-[#30363d] pt-8 mt-8">
+            <div class="border-t border-purple-500/20 pt-8 mt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-                    <p class="text-[#8b949e] text-xs">
-                        &copy; 2025 UniSync. All rights reserved. | Built with 💜 for students worldwide.
+                    <p class="text-[#8b949e] text-xs leading-relaxed">
+                        &copy; 2025 <span class="text-white font-bold">UniSinq</span>. All rights reserved. | Built with 💜 for students worldwide.
                     </p>
-                    <div class="flex gap-4 text-[#8b949e] text-xs">
-                        <a href="/status/" class="hover:text-[#58a6ff] transition-colors">Status</a>
-                        <a href="/security/" class="hover:text-[#58a6ff] transition-colors">Security</a>
-                        <a href="/accessibility/" class="hover:text-[#58a6ff] transition-colors">Accessibility</a>
+                    <div class="flex gap-6 text-[#8b949e] text-xs">
+                        <a href="/status/" class="hover:text-purple-400 transition-colors flex items-center gap-1">
+                            <span>●</span> Status
+                        </a>
+                        <a href="/security/" class="hover:text-purple-400 transition-colors flex items-center gap-1">
+                            <span>●</span> Security
+                        </a>
+                        <a href="/accessibility/" class="hover:text-purple-400 transition-colors flex items-center gap-1">
+                            <span>●</span> Accessibility
+                        </a>
                     </div>
                 </div>
             </div>

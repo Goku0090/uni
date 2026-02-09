@@ -5,7 +5,7 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>UniSync | Home</title>
+    <title>UniSinq | Home</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,16 +26,26 @@
 </head>
 <body class="bg-background text-text min-h-screen font-sans">
     {% csrf_token %}
-    <!-- Navbar -->
-    <nav class="bg-primary shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{% url 'main_home' %}" class="flex items-center">
-                    <img src="{% static 'images/unisync_logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 rounded-full object-cover shadow-md">
-                    <span class="text-white font-bold text-xl ml-2">UniSync</span>
+    <!-- Navbar with Enhanced Logo -->
+    <nav class="bg-gradient-to-r from-primary to-purple-900 shadow-lg sticky top-0 z-50 border-b border-purple-500/30">
+        <div class="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
+            <!-- Logo Section (Left Most) -->
+            <div class="flex items-center group shrink-0">
+                <a href="{% url 'main_home' %}" class="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                    <!-- Logo with Glow -->
+                    <div class="relative">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-0 group-hover:opacity-75 transition duration-500"></div>
+                        <img src="{% static 'images/unisinq-logo.png' %}" alt="UniSinq Logo" class="relative h-12 w-12 rounded-lg object-cover shadow-md border border-purple-400/50">
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-white font-bold text-2xl bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent leading-tight">UniSinq</span>
+                        <span class="text-[10px] text-purple-300 font-semibold">Collaborate & Build</span>
+                    </div>
                 </a>
             </div>
-            <div class="flex gap-6">
+            
+            <!-- Navigation Links (Center to Right) -->
+            <div class="flex gap-6 ml-8">
                 <a href="{% url 'main_home' %}" class="hover:text-accent transition flex items-center gap-2" title="Dashboard - View Projects & Activity Feed">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-9 9a1 1 0 001.414 1.414L2 12.414V19a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-9-9z"/>
@@ -137,10 +147,14 @@
         <div class="relative z-10 text-center px-6 max-w-6xl mx-auto">
             <!-- Logo and Welcome Badge -->
             <div class="flex flex-col items-center mb-8 fade-in-up">
-                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-16 w-16 object-contain mb-4 rounded-xl shadow-lg">
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-medium text-white">
+                <!-- Enhanced Logo with Gradient Border -->
+                <div class="relative mb-4 group">
+                    <div class="absolute -inset-2 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition duration-500 animate-pulse"></div>
+                    <img src="{% static 'images/unisinq-logo.png' %}" alt="UniSinq Logo" class="relative h-20 w-20 object-cover rounded-2xl shadow-2xl border-2 border-purple-400/50">
+                </div>
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm border border-purple-400/50 rounded-full text-sm font-medium text-white hover:from-purple-600/40 hover:to-pink-600/40 transition-all">
                     <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    Welcome back, {{ user.username }}! Ready to innovate?
+                    Welcome back, <span class="font-bold">{{ user.username }}</span>! Ready to innovate? 🚀
                 </div>
             </div>
 
@@ -530,12 +544,12 @@
     <script>
         // Recent Searches Management
         function getRecentSearches() {
-            const searches = localStorage.getItem('unisync_recent_searches');
+            const searches = localStorage.getItem('unisinq_recent_searches');
             return searches ? JSON.parse(searches) : [];
         }
 
         function saveRecentSearches(searches) {
-            localStorage.setItem('unisync_recent_searches', JSON.stringify(searches.slice(0, 10))); // Keep only last 10
+            localStorage.setItem('unisinq_recent_searches', JSON.stringify(searches.slice(0, 10))); // Keep only last 10
         }
 
         function addToRecentSearches(query) {
@@ -549,7 +563,7 @@
         }
 
         function clearRecentSearches() {
-            localStorage.removeItem('unisync_recent_searches');
+            localStorage.removeItem('unisinq_recent_searches');
             displayRecentSearches();
         }
 
@@ -671,7 +685,7 @@
 
             // Update social share URLs
             document.getElementById('twitter-share-btn').href =
-                `https://twitter.com/intent/tweet?text=${encodeURIComponent(projectTitle)}&url=${encodeURIComponent(currentShareUrl)}&via=unisync`;
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(projectTitle)}&url=${encodeURIComponent(currentShareUrl)}&via=unisinq`;
 
             document.getElementById('linkedin-share-btn').href =
                 `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentShareUrl)}`;
@@ -1382,13 +1396,34 @@
                             <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"></path>
                             <path d="M15 7H5"></path>
                         </svg>
-                        💬 Comments <span class="comment-count-{{ post.id }} text-gray-400 text-xs">(0)</span>
+                        💬 Comments <span class="comment-count-{{ post.id }} text-gray-400 text-xs">({{ post.comments_count|default:0 }})</span>
                     </button>
 
-                    <!-- Comments Container (Initially Hidden) -->
-                    <div class="comments-container-{{ post.id }} hidden max-h-64 overflow-y-auto space-y-3 mb-3 bg-gray-800/30 rounded-lg p-3">
+                    <!-- Comments Container (Initially Visible) -->
+                    <div class="comments-container-{{ post.id }} max-h-64 overflow-y-auto space-y-3 mb-3 bg-gray-800/30 rounded-lg p-3">
                         <div class="comments-list-{{ post.id }} space-y-3">
-                            <!-- Comments loaded here via JS -->
+                            {% if post.comments_list %}
+                                {% for comment in post.comments_list %}
+                                    <div class="comment-item-{{ post.id }}-{{ comment.id }} bg-gray-700/40 rounded-lg p-3 border-l-2 border-accent/50 hover:border-accent transition-colors">
+                                        <div class="flex items-start gap-3">
+                                            <div class="relative">
+                                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">
+                                                    {{ comment.user.username|first|upper }}
+                                                </div>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <p class="font-semibold text-white text-sm">{{ comment.user.username }}</p>
+                                                    <span class="text-gray-400 text-xs">{{ comment.created_at|timesince }} ago</span>
+                                                </div>
+                                                <p class="text-gray-300 text-sm mt-1 break-words">{{ comment.content }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-gray-400 text-sm text-center py-4">No comments yet. Be the first to comment!</p>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -1451,7 +1486,7 @@
     <!-- How It Works Section -->
     <section class="px-6 py-16 max-w-7xl mx-auto">
         <div class="text-center mb-16">
-            <h2 class="text-4xl font-bold text-white mb-4">🚀 How UniSync Works</h2>
+            <h2 class="text-4xl font-bold text-white mb-4">🚀 How UniSinq Works</h2>
             <p class="text-xl text-gray-300 max-w-2xl mx-auto">Get started in minutes and turn your ideas into reality</p>
         </div>
 

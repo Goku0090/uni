@@ -1,0 +1,112 @@
+═══════════════════════════════════════════════════════════════
+  QUICK FIX REFERENCE: signals_realtime.py AttributeError
+═══════════════════════════════════════════════════════════════
+
+ERROR FIXED:
+  AttributeError at /post-project/
+  'Project' object has no attribute 'owner'
+
+FILE MODIFIED:
+  e:/login/auth_project/accounts/signals_realtime.py
+
+───────────────────────────────────────────────────────────────
+FIX #1: LINE 65 - ProjectMember Signal
+───────────────────────────────────────────────────────────────
+BEFORE:  member = instance.member
+AFTER:   member = instance.user
+REASON:  ProjectMember model has 'user' field, not 'member'
+
+───────────────────────────────────────────────────────────────
+FIX #2: LINES 176-181 - Connection Signal
+───────────────────────────────────────────────────────────────
+BEFORE:  user=instance.to_user
+         message=f'{instance.from_user.username}...'
+         related_object_id=instance.from_user.id
+
+AFTER:   user=instance.receiver
+         message=f'{instance.sender.username}...'
+         related_object_id=instance.sender.id
+
+REASON:  Connection model uses 'sender'/'receiver' not 'from_user'/'to_user'
+
+───────────────────────────────────────────────────────────────
+FIX #3: LINES 193-196 - Activity Broadcast Query
+───────────────────────────────────────────────────────────────
+BEFORE:  followers = Connection.objects.filter(
+           to_user=actor,
+           is_following=True
+         ).values_list('from_user_id', flat=True)
+
+AFTER:   followers = Connection.objects.filter(
+           receiver=actor,
+           status='accepted'
+         ).values_list('sender_id', flat=True)
+
+REASON:  Connection query must use correct field names
+         - 'to_user' → 'receiver'
+         - 'is_following' → 'status'
+         - 'from_user_id' → 'sender_id'
+
+───────────────────────────────────────────────────────────────
+FIX #4: LINES 224-228 - Notification Creation
+───────────────────────────────────────────────────────────────
+BEFORE:  notification = Notification.objects.create(
+           user=user,
+           type=notification_type,
+           related_object_id=related_object_id,
+           message=message,
+         )
+
+AFTER:   notification = Notification.objects.create(
+           user=user,
+           notification_type=notification_type,
+           title=title,
+           message=message,
+         )
+
+REASON:  Notification model uses 'notification_type' (not 'type')
+         and requires 'title' field
+
+───────────────────────────────────────────────────────────────
+VERIFICATION COMMANDS
+───────────────────────────────────────────────────────────────
+
+# Check Django configuration
+cd e:\login\auth_project
+python manage.py check
+
+# Expected output: All checks pass, signals registered successfully
+
+# Test project creation
+python manage.py shell
+>>> from accounts.models import Project
+>>> Project.objects.create(
+...   user_id=1,
+...   title="Test",
+...   description="Test"
+... )
+
+# Expected: No AttributeError
+
+───────────────────────────────────────────────────────────────
+SUMMARY OF FIELD CORRECTIONS
+───────────────────────────────────────────────────────────────
+
+Model: Project
+  ✓ Correct field: user (NOT owner)
+
+Model: Connection  
+  ✓ Correct fields: sender, receiver, status
+  ✗ Wrong fields: from_user, to_user, is_following
+
+Model: ProjectMember
+  ✓ Correct field: user (NOT member)
+
+Model: Notification
+  ✓ Correct field: notification_type (NOT type)
+  ✓ Required field: title
+
+───────────────────────────────────────────────────────────────
+DATE FIXED: February 07, 2026
+STATUS: ✅ COMPLETE
+───────────────────────────────────────────────────────────────

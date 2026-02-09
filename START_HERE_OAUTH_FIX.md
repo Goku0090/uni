@@ -1,179 +1,134 @@
-# OAuth Login Error - START HERE
+# START HERE: OAuth Error Fix
 
-## The Error You're Getting
-
+## Your Error
 ```
-Error 400: redirect_uri_mismatch
-You can't sign in because this app sent an invalid request.
-```
-
-## What This Means
-
-When you click "Sign in with Google/GitHub", your app sends a **redirect URL** that doesn't match what Google/GitHub expects.
-
-It's like sending a package to address:
-- ❌ App says: "123 Main St"  
-- ❌ Google expects: "123 Main Street"
-- ❌ Mismatch → Error
-
----
-
-## The Fix (3 Steps - 10 Minutes)
-
-### Step 1: Add Callback URL to Google (5 min)
-
-1. Go to: https://console.cloud.google.com
-2. Go to: **APIs & Services** → **Credentials**
-3. Click your OAuth 2.0 Client ID
-4. Scroll to **Authorized redirect URIs**
-5. Add these **exactly** (with trailing slash):
-   ```
-   http://localhost:8000/accounts/google/login/callback/
-   http://127.0.0.1:8000/accounts/google/login/callback/
-   ```
-6. Click **Save**
-
-**Copy these values:**
-- Client ID → Put in .env as `GOOGLE_CLIENT_ID`
-- Client Secret → Put in .env as `GOOGLE_CLIENT_SECRET`
-
-### Step 2: Add Callback URL to GitHub (3 min)
-
-1. Go to: https://github.com/settings/developers
-2. Click **OAuth Apps**
-3. Click your app
-4. Find **Authorization callback URL**
-5. Set to **exactly**:
-   ```
-   http://localhost:8000/accounts/github/login/callback/
-   ```
-6. Click **Update application**
-
-**Copy these values:**
-- Client ID → Put in .env as `GITHUB_CLIENT_ID`
-- Client Secret → Put in .env as `GITHUB_CLIENT_SECRET`
-
-### Step 3: Update .env and Restart (2 min)
-
-Update `.env` file:
-```env
-GOOGLE_CLIENT_ID=your_actual_id_here
-GOOGLE_CLIENT_SECRET=your_actual_secret_here
-GITHUB_CLIENT_ID=your_actual_id_here
-GITHUB_CLIENT_SECRET=your_actual_secret_here
-ALLOWED_HOSTS=localhost,127.0.0.1
+django.core.exceptions.MultipleObjectsReturned
+at /accounts/google/login/
 ```
 
-Restart Django:
+## What's Wrong?
+You have **multiple OAuth app configurations** in your database. Django expects exactly one per provider (Google/GitHub).
+
+## Fix It (Pick One)
+
+### 🚀 Fastest (1 command, 2 minutes)
 ```bash
-python manage.py runserver
+cd auth_project
+python fix_duplicate_oauth.py
 ```
 
-Clear browser cookies and try logging in again.
+### 🔧 Manual (More control, 5 minutes)
+```bash
+cd auth_project
+python manage.py shell
+```
+
+Paste:
+```python
+from allauth.socialaccount.models import SocialApp
+
+for provider in ['google', 'github']:
+    apps = SocialApp.objects.filter(provider=provider)
+    if apps.count() > 1:
+        print(f"Deleting duplicate {provider} apps...")
+        apps.exclude(id=apps.first().id).delete()
+
+print("Done!")
+exit()
+```
+
+### 🔄 Full Reset (Nuclear option, 10 minutes)
+```bash
+python reset_oauth_config.py
+```
+
+## After Fixing
+
+1. Open Django admin: `http://localhost:8000/admin/socialaccount/socialapp/`
+2. Click Google app, update credentials (from Google Cloud Console)
+3. Click GitHub app, update credentials (from GitHub OAuth settings)
+4. Save
+
+## Verify It Works
+
+```bash
+# Test OAuth login
+# Browser: http://localhost:8000/accounts/login/
+# Click: "Login with Google"
+# Should work!
+```
+
+## Guides
+
+- **Quick Reference**: `FIX_OAUTH_ERROR_QUICK.md`
+- **Step-by-Step**: `ACTION_PLAN_FIX_OAUTH_NOW.md`
+- **Full Details**: `SOLUTION_MULTIPLEOBJECTSRETURNED_AND_WEBSOCKET.md`
+- **Code Analysis**: `COMPREHENSIVE_CODE_ANALYSIS_2026.md`
+
+## Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Still seeing error | Run `python diagnose_oauth_error.py` to check |
+| Credentials invalid | Update in `/admin/socialaccount/socialapp/` |
+| Database locked | Wait 30 seconds and retry |
+| Cache stale | `python manage.py shell` → `from django.core.cache import cache; cache.clear()` |
+
+## WebSocket Code You Showed
+
+Your WebSocket code is **correct and ready**:
+```javascript
+let socket = new WebSocket("ws://localhost:8000/ws/project/2/");
+socket.onopen = () => console.log("✅ WORKING!");
+```
+
+To use it:
+1. Start WebSocket: `python manage.py runworker project_update activity_feed notifications`
+2. Have Redis running
+3. See `SOLUTION_MULTIPLEOBJECTSRETURNED_AND_WEBSOCKET.md` for full WebSocket guide
+
+## Timeline
+
+- **Diagnose**: 1 minute (`diagnose_oauth_error.py`)
+- **Fix**: 2-5 minutes (pick fix option above)
+- **Verify**: 2 minutes (update credentials + test)
+- **Total**: ~10 minutes
 
 ---
 
-## That's It!
+## Files Created For You
 
-You should now be able to:
-- ✅ Click "Sign in with Google" → Works
-- ✅ Click "Sign in with GitHub" → Works
-- ✅ Get logged in successfully
-
----
-
-## If Still Not Working
-
-Read the detailed guide:
-- **FIX_OAUTH_REDIRECT_URI_MISMATCH.md** - Full troubleshooting
-- **OAUTH_SETUP_VISUAL_GUIDE.md** - Step-by-step with examples
-- **OAUTH_QUICK_FIX_STEPS.txt** - Quick reference
-
----
-
-## Key Points to Remember
-
-✅ Exact URL must match (case-sensitive)
-✅ Don't forget the trailing slash: `/callback/`
-✅ Use `http://` not `https://` for local dev
-✅ Use `localhost:8000` or `127.0.0.1:8000` with port
-✅ Wait 5 minutes for OAuth settings to apply
-✅ Clear browser cookies after changes
-✅ Credentials must be in .env file
-
----
-
-## Common Mistakes to Avoid
-
-❌ Missing trailing slash
 ```
-WRONG: /accounts/google/login/callback
-RIGHT: /accounts/google/login/callback/
-```
+e:/login/auth_project/
+├── fix_duplicate_oauth.py               [Run this to fix]
+├── diagnose_oauth_error.py              [Check what's wrong]
+├── reset_oauth_config.py                [Full reset]
+└── deep_debug_oauth.py                  [Debug tool]
 
-❌ Wrong protocol
-```
-WRONG: https://localhost:8000/...
-RIGHT: http://localhost:8000/... (local dev)
-```
-
-❌ No port
-```
-WRONG: http://localhost/accounts/...
-RIGHT: http://localhost:8000/accounts/...
-```
-
-❌ Empty credentials
-```
-WRONG: GOOGLE_CLIENT_ID=
-RIGHT: GOOGLE_CLIENT_ID=123456789-abcdef...
+e:/login/
+├── README_FIX_OAUTH_ERROR.md            [Overview]
+├── ACTION_PLAN_FIX_OAUTH_NOW.md         [Step-by-step]
+├── FIX_OAUTH_ERROR_QUICK.md             [Quick reference]
+├── SOLUTION_MULTIPLEOBJECTSRETURNED_AND_WEBSOCKET.md [Full guide]
+├── FIX_OAUTH_MULTIPLEOBJECTSRETURNED_ERROR.md [Details]
+├── COMPREHENSIVE_CODE_ANALYSIS_2026.md  [Code deep-dive]
+└── START_HERE_OAUTH_FIX.md              [This file]
 ```
 
 ---
 
-## Exact Callback URLs
+## Next Step
 
-For local development (localhost:8000):
-```
-Google: http://localhost:8000/accounts/google/login/callback/
-GitHub: http://localhost:8000/accounts/github/login/callback/
+**Run this command now:**
+```bash
+cd e:\login\auth_project
+python fix_duplicate_oauth.py
 ```
 
-For production (Render):
-```
-Google: https://yourapp.onrender.com/accounts/google/login/callback/
-GitHub: https://yourapp.onrender.com/accounts/github/login/callback/
-```
+Then check the output - it will tell you if the error is fixed!
 
 ---
 
-## Files Created for Reference
-
-1. **FIX_OAUTH_REDIRECT_URI_MISMATCH.md**
-   - Complete troubleshooting guide
-   - All common issues and solutions
-
-2. **OAUTH_QUICK_FIX_STEPS.txt**
-   - Fast reference checklist
-   - Don't-do list
-
-3. **OAUTH_SETUP_VISUAL_GUIDE.md**
-   - Visual diagrams and examples
-   - Step-by-step with screenshots
-
-4. **START_HERE_OAUTH_FIX.md** (this file)
-   - Quick start guide
-
----
-
-## Status
-
-✅ **FIXABLE** - Follow the 3 steps above and your OAuth login will work
-
-Expected timeline: 10 minutes total
-- Google setup: 5 min
-- GitHub setup: 3 min
-- Django restart: 2 min
-- Testing: 1 min
+**When you're done**: Test OAuth login at `http://localhost:8000/accounts/login/`
 
 Good luck! 🚀

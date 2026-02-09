@@ -6,7 +6,9 @@ from nltk.stem import WordNetLemmatizer
 from textblob import TextBlob
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 import spacy
+import numpy as np
 
 # Download required NLTK data
 try:
@@ -477,3 +479,336 @@ class ProjectVisibilityFilter:
         # Calculate percentage
         percentage = (match_score / total_criteria * 100) if total_criteria > 0 else 0
         return round(percentage)
+
+
+class AdvancedSkillMatcher:
+    """
+    Advanced ML-based skill matching algorithm
+    Features:
+    - Skill level assessment (beginner/intermediate/expert)
+    - Project complexity matching
+    - Mutual interest scoring
+    - Complementary skills detection
+    """
+
+    # Skill levels mapping
+    SKILL_LEVELS = {
+        'beginner': 1,
+        'intermediate': 2,
+        'advanced': 3,
+        'expert': 4
+    }
+
+    # Project complexity levels
+    COMPLEXITY_LEVELS = {
+        'easy': 1,
+        'medium': 2,
+        'hard': 3,
+        'expert': 4
+    }
+
+    # Complementary skill pairs (skills that work well together)
+    COMPLEMENTARY_SKILLS = {
+        'python': ['django', 'flask', 'fastapi', 'pandas', 'tensorflow', 'pytorch'],
+        'javascript': ['react', 'angular', 'vue', 'nodejs', 'express'],
+        'react': ['javascript', 'html', 'css', 'nodejs'],
+        'django': ['python', 'postgresql', 'docker', 'redis'],
+        'tensorflow': ['python', 'numpy', 'pandas', 'matplotlib'],
+        'docker': ['kubernetes', 'linux', 'aws', 'gcp'],
+        'frontend': ['ui/ux', 'design', 'figma', 'html', 'css'],
+        'backend': ['database', 'api', 'server', 'authentication'],
+    }
+
+    @staticmethod
+    def extract_skill_level(profile_data):
+        """
+        Extract skill level from profile data
+        Infers from: bio, years of experience, project count
+        Returns: 1-4 (beginner to expert)
+        """
+        level = 1  # Default: beginner
+
+        bio = profile_data.get('bio', '').lower()
+        
+        # Keywords indicating expertise level
+        expert_keywords = ['10+ years', 'senior', 'lead', 'architect', 'expert']
+        advanced_keywords = ['5+ years', 'advanced', 'specialized', 'proficient']
+        intermediate_keywords = ['2-5 years', 'intermediate', 'experienced', 'solid']
+
+        if any(keyword in bio for keyword in expert_keywords):
+            level = 4
+        elif any(keyword in bio for keyword in advanced_keywords):
+            level = 3
+        elif any(keyword in bio for keyword in intermediate_keywords):
+            level = 2
+
+        return level
+
+    @staticmethod
+    def assess_project_complexity(project_data):
+        """
+        Assess project complexity from description and requirements
+        Returns: 1-4 (easy to expert)
+        """
+        complexity = 1  # Default: easy
+        
+        description = (project_data.get('description', '') + 
+                      ' ' + str(project_data.get('collaboration_needs', ''))).lower()
+
+        # Keywords indicating complexity
+        expert_complexity = ['scale', 'distributed', 'microservices', 'blockchain', 
+                           'ai/ml', 'machine learning', 'real-time', 'high-performance']
+        hard_complexity = ['api integration', 'authentication', 'database', 
+                          'complex logic', 'optimization']
+        medium_complexity = ['forms', 'validation', 'ui', 'crud', 'basic']
+
+        if any(keyword in description for keyword in expert_complexity):
+            complexity = 4
+        elif any(keyword in description for keyword in hard_complexity):
+            complexity = 3
+        elif any(keyword in description for keyword in medium_complexity):
+            complexity = 2
+
+        return complexity
+
+    @staticmethod
+    def calculate_skill_match_score(user_profile, other_profile):
+        """
+        Calculate skill match score (0-100) between two profiles
+        Factors:
+        - Common skills (40%)
+        - Complementary skills (30%)
+        - Skill level compatibility (20%)
+        - Interest overlap (10%)
+        """
+        scores = {}
+
+        # 1. SKILL OVERLAP (40%)
+        user_skills = set(str(s).lower().strip() for s in (user_profile.get('skills') or []))
+        other_skills = set(str(s).lower().strip() for s in (other_profile.get('skills') or []))
+        
+        if user_skills and other_skills:
+            skill_overlap = len(user_skills.intersection(other_skills))
+            total_unique = len(user_skills.union(other_skills))
+            scores['skill_overlap'] = (skill_overlap / total_unique * 100) if total_unique > 0 else 0
+        else:
+            scores['skill_overlap'] = 0
+
+        # 2. COMPLEMENTARY SKILLS (30%)
+        complementary_count = 0
+        for skill in user_skills:
+            if skill in AdvancedSkillMatcher.COMPLEMENTARY_SKILLS:
+                complements = set(AdvancedSkillMatcher.COMPLEMENTARY_SKILLS[skill])
+                if complements.intersection(other_skills):
+                    complementary_count += 1
+
+        scores['complementary'] = (complementary_count / max(len(user_skills), 1) * 100) if user_skills else 0
+
+        # 3. SKILL LEVEL COMPATIBILITY (20%)
+        user_level = AdvancedSkillMatcher.extract_skill_level(user_profile)
+        other_level = AdvancedSkillMatcher.extract_skill_level(other_profile)
+        
+        # Closer levels are better (but some variation is good)
+        level_diff = abs(user_level - other_level)
+        level_score = max(0, 100 - (level_diff * 25))
+        scores['skill_level'] = level_score
+
+        # 4. INTEREST OVERLAP (10%)
+        user_interests = set(str(i).lower().strip() for i in (user_profile.get('interests') or []))
+        other_interests = set(str(i).lower().strip() for i in (other_profile.get('interests') or []))
+        
+        if user_interests and other_interests:
+            interest_overlap = len(user_interests.intersection(other_interests))
+            total_interests = len(user_interests.union(other_interests))
+            scores['interests'] = (interest_overlap / total_interests * 100) if total_interests > 0 else 0
+        else:
+            scores['interests'] = 0
+
+        # Calculate weighted score
+        final_score = (
+            scores['skill_overlap'] * 0.40 +
+            scores['complementary'] * 0.30 +
+            scores['skill_level'] * 0.20 +
+            scores['interests'] * 0.10
+        )
+
+        return round(final_score, 1)
+
+    @staticmethod
+    def calculate_project_collaboration_fit(user_profile, project_data):
+        """
+        Calculate how well a user fits for a project
+        Factors:
+        - Skill match with project requirements (40%)
+        - Experience level vs project complexity (35%)
+        - Interest alignment (15%)
+        - Availability/commitment level (10%)
+        """
+        scores = {}
+
+        # 1. SKILL REQUIREMENT MATCH (40%)
+        user_skills = set(str(s).lower().strip() for s in (user_profile.get('skills') or []))
+        project_techs = set(str(t).lower().strip() for t in (project_data.get('technologies') or []))
+        
+        if user_skills and project_techs:
+            skill_match = len(user_skills.intersection(project_techs))
+            scores['skill_match'] = (skill_match / len(project_techs) * 100)
+        else:
+            scores['skill_match'] = 0
+
+        # 2. EXPERIENCE vs COMPLEXITY (35%)
+        user_level = AdvancedSkillMatcher.extract_skill_level(user_profile)
+        project_complexity = AdvancedSkillMatcher.assess_project_complexity(project_data)
+        
+        # User should be at or above project level (or 1 level below is acceptable)
+        level_diff = user_level - project_complexity
+        if level_diff >= 0:
+            scores['complexity_fit'] = 100
+        elif level_diff == -1:
+            scores['complexity_fit'] = 70  # Slightly underleveled but okay
+        else:
+            scores['complexity_fit'] = 40  # Significantly underleveled
+
+        # 3. INTEREST ALIGNMENT (15%)
+        user_interests = set(str(i).lower().strip() for i in (user_profile.get('interests') or []))
+        project_needs = set(str(n).lower().strip() for n in (project_data.get('collaboration_needs') or []))
+        
+        if user_interests and project_needs:
+            interest_match = len(user_interests.intersection(project_needs))
+            scores['interests'] = (interest_match / len(project_needs) * 100)
+        else:
+            scores['interests'] = 0
+
+        # 4. COMMITMENT (10%) - could be enhanced with actual availability data
+        scores['commitment'] = 50  # Default neutral
+
+        # Calculate weighted score
+        final_score = (
+            scores['skill_match'] * 0.40 +
+            scores['complexity_fit'] * 0.35 +
+            scores['interests'] * 0.15 +
+            scores['commitment'] * 0.10
+        )
+
+        return {
+            'overall_fit': round(final_score, 1),
+            'skill_match': round(scores['skill_match'], 1),
+            'complexity_fit': round(scores['complexity_fit'], 1),
+            'interest_alignment': round(scores['interests'], 1),
+            'recommendation': AdvancedSkillMatcher.get_fit_recommendation(final_score)
+        }
+
+    @staticmethod
+    def find_best_collaborators(user_profile, all_profiles, limit=10):
+        """
+        Find best collaborators for a user
+        Returns: List of (profile, score, reason) tuples
+        """
+        matches = []
+
+        for profile in all_profiles:
+            # Skip self
+            if profile.get('user_id') == user_profile.get('user_id'):
+                continue
+
+            score = AdvancedSkillMatcher.calculate_skill_match_score(
+                user_profile, 
+                profile
+            )
+
+            # Get detailed match reasons
+            reasons = AdvancedSkillMatcher.get_match_reasons(
+                user_profile, 
+                profile, 
+                score
+            )
+
+            matches.append({
+                'profile': profile,
+                'score': score,
+                'reasons': reasons
+            })
+
+        # Sort by score
+        matches.sort(key=lambda x: x['score'], reverse=True)
+
+        return matches[:limit]
+
+    @staticmethod
+    def get_match_reasons(user_profile, other_profile, score):
+        """Generate human-readable match reasons"""
+        reasons = []
+
+        user_skills = set(str(s).lower() for s in (user_profile.get('skills') or []))
+        other_skills = set(str(s).lower() for s in (other_profile.get('skills') or []))
+        
+        # Common skills
+        common = user_skills.intersection(other_skills)
+        if common:
+            reasons.append(f"Shares skills: {', '.join(list(common)[:2])}")
+
+        # Complementary skills
+        for skill in list(user_skills)[:3]:
+            if skill in AdvancedSkillMatcher.COMPLEMENTARY_SKILLS:
+                complements = set(AdvancedSkillMatcher.COMPLEMENTARY_SKILLS[skill])
+                if complements.intersection(other_skills):
+                    reasons.append(f"Complements: {skill} + {list(complements.intersection(other_skills))[0]}")
+                    break
+
+        # Skill level
+        user_level = AdvancedSkillMatcher.extract_skill_level(user_profile)
+        other_level = AdvancedSkillMatcher.extract_skill_level(other_profile)
+        level_names = {1: 'Beginner', 2: 'Intermediate', 3: 'Advanced', 4: 'Expert'}
+        if user_level == other_level:
+            reasons.append(f"Same experience level: {level_names.get(user_level, 'Unknown')}")
+
+        # Interest match
+        user_interests = set(str(i).lower() for i in (user_profile.get('interests') or []))
+        other_interests = set(str(i).lower() for i in (other_profile.get('interests') or []))
+        common_interests = user_interests.intersection(other_interests)
+        if common_interests:
+            reasons.append(f"Shared interests: {list(common_interests)[0]}")
+
+        return reasons or [f"Good match ({score}% compatibility)"]
+
+    @staticmethod
+    def get_fit_recommendation(score):
+        """Get recommendation text based on fit score"""
+        if score >= 90:
+            return "Excellent fit - highly recommended"
+        elif score >= 75:
+            return "Good fit - recommended"
+        elif score >= 60:
+            return "Decent fit - consider this match"
+        elif score >= 40:
+            return "Possible fit - may need different skills"
+        else:
+            return "Poor fit - not recommended"
+
+    @staticmethod
+    def rank_collaborators_for_project(project_data, all_user_profiles, limit=10):
+        """
+        Find best collaborators for a specific project
+        Returns: Ranked list of (profile, fit_score, reasons) tuples
+        """
+        matches = []
+
+        for profile in all_user_profiles:
+            fit_data = AdvancedSkillMatcher.calculate_project_collaboration_fit(
+                profile, 
+                project_data
+            )
+
+            matches.append({
+                'profile': profile,
+                'overall_fit': fit_data['overall_fit'],
+                'skill_match': fit_data['skill_match'],
+                'complexity_fit': fit_data['complexity_fit'],
+                'interest_alignment': fit_data['interest_alignment'],
+                'recommendation': fit_data['recommendation']
+            })
+
+        # Sort by overall fit
+        matches.sort(key=lambda x: x['overall_fit'], reverse=True)
+
+        return matches[:limit]

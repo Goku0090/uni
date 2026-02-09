@@ -292,7 +292,7 @@ def register_view(request):
 
             # Log the user in
             login(request, user)
-            messages.success(request, 'Registration successful! Welcome to UniSync!')
+            messages.success(request, 'Registration successful! Welcome to UniSinq!')
             logger.info(f"User registered successfully: {username}")
 
             # Redirect to main dashboard after successful registration
@@ -372,11 +372,47 @@ def login_view(request):
         form = LoginForm()
     
     import os
-    # Temporarily disable social app checks to prevent MultipleObjectsReturned errors
+    # Get OAuth credentials and handle potential MultipleObjectsReturned errors
+    try:
+        from allauth.socialaccount.models import SocialApp
+        
+        # Check for duplicate social apps (common issue)
+        google_apps = SocialApp.objects.filter(provider='google')
+        github_apps = SocialApp.objects.filter(provider='github')
+        
+        # OAuth is only enabled if:
+        # 1. Exactly 1 SocialApp of that provider exists
+        # 2. The credential env var is set (not placeholder)
+        google_client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+        github_client_id = os.getenv('GITHUB_CLIENT_ID', '').strip()
+        
+        has_google = (
+            google_apps.count() == 1 
+            and google_client_id 
+            and not google_client_id.startswith('your-')
+            and 'example' not in google_client_id
+        )
+        has_github = (
+            github_apps.count() == 1 
+            and github_client_id 
+            and not github_client_id.startswith('your-')
+            and 'example' not in github_client_id
+        )
+        
+        if google_apps.count() > 1:
+            logger.warning(f"Multiple Google SocialApp entries found ({google_apps.count()}). OAuth may not work.")
+        if github_apps.count() > 1:
+            logger.warning(f"Multiple GitHub SocialApp entries found ({github_apps.count()}). OAuth may not work.")
+            
+    except Exception as e:
+        logger.error(f"Error checking social apps: {e}")
+        has_google = False
+        has_github = False
+    
     context = {
         'form': form,
-        'GITHUB_CLIENT_ID': os.getenv('GITHUB_CLIENT_ID'),
-        'GOOGLE_CLIENT_ID': os.getenv('GOOGLE_CLIENT_ID'),
+        'GITHUB_CLIENT_ID': github_client_id if has_github else None,
+        'GOOGLE_CLIENT_ID': google_client_id if has_google else None,
     }
     return render(request, 'login.html', context)
 
@@ -629,10 +665,10 @@ def main(request):
 
 # About Us Page
 def about_view(request):
-    """About Us page showcasing UniSync and its creator"""
+    """About Us page showcasing UniSinq and its creator"""
     context = {
-        'page_title': 'About UniSync',
-        'meta_description': 'Learn about UniSync - a student collaboration platform created by Gautam Nair to connect talented students worldwide for innovative projects.',
+        'page_title': 'About UniSinq',
+        'meta_description': 'Learn about UniSinq - a student collaboration platform created by Gautam Nair to connect talented students worldwide for innovative projects.',
     }
     return render(request, 'about.html', context)
 
@@ -640,8 +676,8 @@ def about_view(request):
 def help_center_view(request):
     """Help Center page with FAQs and support resources"""
     context = {
-        'page_title': 'Help Center - UniSync',
-        'meta_description': 'Get help and support for UniSync. Find answers to frequently asked questions and learn how to make the most of our student collaboration platform.',
+        'page_title': 'Help Center - UniSinq',
+        'meta_description': 'Get help and support for UniSinq. Find answers to frequently asked questions and learn how to make the most of our student collaboration platform.',
     }
     return render(request, 'help_center.html', context)
 
@@ -779,13 +815,17 @@ def main_home(request):
                 other_user_id = conn['receiver_id'] if conn['sender_id'] == request.user.id else conn['sender_id']
                 connection_status[other_user_id] = conn['status']
         
-        # Add match badge info to each project
+        # Add match badge info and comments to each project
         for project in visible_projects:
             if project.id in project_match_details:
                 match_info = project_match_details[project.id]
                 project.match_score = match_info['score']
                 project.match_reasons = match_info['reasons']
                 project.match_badge = ProjectVisibilityFilter.get_project_match_badge(match_info['score'])
+            
+            # Fetch comments for the project to display on load
+            project.comments_list = Comment.objects.filter(project=project).select_related('user').order_by('-created_at')[:5]
+            project.comments_count = Comment.objects.filter(project=project).count()
     
     return render(request, 'main_home.html', {
         'feed_posts': visible_projects,
@@ -1002,11 +1042,12 @@ def enhanced_messages_view(request):
         # Get last message
         last_message = room.messages.order_by('-created_at').first()
 
-        # Count unread messages
+        # Count unread messages (exclude messages from current user)
         unread_count = MessageReadStatus.objects.filter(
             message__chat_room=room,
-            message__sender__ne=request.user,
             user=request.user
+        ).exclude(
+            message__sender=request.user
         ).count()
 
         # For direct chats, get the other user
@@ -2027,7 +2068,7 @@ def user_profile_api(request, user_id):
 
 @login_required
 def message_view(request):
-    """Main messaging page - show conversations"""
+    """Main messaging page - show conversations (direct messages and group chats)"""
     # Get all users the current user has messaged with or is connected to
     connected_users = Connection.objects.filter(
         Q(sender=request.user, status='accepted') |
@@ -2047,12 +2088,28 @@ def message_view(request):
     received_messages = Message.objects.filter(receiver=request.user).values_list('sender', flat=True).distinct()
 
     for user_id in sent_messages:
-        conversation_users.add(User.objects.get(id=user_id))
+        if user_id:  # Skip None values
+            try:
+                conversation_users.add(User.objects.get(id=user_id))
+            except User.DoesNotExist:
+                pass  # User was deleted, skip
     for user_id in received_messages:
-        conversation_users.add(User.objects.get(id=user_id))
+        if user_id:  # Skip None values
+            try:
+                conversation_users.add(User.objects.get(id=user_id))
+            except User.DoesNotExist:
+                pass  # User was deleted, skip
+
+    # Get all group chat rooms where user is a member (ADDED)
+    group_chat_rooms = ChatRoom.objects.filter(
+        members__user=request.user,
+        is_active=True
+    ).distinct()
 
     # Convert to list and sort by most recent message
     conversations = []
+    
+    # Add direct message conversations
     for user in conversation_users:
         last_message = Message.objects.filter(
             Q(sender=request.user, receiver=user) |
@@ -2074,7 +2131,30 @@ def message_view(request):
         unread_count = len(set(all_messages) - set(read_message_ids))
 
         conversations.append({
+            'type': 'direct',
             'user': user,
+            'chat_room': None,
+            'last_message': last_message,
+            'unread_count': unread_count
+        })
+    
+    # Add group chat conversations (ADDED)
+    for room in group_chat_rooms:
+        last_message = room.messages.order_by('-created_at').first()
+        
+        # Count unread messages in group chat
+        all_room_messages = room.messages.values_list('id', flat=True)
+        read_room_message_ids = MessageReadStatus.objects.filter(
+            message_id__in=all_room_messages,
+            user=request.user
+        ).values_list('message_id', flat=True)
+        
+        unread_count = len(set(all_room_messages) - set(read_room_message_ids))
+        
+        conversations.append({
+            'type': 'group',
+            'user': None,
+            'chat_room': room,
             'last_message': last_message,
             'unread_count': unread_count
         })
@@ -3312,7 +3392,7 @@ def api_root(request):
         ],
         'response_formats': ['JSON', 'XML (via Accept header)'],
         'rate_limits': '1000 requests/hour per user',
-        'contact_info': 'API Support: support@unisync.com'
+        'contact_info': 'API Support: support@unisinq.com'
     }
 
     return render(request, 'api_root.html', context)

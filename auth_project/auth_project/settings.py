@@ -96,6 +96,13 @@ TEMPLATES = [
 # --- WSGI ---
 WSGI_APPLICATION = 'auth_project.wsgi.application'
 
+# --- Channel Layers (WebSocket Broadcasting) ---
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
+
 # --- Database ---
 # Render provides DATABASE_URL automatically
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -112,8 +119,8 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'unisync_db'),
-            'USER': os.getenv('DB_USER', 'unisync_user'),
+            'NAME': os.getenv('DB_NAME', 'unisinq_db'),
+            'USER': os.getenv('DB_USER', 'unisinq_user'),
             'PASSWORD': os.getenv('DB_PASSWORD', 'your_password_here'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
@@ -254,7 +261,7 @@ else:
     print("[INFO] To use ZeptoMail: Set ZEPTO_MAIL_API_KEY and ZEPTO_MAIL_TOKEN in .env")
 
 # Default sender email
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@unisync.app')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@unisinq.app')
 
 # Alternative SMTP settings (uncomment if needed as fallback)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -1,5 +1,5 @@
 """
-Authentication Service for UniSync
+Authentication Service for UniSinq
 Handles user authentication related services like welcome emails.
 """
 
@@ -30,13 +30,13 @@ class AuthService:
             bool: True if email sent successfully, False otherwise
         """
         try:
-            subject = f"Welcome back to UniSync, {username}! 🚀"
+            subject = f"Welcome back to UniSinq, {username}! 🚀"
 
             # Plain text version
             text_content = f"""
 Hi {username}!
 
-Welcome back to UniSync! We're excited to see you again.
+Welcome back to UniSinq! We're excited to see you again.
 
 Continue your journey of innovation and collaboration with fellow students worldwide.
 
@@ -49,7 +49,7 @@ What's new:
 Ready to dive back in? Visit: http://localhost:8000
 
 Happy collaborating!
-🚀 The UniSync Team
+🚀 The UniSinq Team
 
 ---
 This email was sent to {email}
@@ -63,7 +63,7 @@ If you didn't request this, please ignore this email.
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Back to UniSync</title>
+    <title>Welcome Back to UniSinq</title>
     <style>
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -147,7 +147,7 @@ If you didn't request this, please ignore this email.
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🚀 UniSync</div>
+            <div class="logo">🚀 UniSinq</div>
             <h1>Welcome Back, {username}!</h1>
             <p class="welcome-text">We're thrilled to see you again!</p>
         </div>
@@ -172,7 +172,7 @@ If you didn't request this, please ignore this email.
         <p>Ready to dive back into the world of student collaboration? Your dashboard is waiting!</p>
 
         <p>Happy collaborating,<br>
-        <strong>The UniSync Team</strong> <span class="rocket">🚀</span></p>
+        <strong>The UniSinq Team</strong> <span class="rocket">🚀</span></p>
 
         <div class="footer">
             <p>

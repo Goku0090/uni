@@ -1,0 +1,70 @@
+═══════════════════════════════════════════════════════════════════════════════
+                        INSTANT WEBSOCKET FIX
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEM:
+  WebSocket connection to 'ws://127.0.0.1:8000/ws/project/2/' failed
+  
+CAUSE:
+  Using: python manage.py runserver (HTTP only)
+  Need:  daphne (HTTP + WebSocket)
+
+SOLUTION:
+  Copy and paste ONE command below:
+
+═══════════════════════════════════════════════════════════════════════════════
+WINDOWS - Run This Command
+═══════════════════════════════════════════════════════════════════════════════
+
+cd e:\login\auth_project && pip install daphne==4.0.0 && daphne -b 0.0.0.0 -p 8000 auth_project.asgi:application
+
+═══════════════════════════════════════════════════════════════════════════════
+MAC/LINUX - Run This Command
+═══════════════════════════════════════════════════════════════════════════════
+
+cd /path/to/auth_project && pip install daphne==4.0.0 && daphne -b 0.0.0.0 -p 8000 auth_project.asgi:application
+
+═══════════════════════════════════════════════════════════════════════════════
+WHAT TO EXPECT
+═══════════════════════════════════════════════════════════════════════════════
+
+Terminal Output:
+  Installing daphne==4.0.0... ✓
+  Starting Daphne...
+  Starting server at http://0.0.0.0:8000 with ASGI application...
+  
+Browser Console (F12):
+  ✅ Connected to project 2 updates
+  ✅ Connected to activity feed
+  ✅ Connected to notifications
+
+═══════════════════════════════════════════════════════════════════════════════
+THEN TEST
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Open browser: http://127.0.0.1:8000/project/2/
+2. Open console: F12 → Console tab
+3. Look for: ✅ Messages saying "Connected to..."
+4. No red errors = SUCCESS ✅
+
+═══════════════════════════════════════════════════════════════════════════════
+IF SOMETHING GOES WRONG
+═══════════════════════════════════════════════════════════════════════════════
+
+Error: "daphne: command not found"
+  → Run: pip install daphne==4.0.0
+
+Error: "Address already in use"
+  → Port 8000 is taken, stop other Django processes
+
+Error: "WebSocket still fails"
+  → Hard refresh browser: Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)
+  → Check browser console for red errors
+
+═══════════════════════════════════════════════════════════════════════════════
+MORE INFO
+═══════════════════════════════════════════════════════════════════════════════
+
+See: FIX_WEBSOCKET_CONNECTION_ERROR.md
+
+═══════════════════════════════════════════════════════════════════════════════

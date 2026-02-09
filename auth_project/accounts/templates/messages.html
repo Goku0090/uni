@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages | UniSync</title>
+    <title>Messages | UniSinq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -417,9 +417,9 @@
     <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <a href="{% url 'main_home' %}" class="logo-link flex items-center gap-2 hover:opacity-80 transition-opacity" title="Back to Home">
-                <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-8 w-8 object-contain">
+                <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-8 w-8 object-contain">
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">
-                    UniSync
+                    UniSinq
                 </h1>
             </a>
             <nav class="hidden md:flex space-x-8">
@@ -481,9 +481,9 @@
         <div class="mb-12">
             <div class="flex items-center gap-4 mb-6">
                 <a href="{% url 'main_home' %}" class="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-14 w-14 object-contain rounded-lg shadow-md ring-2 ring-blue-100 group-hover:ring-blue-300 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-14 w-14 object-contain rounded-lg shadow-md ring-2 ring-blue-100 group-hover:ring-blue-300 transition">
                     <div>
-                        <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">UniSync</h2>
+                        <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-pink-600 bg-clip-text text-transparent">UniSinq</h2>
                         <p class="text-xs text-gray-500 font-medium">Collaborate & Innovate</p>
                     </div>
                 </a>
@@ -545,24 +545,41 @@
         {% if conversations %}
             <div class="conversation-list" id="conversationsList">
                 {% for conversation in conversations %}
-                <div class="message-card {% if conversation.unread_count > 0 %}unread{% endif %} fade-in" data-username="{% if conversation.user %}{{ conversation.user.username|lower }}{% endif %}">
+                {% if conversation.type == 'direct' %}
+                    <div class="message-card {% if conversation.unread_count > 0 %}unread{% endif %} fade-in" data-username="{{ conversation.user.username|lower }}">
+                {% else %}
+                    <div class="message-card {% if conversation.unread_count > 0 %}unread{% endif %} fade-in" data-chatroom="{{ conversation.chat_room.id }}">
+                {% endif %}
                     <div class="p-4 flex items-center justify-between">
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                             <!-- Avatar -->
-                            <div class="avatar">
-                                {% if conversation.user.first_name %}{{ conversation.user.first_name|first|upper }}{% else %}{{ conversation.user.username|first|upper }}{% endif %}
-                            </div>
+                            {% if conversation.type == 'direct' %}
+                                <div class="avatar">
+                                    {% if conversation.user.first_name %}{{ conversation.user.first_name|first|upper }}{% else %}{{ conversation.user.username|first|upper }}{% endif %}
+                                </div>
+                            {% else %}
+                                <div class="avatar" style="background: linear-gradient(135deg, #ec4899, #f59e0b); font-size: 20px;">
+                                    👥
+                                </div>
+                            {% endif %}
 
-                            <!-- User Info -->
+                            <!-- User/Room Info -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2 mb-1">
                                     <h3 class="font-semibold text-gray-900">
-                                        {% if conversation.user.first_name and conversation.user.last_name %}
-                                            {{ conversation.user.first_name }} {{ conversation.user.last_name }}
+                                        {% if conversation.type == 'direct' %}
+                                            {% if conversation.user.first_name and conversation.user.last_name %}
+                                                {{ conversation.user.first_name }} {{ conversation.user.last_name }}
+                                            {% else %}
+                                                {{ conversation.user.username }}
+                                            {% endif %}
                                         {% else %}
-                                            {{ conversation.user.username }}
+                                            {{ conversation.chat_room.name }}
                                         {% endif %}
                                     </h3>
+                                    {% if conversation.type == 'group' %}
+                                        <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded">GROUP</span>
+                                    {% endif %}
                                 </div>
 
                                 <!-- Last Message Preview -->
@@ -575,8 +592,8 @@
                                     </p>
                                     <div class="flex items-center gap-2 mt-1">
                                         <span class="message-time">{{ conversation.last_message.created_at|timesince }} ago</span>
-                                        {% if conversation.last_message.sender.id != user.id and not conversation.last_message.is_read %}
-                                            <span class="notification-dot"></span>
+                                        {% if conversation.type == 'group' %}
+                                            <span class="text-xs text-gray-500">({{ conversation.chat_room.members.count }} members)</span>
                                         {% endif %}
                                     </div>
                                 {% else %}
@@ -592,27 +609,34 @@
                             {% endif %}
 
                             <div class="hover-actions flex gap-2">
-                                <button onclick="pinConversation({{ conversation.user.id }})" 
+                                <button onclick="pinConversation('{% if conversation.type == 'direct' %}{{ conversation.user.id }}{% else %}group-{{ conversation.chat_room.id }}{% endif %}')" 
                                         class="action-button"
                                         title="Pin conversation">
                                     📌
                                 </button>
-                                <button onclick="muteConversation({{ conversation.user.id }})" 
+                                <button onclick="muteConversation('{% if conversation.type == 'direct' %}{{ conversation.user.id }}{% else %}group-{{ conversation.chat_room.id }}{% endif %}')" 
                                         class="action-button"
                                         title="Mute notifications">
                                     🔕
                                 </button>
                             </div>
 
-                            <a href="{% url 'chat' conversation.user.id %}" 
-                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition whitespace-nowrap">
-                                Chat
-                            </a>
+                            {% if conversation.type == 'direct' %}
+                                <a href="{% url 'chat' conversation.user.id %}" 
+                                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition whitespace-nowrap">
+                                    Chat
+                                </a>
+                            {% else %}
+                                <a href="{% url 'enhanced_chat' conversation.chat_room.id %}" 
+                                   class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-sm transition whitespace-nowrap">
+                                    Open
+                                </a>
+                            {% endif %}
                         </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+                        </div>
+                        </div>
+                        {% endfor %}
+                        </div>
         {% else %}
             <!-- Empty State -->
             <div class="empty-state">
@@ -686,7 +710,9 @@
             
             conversations.forEach(card => {
                 const username = card.getAttribute('data-username');
-                const shouldShow = !query || (username && username.includes(query));
+                const chatroom = card.getAttribute('data-chatroom');
+                const searchText = username ? username.toLowerCase() : (chatroom ? 'group-' + chatroom : '');
+                const shouldShow = !query || (searchText && searchText.includes(query.toLowerCase()));
                 card.style.display = shouldShow ? '' : 'none';
                 if (shouldShow) visibleCount++;
             });

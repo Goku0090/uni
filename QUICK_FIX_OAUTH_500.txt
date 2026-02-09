@@ -1,0 +1,130 @@
+================================================================================
+                    QUICK FIX: OAuth 500 Error
+================================================================================
+
+ISSUE: GET http://127.0.0.1:8000/accounts/3rdparty/signup/ 500 Error
+
+ROOT CAUSE: Missing SocialApp configuration in database (django-allauth)
+
+================================================================================
+                            INSTANT FIX (3 STEPS)
+================================================================================
+
+STEP 1: Run Setup Script
+────────────────────────
+$ cd auth_project
+$ python setup_oauth_fixed.py
+
+Expected output:
+  [OK] Google OAuth UPDATED
+  [OK] GitHub OAuth CREATED
+  [SUCCESS] OAuth Setup Complete!
+
+
+STEP 2: Update .env File
+────────────────────────
+Add these credentials (get from Google Cloud & GitHub console):
+
+GOOGLE_OAUTH_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_OAUTH_SECRET_KEY=YOUR_GOOGLE_SECRET_KEY
+GITHUB_OAUTH_CLIENT_ID=YOUR_GITHUB_CLIENT_ID
+GITHUB_OAUTH_SECRET_KEY=YOUR_GITHUB_SECRET_KEY
+
+
+STEP 3: Restart Server
+──────────────────────
+$ python manage.py runserver
+
+✅ OAuth should now work!
+
+
+================================================================================
+                            VERIFY SETUP
+================================================================================
+
+Open Django Shell:
+$ python manage.py shell
+
+Check SocialApps exist:
+>>> from allauth.socialaccount.models import SocialApp
+>>> list(SocialApp.objects.all().values_list('provider', 'client_id'))
+[('google', 'YOUR_CLIENT_ID'), ('github', 'YOUR_CLIENT_ID')]
+
+✓ If you see the list above, setup is complete!
+
+
+================================================================================
+                        GET OAUTH CREDENTIALS
+================================================================================
+
+GOOGLE:
+1. Go to https://console.cloud.google.com/
+2. Create OAuth 2.0 Client ID (Web Application)
+3. Authorized redirect URIs:
+   - http://localhost:8000/accounts/google/login/callback/
+   - https://yourdomain.com/accounts/google/login/callback/
+
+GITHUB:
+1. Go to GitHub Settings → Developer settings → OAuth Apps
+2. New OAuth App
+3. Authorization callback URL:
+   - http://localhost:8000/accounts/github/login/callback/
+   - https://yourdomain.com/accounts/github/login/callback/
+
+
+================================================================================
+                        WHAT WAS FIXED
+================================================================================
+
+Files Modified:
+✓ auth_project/accounts/signals_realtime.py
+  - Fixed emoji logging issue (Windows compatibility)
+
+Files Created:
+✓ auth_project/setup_oauth_fixed.py
+  - Automatic SocialApp setup script
+  - Reads credentials from .env
+  - Links to Site framework
+
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+If still getting 500 error:
+
+1. Check SocialApps in admin:
+   $ python manage.py runserver
+   → http://localhost:8000/admin/socialaccount/socialapp/
+   → Should show Google and GitHub apps
+
+2. Check Site configuration:
+   → http://localhost:8000/admin/sites/site/
+   → Domain should be "localhost:8000" or your actual domain
+
+3. Check logs:
+   $ python manage.py runserver
+   → Look for error messages in terminal
+
+4. Reset database (development only):
+   $ python manage.py flush
+   $ python setup_oauth_fixed.py
+   $ python manage.py runserver
+
+
+================================================================================
+                        SUCCESS INDICATORS
+================================================================================
+
+✓ SocialApps created in database
+✓ Linked to Site ID 1
+✓ Credentials loaded from .env
+✓ No more 500 errors on OAuth endpoints
+✓ Login with Google button works
+✓ Login with GitHub button works
+
+
+================================================================================
+Generated: 2026-02-07
+Status: Ready to test
+================================================================================

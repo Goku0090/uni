@@ -1,0 +1,984 @@
+================================================================================
+                    COMPLETE CODEBASE ANALYSIS - 2026
+================================================================================
+
+PROJECT: UniSync - Collaborative Project Matching Platform
+STACK: Django + DRF + Channels + PostgreSQL + Vue.js/Vanilla JS
+DEPLOYMENT: Railway / Render
+
+================================================================================
+                         1. APPLICATION ARCHITECTURE
+================================================================================
+
+1.1 CORE STRUCTURE
+├── auth_project/                      [Django Project Root]
+│   ├── auth_project/                  [Project Settings]
+│   │   ├── settings.py                [Configuration]
+│   │   ├── urls.py                    [URL Routing]
+│   │   ├── asgi.py                    [WebSocket Support]
+│   │   └── wsgi.py                    [WSGI Configuration]
+│   │
+│   ├── accounts/                      [Main Application]
+│   │   ├── models.py                  [Database Models - 700+ lines]
+│   │   ├── views.py                   [View Logic - 3400+ lines]
+│   │   ├── serializers.py             [DRF Serializers]
+│   │   ├── urls.py                    [App Routes]
+│   │   ├── consumers.py               [WebSocket Consumers]
+│   │   ├── forms.py                   [Django Forms]
+│   │   ├── utils.py                   [Helper Functions]
+│   │   ├── templates/                 [HTML Templates]
+│   │   │   ├── main_home.html         [Dashboard/Feed]
+│   │   │   ├── login.html             [OTP Login]
+│   │   │   ├── register.html          [Registration]
+│   │   │   ├── project_detail.html    [Project Details]
+│   │   │   ├── messages.html          [Messaging UI]
+│   │   │   ├── find_collaborators.html[User Search]
+│   │   │   └── ... (10+ more templates)
+│   │   ├── static/                    [CSS/JS Assets]
+│   │   └── tests/                     [Test Files]
+│   │
+│   ├── manage.py                      [Django CLI]
+│   └── requirements.txt               [Dependencies]
+
+
+1.2 KEY TECHNOLOGIES
+• Django 4.2+             - Web framework
+• Django REST Framework   - API development
+• Django Channels         - WebSocket support
+• PostgreSQL              - Database
+• Redis                   - Caching & channel layer
+• Vue.js / Vanilla JS     - Frontend
+• Tailwind CSS            - Styling
+• Django-allauth          - Social authentication
+• Celery (optional)       - Async tasks
+
+================================================================================
+                      2. DATABASE MODELS & RELATIONSHIPS
+================================================================================
+
+2.1 USER MANAGEMENT MODELS
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ User (Django Auth)                                                   │
+├─────────────────────────────────────────────────────────────────────┤
+│ • username, email, password (hash)                                   │
+│ • first_name, last_name                                             │
+│ • is_active, is_staff, is_superuser                                │
+└─────────────────────────────────────────────────────────────────────┘
+                            ↓ (OneToOne)
+┌─────────────────────────────────────────────────────────────────────┐
+│ StudentProfile                                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│ • user → User (OneToOne, CASCADE)                                   │
+│ • full_name, college, location                                      │
+│ • interests (JSONField)                                             │
+│ • bio, profile_photo, skills, project_interests                    │
+│ • github, linkedin, portfolio, behance (URLs)                       │
+│ • role_preference, profile_completed                                │
+│ • created_at, updated_at                                            │
+└─────────────────────────────────────────────────────────────────────┘
+
+2.2 AUTHENTICATION MODELS
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ OTP                                                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│ • email, otp_code (6-digit)                                         │
+│ • purpose: login, registration, reset                               │
+│ • is_used, created_at, expires_at (5 min expiry)                   │
+│ Methods:                                                             │
+│  - generate_otp(email, purpose)                                    │
+│  - verify_otp(otp_code)                                            │
+│  - is_valid()                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+2.3 PROJECT & COLLABORATION MODELS
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ Project                                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│ • user (ForeignKey) → User (creator/owner)                         │
+│ • title, short_description, detailed_description                    │
+│ • category, image, technologies (JSONField)                         │
+│ • collaboration_needs, max_members, visibility                      │
+│ • status: active, paused, completed, archived                       │
+│ • start_date, end_date                                              │
+│ • created_at, updated_at                                            │
+│ Methods:                                                             │
+│  - get_active_members()                                             │
+│  - get_pending_invitations()                                        │
+│  - is_member(user)                                                  │
+└─────────────────────────────────────────────────────────────────────┘
+                            ↓ (ForeignKey)
+┌─────────────────────────────────────────────────────────────────────┐
+│ ProjectMember (roles: owner, admin, contributor, viewer)            │
+├─────────────────────────────────────────────────────────────────────┤
+│ • project, user, role, is_active                                    │
+│ • joined_at                                                         │
+│ Properties:                                                          │
+│  - can_manage_project, can_invite_members, can_manage_tasks        │
+│  - can_edit_project                                                 │
+└─────────────────────────────────────────────────────────────────────┘
+
+2.4 SOCIAL & ENGAGEMENT MODELS
+
+┌────────────────────────────┐    ┌─────────────────────┐
+│ Connection                 │    │ Follow              │
+├────────────────────────────┤    ├─────────────────────┤
+│ • sender → User            │    │ • follower → User   │
+│ • receiver → User          │    │ • following → User  │
+│ • status: pending/accepted │    │ • created_at        │
+│ • created_at, updated_at   │    └─────────────────────┘
+└────────────────────────────┘
+
+┌────────────────────────────┐    ┌─────────────────────┐
+│ Like                       │    │ Comment             │
+├────────────────────────────┤    ├─────────────────────┤
+│ • user → User              │    │ • user → User       │
+│ • project → Project        │    │ • project → Project │
+│ • created_at               │    │ • content           │
+│ (unique_together)          │    │ • created_at        │
+└────────────────────────────┘    └─────────────────────┘
+
+2.5 MESSAGING MODELS
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ ChatRoom                                                              │
+├──────────────────────────────────────────────────────────────────────┤
+│ • name, description, chat_type (direct/group)                        │
+│ • created_by → User, created_at, updated_at                          │
+└──────────────────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────────────────┐
+│ Message                                                              │
+├──────────────────────────────────────────────────────────────────────┤
+│ • sender → User, receiver → User (nullable)                         │
+│ • chat_room → ChatRoom (nullable)                                    │
+│ • content, message_type (text/file/image/call)                      │
+│ • reply_to → self (threading support)                              │
+│ • created_at, updated_at                                            │
+│ Methods:                                                             │
+│  - mark_as_read_by(user)                                           │
+│  - is_read_by(user)                                                │
+│  - get_read_count()                                                │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ MessageReadStatus                                                    │
+├──────────────────────────────────────────────────────────────────────┤
+│ • message → Message, user → User, read_at                           │
+└──────────────────────────────────────────────────────────────────────┘
+
+2.6 OTHER MODELS
+
+┌────────────────────────────┐    ┌─────────────────────┐
+│ Activity                   │    │ UserStats           │
+├────────────────────────────┤    ├─────────────────────┤
+│ • user → User              │    │ • user → User       │
+│ • activity_type (8 types)  │    │ • counters: projects│
+│ • title, description       │    │   connections, likes│
+│ • project, target_user     │    │   comments, followers
+│ • is_public, created_at    │    │ • last_updated      │
+└────────────────────────────┘    └─────────────────────┘
+
+┌────────────────────────────┐    ┌─────────────────────┐
+│ ProjectTask                │    │ ProjectMilestone    │
+├────────────────────────────┤    ├─────────────────────┤
+│ • project → Project        │    │ • project → Project │
+│ • title, description       │    │ • title, description│
+│ • assigned_to, assigned_by │    │ • due_date          │
+│ • status (5 states)        │    │ • is_completed      │
+│ • priority (4 levels)      │    │ • completed_by      │
+│ • due_date, completed_at   │    └─────────────────────┘
+└────────────────────────────┘
+
+================================================================================
+                           3. VIEW LAYER OVERVIEW
+================================================================================
+
+3.1 AUTHENTICATION VIEWS
+
+Login/Register Flow:
+├── register_user()           - Email-based registration with OTP verification
+├── verify_otp()              - OTP verification endpoint
+├── login_view()              - Email OTP login
+├── logout_view()             - Session cleanup
+├── password_reset()          - Reset via OTP
+└── google_oauth_callback()   - Social auth (Google/GitHub)
+
+3.2 PROFILE VIEWS
+
+Profile Management:
+├── student_profile()         - View user's own profile
+├── view_profile()            - View another user's profile
+├── edit_profile()            - Edit profile information
+├── upload_avatar()           - Profile photo upload
+├── StudentProfileForm        - Profile form with validation
+└── UserProfileView (API)     - REST API for profile data
+
+3.3 PROJECT VIEWS
+
+Project Management:
+├── main_home()               - Dashboard with project feed
+├── post_project()            - Create new project
+├── project_detail()          - View project details
+├── edit_project()            - Edit project info
+├── delete_project()          - Remove project
+├── ProjectDetailView (API)   - REST API for projects
+├── ProjectListView (API)     - List projects with pagination
+└── project_filtering()       - Advanced search/filter
+
+Key Features:
+• Visibility filtering (public, private, draft)
+• Category-based grouping
+• Search by title, description, technologies
+• Sorting by date, popularity, relevance
+
+3.4 COLLABORATION VIEWS
+
+Connections & Teams:
+├── find_collaborators()      - User search/discovery
+├── send_connection()         - Send connection request
+├── accept_connection()       - Accept request
+├── reject_connection()       - Reject request
+├── manage_team()             - View/manage project members
+├── invite_to_project()       - Invite users
+└── ProjectMemberView (API)   - REST API for team management
+
+3.5 SOCIAL VIEWS
+
+Engagement Features:
+├── like_project()            - Toggle like on project
+├── unlike_project()          - Remove like
+├── add_comment()             - Post comment
+├── delete_comment()          - Remove comment
+├── follow_user()             - Follow user
+├── unfollow_user()           - Unfollow user
+└── LikeView, CommentView     - REST APIs
+
+3.6 MESSAGING VIEWS
+
+Chat System:
+├── messages_page()           - Main chat interface
+├── get_conversations()       - List all chats
+├── send_message()            - Send direct message
+├── mark_as_read()            - Mark messages read
+├── ChatRoomListView          - REST API for rooms
+├── MessageListView           - REST API for messages
+└── WebSocket Consumers       - Real-time updates
+
+3.7 ACTIVITY FEED VIEWS
+
+Dashboard & Feed:
+├── main_home()               - Activity feed (real-time)
+├── activity_feed()           - User's activities
+├── get_notifications()       - User notifications
+└── ActivityView (API)        - Activity REST API
+
+================================================================================
+                         4. REST API ENDPOINTS
+================================================================================
+
+4.1 AUTHENTICATION ENDPOINTS
+
+POST   /api/auth/register/             - Register new user
+POST   /api/auth/verify-otp/           - Verify OTP code
+POST   /api/auth/login/                - Email OTP login
+POST   /api/auth/logout/               - Logout
+POST   /api/auth/reset-password/       - Reset password
+GET    /api/auth/google/               - Google OAuth endpoint
+GET    /api/auth/github/               - GitHub OAuth endpoint
+
+4.2 PROFILE ENDPOINTS
+
+GET    /api/profile/<user_id>/         - Get user profile
+PUT    /api/profile/update/            - Update profile
+POST   /api/profile/upload-photo/      - Upload avatar
+GET    /api/profile/suggestions/       - Recommended collaborators
+GET    /api/profile/search/            - Search users by criteria
+
+4.3 PROJECT ENDPOINTS
+
+GET    /api/projects/                  - List all projects (paginated)
+POST   /api/projects/create/           - Create project
+GET    /api/projects/<id>/             - Get project details
+PUT    /api/projects/<id>/update/      - Update project
+DELETE /api/projects/<id>/delete/      - Delete project
+GET    /api/projects/filter/           - Advanced filtering
+GET    /api/projects/<id>/members/     - Get project members
+POST   /api/projects/<id>/invite/      - Invite member
+DELETE /api/projects/<id>/remove-member/ - Remove member
+
+4.4 SOCIAL ENDPOINTS
+
+POST   /api/like/<project_id>/         - Like project
+DELETE /api/unlike/<project_id>/       - Unlike project
+POST   /api/comment/<project_id>/      - Add comment
+DELETE /api/comment/<id>/delete/       - Delete comment
+POST   /api/follow/<user_id>/          - Follow user
+DELETE /api/unfollow/<user_id>/        - Unfollow user
+
+4.5 CONNECTION ENDPOINTS
+
+POST   /api/connect/<user_id>/         - Send connection request
+PUT    /api/connect/<conn_id>/accept/  - Accept request
+PUT    /api/connect/<conn_id>/reject/  - Reject request
+GET    /api/connections/               - List connections
+DELETE /api/connections/<id>/          - Remove connection
+
+4.6 MESSAGING ENDPOINTS
+
+GET    /api/messages/conversations/    - List chat rooms
+POST   /api/messages/create/           - Create chat room
+GET    /api/messages/<room_id>/        - Get room messages
+POST   /api/messages/<room_id>/send/   - Send message
+PUT    /api/messages/<id>/read/        - Mark as read
+DELETE /api/messages/<id>/delete/      - Delete message
+
+4.7 ACTIVITY ENDPOINTS
+
+GET    /api/activity/                  - Activity feed
+GET    /api/notifications/             - User notifications
+POST   /api/activity/create/           - Create activity record
+
+================================================================================
+                         5. WEBSOCKET INTEGRATION
+================================================================================
+
+5.1 CHANNEL CONFIGURATION (settings.py)
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis_host', 6379)],
+        },
+    }
+}
+
+5.2 WEBSOCKET CONSUMERS
+
+ProjectConsumer (channels/consumers.py):
+├── connect()                 - Establish WebSocket connection
+├── disconnect()              - Clean up on disconnect
+├── receive()                 - Handle incoming messages
+├── send_project_update()     - Broadcast project changes
+├── send_comment_added()      - Real-time comment notifications
+└── send_like_added()         - Real-time like notifications
+
+MessageConsumer:
+├── connect()                 - Join chat room
+├── disconnect()              - Leave chat room
+├── receive()                 - Handle incoming messages
+└── send_message()            - Broadcast to room
+
+ActivityConsumer:
+├── connect()                 - Subscribe to activity feed
+├── disconnect()              - Unsubscribe
+└── send_activity()           - Broadcast activity updates
+
+5.3 CLIENT-SIDE WEBSOCKET (main_home.html, messages.html)
+
+const socket = new WebSocket(`ws://${window.location.host}/ws/project/${projectId}/`);
+
+socket.onopen = () => {
+    console.log('✅ WebSocket connected');
+};
+
+socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    // Handle real-time updates
+};
+
+socket.onerror = (error) => {
+    console.error('❌ WebSocket error:', error);
+};
+
+================================================================================
+                      6. AUTHENTICATION SYSTEM
+================================================================================
+
+6.1 EMAIL OTP FLOW
+
+User Registration/Login:
+1. User enters email
+2. System generates 6-digit OTP
+3. Sends to email via Brevo/ZeptoMail API
+4. User enters OTP
+5. Validation & JWT token issued
+6. Auto-login or prompt for profile
+
+Code Path:
+└── register_user() → OTP.generate_otp() → send_otp_email()
+    └── verify_otp() → OTP.verify_otp() → login user
+
+6.2 SOCIAL AUTHENTICATION (OAuth 2.0)
+
+Google/GitHub Login:
+1. User clicks "Login with Google/GitHub"
+2. Redirects to provider
+3. User authorizes
+4. Provider redirects back with code
+5. Backend exchanges code for token
+6. Creates/retrieves user
+7. Auto-login
+
+Libraries:
+├── django-allauth          - OAuth handling
+├── SocialAccount model     - Provider credentials
+└── SocialApp model         - App configuration
+
+6.3 SESSION MANAGEMENT
+
+├── Django Sessions (default)
+├── JWT Tokens (for API)
+├── CSRF Protection (middleware)
+└── Secure Cookies (production)
+
+Settings:
+├── SESSION_COOKIE_SECURE = True
+├── CSRF_COOKIE_SECURE = True
+├── SECURE_SSL_REDIRECT = True
+└── SameSite = 'Lax' / 'Strict'
+
+================================================================================
+                      7. FRONTEND ARCHITECTURE
+================================================================================
+
+7.1 TEMPLATE HIERARCHY
+
+base.html / base_with_footer.html
+├── main_home.html             [Dashboard/Feed - Main UI]
+├── project_detail.html        [Project Details Page]
+├── login.html                 [Login/OTP Page]
+├── register.html              [Registration Page]
+├── messages.html              [Chat Interface]
+├── find_collaborators.html    [User Search]
+├── user_profile.html          [Profile View]
+├── post_project.html          [Create/Edit Project]
+└── features/
+    ├── notifications.html     [Notification Panel]
+    ├── messages.html          [Chat Features]
+    └── ...
+
+7.2 CSS FRAMEWORK
+
+Tailwind CSS + Custom CSS:
+├── Utility classes for layout
+├── Custom animations
+├── Dark mode support
+├── Responsive design
+└── Static/css/custom.css
+
+7.3 JAVASCRIPT FEATURES
+
+main_home.html:
+├── Real-time WebSocket updates
+├── Project feed rendering
+├── Like/comment interactions
+├── Modal dialogs
+└── Form handling
+
+project_detail.html:
+├── Team management
+├── Task tracking
+├── Comments section
+├── File uploads
+└── Real-time collaboration
+
+messages.html:
+├── Chat room switching
+├── Message pagination
+├── Typing indicators
+├── File sharing
+└── Read receipts
+
+find_collaborators.html:
+├── User search
+├── Filter/sorting
+├── Profile preview
+├── Connection requests
+└── Smart matching
+
+================================================================================
+                         8. CACHING STRATEGY
+================================================================================
+
+8.1 CACHE CONFIGURATION
+
+CACHE:
+├── Backend: Redis (production) / Dummy (development)
+├── TTL: Varies by content type
+└── Keys: Namespaced by entity
+
+8.2 CACHED ITEMS
+
+User-level Caching:
+├── User profiles (24 hours)
+├── User statistics (1 hour)
+├── Follower/following lists (1 hour)
+└── Connection requests (30 minutes)
+
+Project-level Caching:
+├── Project details (1 hour)
+├── Project members (30 minutes)
+├── Comments (15 minutes)
+└── Like counts (5 minutes)
+
+Activity-level Caching:
+├── Activity feed (10 minutes)
+├── Notifications (5 minutes)
+└── Message count (2 minutes)
+
+8.3 CACHE INVALIDATION
+
+On Trigger Events:
+├── Profile update → clear user cache
+├── Project update → clear project cache
+├── New comment → clear comments cache
+├── Like/unlike → clear like cache
+└── Message sent → clear message cache
+
+Code Pattern:
+cache.delete(f'user_profile_{user_id}')
+cache.delete(f'project_{project_id}')
+cache.clear()  # Full flush
+
+================================================================================
+                         9. ERROR HANDLING
+================================================================================
+
+9.1 EXCEPTION HANDLING PATTERNS
+
+Try-Except Blocks:
+def view_with_error_handling(request):
+    try:
+        data = SomeModel.objects.get(id=request.GET.get('id'))
+        return render(request, 'template.html', {'data': data})
+    except SomeModel.DoesNotExist:
+        messages.error(request, 'Item not found')
+        return redirect('home')
+    except Exception as e:
+        logger.error(f'Unexpected error: {str(e)}')
+        return HttpResponse('Server error', status=500)
+
+9.2 CUSTOM ERROR PAGES
+
+├── 404.html - Not found
+├── 500.html - Server error
+├── 403.html - Forbidden
+└── 400.html - Bad request
+
+9.3 LOGGING
+
+Logger Configuration:
+├── Logger: accounts app
+├── Level: DEBUG / INFO / WARNING / ERROR
+├── Format: timestamp, level, message
+└── Files: logs/ directory
+
+Usage:
+logger.error(f"Error in {view_name}: {str(e)}")
+logger.info("User registered successfully")
+logger.warning("Cache miss for key: {key}")
+
+================================================================================
+                         10. DEPLOYMENT CHECKLIST
+================================================================================
+
+10.1 PRE-DEPLOYMENT
+
+✓ Environment Variables:
+  ├── SECRET_KEY (production)
+  ├── DEBUG = False
+  ├── ALLOWED_HOSTS = ['yourdomain.com']
+  ├── DATABASE_URL (PostgreSQL)
+  ├── REDIS_URL
+  ├── Email service credentials
+  └── OAuth app credentials
+
+✓ Database:
+  ├── python manage.py makemigrations
+  ├── python manage.py migrate
+  ├── python manage.py collectstatic
+
+✓ Security:
+  ├── SECURE_SSL_REDIRECT = True
+  ├── SESSION_COOKIE_SECURE = True
+  ├── CSRF_COOKIE_SECURE = True
+  ├── ALLOWED_HOSTS configured
+  └── SSL certificate installed
+
+10.2 DEPLOYMENT PLATFORMS
+
+Railway.app:
+├── Connect GitHub repo
+├── Set environment variables
+├── Deploy on push
+├── PostgreSQL integration
+└── Automatic scaling
+
+Render.com:
+├── Connect GitHub
+├── Build command: pip install -r requirements.txt
+├── Start command: gunicorn auth_project.wsgi
+├── PostgreSQL service
+└── Environment variables
+
+Heroku:
+├── Create Procfile: web: gunicorn auth_project.wsgi
+├── Create runtime.txt: python-3.11.0
+├── Deploy via git push heroku main
+└── Provision PostgreSQL add-on
+
+10.3 MONITORING & MAINTENANCE
+
+├── Log monitoring (error rates)
+├── Performance tracking (response times)
+├── Database backups (daily)
+├── Cache health checks
+├── WebSocket connection monitoring
+└── Error alerting setup
+
+================================================================================
+                         11. PERFORMANCE OPTIMIZATION
+================================================================================
+
+11.1 DATABASE OPTIMIZATIONS
+
+Queries:
+├── select_related() - JOIN for FK
+├── prefetch_related() - Separate query for M2M/reverse FK
+├── Only() / defer() - Select specific fields
+├── values() / values_list() - For aggregations
+└── Database indexing on frequently filtered columns
+
+Example:
+projects = Project.objects.select_related('owner')\
+                         .prefetch_related('members')\
+                         .only('id', 'title', 'owner_id')\
+                         .filter(visibility='public')
+
+11.2 QUERY PERFORMANCE
+
+Tools:
+├── Django Debug Toolbar (development)
+├── django-silk (production-safe)
+├── Raw SQL profiling
+└── EXPLAIN ANALYZE in PostgreSQL
+
+Common Issues:
+├── N+1 queries → use select_related/prefetch_related
+├── Missing indexes → add to frequently filtered fields
+├── Inefficient JOINs → optimize QuerySet structure
+└── Cache misses → implement caching layer
+
+11.3 CACHING STRATEGY
+
+├── Query result caching
+├── Template fragment caching
+├── View caching (cache_page decorator)
+├── Redis for session storage
+└── Browser cache headers
+
+11.4 FRONTEND OPTIMIZATION
+
+├── Minified CSS/JS
+├── Image optimization (lazy loading)
+├── Gzip compression
+├── CDN for static files (optional)
+├── Async/defer JS loading
+└── WebSocket instead of polling
+
+================================================================================
+                      12. TESTING INFRASTRUCTURE
+================================================================================
+
+12.1 TEST FILES
+
+test_*.py files in project root:
+├── test_login.py              - Login/OTP flow
+├── test_comments_api.py       - Comment functionality
+├── test_profile_view.py       - Profile endpoints
+├── test_email.py              - Email sending
+├── test_filter.py             - Project filtering
+├── test_search.py             - Search functionality
+└── test_otp.py                - OTP generation & verification
+
+12.2 TEST PATTERNS
+
+Unit Tests:
+def test_otp_generation():
+    otp = OTP.generate_otp('test@example.com', 'login')
+    assert otp.otp_code is not None
+    assert len(otp.otp_code) == 6
+    assert not otp.is_used
+
+Integration Tests:
+def test_full_login_flow():
+    # Register user
+    # Generate OTP
+    # Verify OTP
+    # Check user is logged in
+
+12.3 RUNNING TESTS
+
+pytest:
+pytest test_login.py                    # Run single test file
+pytest test_login.py::test_otp_generation  # Run single test
+pytest --cov=accounts                   # With coverage
+pytest -v --tb=short                    # Verbose output
+
+Django test runner:
+python manage.py test accounts
+python manage.py test accounts.tests.TestLogin
+
+================================================================================
+                      13. COMMON TASKS & COMMANDS
+================================================================================
+
+13.1 MANAGEMENT COMMANDS
+
+Create superuser:
+python manage.py createsuperuser
+
+Reset database:
+python manage.py flush --no-input
+python manage.py migrate
+
+Create test data:
+python manage.py shell
+>>> from accounts.models import StudentProfile, Project
+>>> # Create test objects
+
+Clear cache:
+from django.core.cache import cache
+cache.clear()
+
+Check migrations:
+python manage.py showmigrations
+
+Apply migrations:
+python manage.py migrate
+python manage.py migrate accounts
+
+13.2 DEVELOPMENT COMMANDS
+
+Run server:
+python manage.py runserver 0.0.0.0:8000
+
+Run Celery (if async tasks):
+celery -A auth_project worker --loglevel=info
+
+Run Daphne (WebSocket server):
+daphne -b 0.0.0.0 -p 8000 auth_project.asgi:application
+
+Run tests:
+python manage.py test
+pytest
+
+Check code quality:
+flake8 accounts/
+black accounts/
+isort accounts/
+
+13.3 PRODUCTION COMMANDS
+
+Collect static files:
+python manage.py collectstatic --no-input
+
+Create migrations:
+python manage.py makemigrations
+
+Migrate database:
+python manage.py migrate
+
+Backup database:
+pg_dump database_name > backup.sql
+
+================================================================================
+                         14. KEY ISSUES & SOLUTIONS
+================================================================================
+
+14.1 COMMON ISSUES FIXED
+
+❌ CSRF Token Issues:
+   Solution: Ensure {% csrf_token %} in forms, CSRF middleware enabled
+
+❌ WebSocket Connection Errors:
+   Solution: Check Daphne running, Redis configured, ASGI routing correct
+
+❌ Comments Not Visible:
+   Solution: Verify Comment model, check visibility settings, clear cache
+
+❌ Profile Photo Not Showing:
+   Solution: Check MEDIA_URL/ROOT, file permissions, image format validation
+
+❌ Project Owner Attribute Error:
+   Solution: Ensure Project.user field exists, handle null gracefully
+
+❌ No Collaborators Found:
+   Solution: Check StudentProfile creation, filter logic, search implementation
+
+14.2 DEBUGGING TECHNIQUES
+
+Console Logging:
+print(f"Debug: {variable}")
+import pdb; pdb.set_trace()
+
+Django Shell:
+python manage.py shell
+>>> from accounts.models import User, Project
+>>> Project.objects.count()
+
+Debug Toolbar:
+INSTALLED_APPS += ['debug_toolbar']
+MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+INTERNAL_IPS = ['127.0.0.1']
+
+================================================================================
+                         15. IMPORTANT NOTES
+================================================================================
+
+15.1 MODEL RELATIONSHIPS SUMMARY
+
+Project → User (owner)
+Project ← ProjectMember (team members with roles)
+ProjectMember ← ProjectTask, ProjectMilestone
+
+User ← Comment (on projects)
+User ← Like (on projects)
+User ← Message (sender/receiver)
+User ← Connection (sender/receiver)
+User ← Follow (follower/following)
+
+StudentProfile ← User (extended profile)
+Activity ← User (activity records)
+
+Message → ChatRoom (group chats)
+Message ← MessageReadStatus (read tracking)
+Message ← MessageReaction (emoji reactions)
+Message ← MessageFile (file attachments)
+
+15.2 CRITICAL CONFIGURATION
+
+settings.py Critical Settings:
+├── ALLOWED_HOSTS (security)
+├── SECRET_KEY (security)
+├── DATABASES (PostgreSQL in production)
+├── CHANNEL_LAYERS (Redis for WebSocket)
+├── CACHE_BACKENDS (Redis)
+├── EMAIL_BACKEND (Brevo/ZeptoMail)
+├── OAuth credentials
+└── CORS settings (if separate frontend)
+
+15.3 PERFORMANCE BASELINES
+
+Expected Performance:
+├── Page load: < 2 seconds
+├── API response: < 500ms
+├── WebSocket latency: < 100ms
+├── Database queries per page: < 10
+└── Cache hit rate: > 80%
+
+================================================================================
+                         16. SECURITY BEST PRACTICES
+================================================================================
+
+✓ CSRF Protection: Enabled on all POST/PUT/DELETE
+✓ SQL Injection Prevention: Use ORM (no raw SQL)
+✓ XSS Prevention: Django templates escape by default
+✓ Authentication: Email OTP + session/JWT
+✓ Authorization: Check user permissions before operations
+✓ HTTPS: Required in production
+✓ Sensitive Data: Hash passwords, encrypt sensitive info
+✓ Rate Limiting: Implement on auth endpoints
+✓ Input Validation: Validate all user input
+✓ File Upload: Validate file types and sizes
+
+================================================================================
+                         17. FILE STRUCTURE REFERENCE
+================================================================================
+
+e:/login/auth_project/
+├── manage.py
+├── requirements.txt
+├── Procfile (for Heroku/Railway)
+├── render.yaml (for Render)
+├── db.sqlite3 (development only)
+│
+├── auth_project/
+│   ├── __init__.py
+│   ├── settings.py          ← Database, apps, middleware, email config
+│   ├── urls.py              ← Main URL routing
+│   ├── asgi.py              ← WebSocket config (Daphne)
+│   ├── wsgi.py              ← WSGI for gunicorn
+│   └── routing.py           ← Channel routing
+│
+├── accounts/
+│   ├── models.py            ← Database models (700+ lines)
+│   ├── views.py             ← View logic (3400+ lines)
+│   ├── serializers.py       ← DRF serializers
+│   ├── urls.py              ← App routes
+│   ├── forms.py             ← Django forms
+│   ├── utils.py             ← Helper functions
+│   ├── consumers.py         ← WebSocket consumers
+│   ├── admin.py             ← Django admin config
+│   ├── apps.py              ← App config
+│   ├── tests/               ← Test files
+│   ├── migrations/          ← Database migrations
+│   ├── static/              ← CSS, JS, images
+│   ├── templates/           ← HTML templates
+│   │   ├── main_home.html
+│   │   ├── project_detail.html
+│   │   ├── messages.html
+│   │   ├── find_collaborators.html
+│   │   └── ... (10+ more)
+│   └── templatetags/        ← Custom template tags
+│
+├── templates/               ← Project-level templates
+├── static/                  ← Project-level static files
+├── media/                   ← User uploads
+├── logs/                    ← Application logs
+└── data/                    ← CSV/Excel data
+
+================================================================================
+                         CONCLUSION
+================================================================================
+
+UniSync is a comprehensive Django-based collaborative project matching platform
+with:
+
+✓ Robust authentication (OTP + OAuth)
+✓ Real-time WebSocket updates
+✓ Project management & collaboration
+✓ Social engagement (likes, comments, follows)
+✓ Direct messaging system
+✓ User discovery & connection matching
+✓ Activity feeds
+✓ Performance optimizations
+✓ Production-ready deployment
+
+The codebase follows Django best practices with clear separation of concerns,
+comprehensive model relationships, and scalable architecture suitable for
+growth from MVP to production deployment.
+
+Key Strengths:
+• Well-organized models with proper relationships
+• Comprehensive REST API layer
+• Real-time capabilities with WebSocket
+• Multiple authentication methods
+• Extensive template system
+• Performance optimizations (caching, query optimization)
+
+Areas for Enhancement:
+• Increase test coverage
+• Add API documentation (Swagger/OpenAPI)
+• Implement rate limiting
+• Add monitoring/alerting
+• Consider async tasks (Celery) for heavy operations
+
+================================================================================
+Generated: 2026-02-07
+Version: Final Analysis
+================================================================================

@@ -1,0 +1,249 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     OAUTH 500 ERROR - REFERENCE CARD                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─ ERROR SIGNATURE ─────────────────────────────────────────────────────────┐
+│ HTTP Status: 500 Internal Server Error                                     │
+│ URL: GET http://127.0.0.1:8000/accounts/3rdparty/signup/                  │
+│ Endpoint: Django-allauth OAuth callback                                    │
+│ Trigger: User clicks "Login with Google" or "Login with GitHub"           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ ROOT CAUSE ──────────────────────────────────────────────────────────────┐
+│ Missing SocialApp configuration in database                                │
+│                                                                             │
+│ Django-allauth requires OAuth provider configs stored as SocialApp records │
+│ Without these, all OAuth operations fail with 500 error                   │
+│                                                                             │
+│ Check: SELECT * FROM allauth_socialapp;                                   │
+│ Expected: 2+ rows (Google, GitHub)                                        │
+│ Actual: Empty or missing entries                                          │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ ONE-LINER SUMMARY ───────────────────────────────────────────────────────┐
+│ "Django-allauth needs SocialApp database records linking OAuth credentials │
+│  to your Site - run setup_oauth_fixed.py to create them"                  │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ INSTANT FIX ─────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ 1. $ cd auth_project                                                       │
+│ 2. $ python setup_oauth_fixed.py                                          │
+│ 3. Update .env with Google & GitHub OAuth credentials                     │
+│ 4. $ python manage.py runserver                                           │
+│ 5. Test: http://localhost:8000/login/ → Click Google button              │
+│                                                                             │
+│ Time Required: 15-20 minutes                                              │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ SCRIPT USAGE ────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Script: setup_oauth_fixed.py                                              │
+│ Location: auth_project/setup_oauth_fixed.py                               │
+│ Purpose: Auto-create SocialApp entries in database                        │
+│                                                                             │
+│ Command:  python setup_oauth_fixed.py                                     │
+│                                                                             │
+│ What it does:                                                              │
+│ ✓ Reads OAuth credentials from .env                                       │
+│ ✓ Creates SocialApp for Google (if missing)                              │
+│ ✓ Creates SocialApp for GitHub (if missing)                              │
+│ ✓ Links both to Site ID 1                                                │
+│ ✓ Prints confirmation                                                     │
+│                                                                             │
+│ Output Format:                                                             │
+│ [OK] Google OAuth CREATED                                                 │
+│   - Client ID: YOUR_GOOGLE_CLIENT_ID                                      │
+│   - Sites: ['localhost:8000']                                             │
+│ [OK] GitHub OAuth CREATED                                                 │
+│   - Client ID: YOUR_GITHUB_CLIENT_ID                                      │
+│   - Sites: ['localhost:8000']                                             │
+│ [SUCCESS] OAuth Setup Complete!                                           │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ CREDENTIALS REQUIRED ────────────────────────────────────────────────────┐
+│                                                                             │
+│ GOOGLE:                                                                    │
+│ ├─ Get from: https://console.cloud.google.com/                           │
+│ ├─ Steps:                                                                 │
+│ │  1. Create Project                                                      │
+│ │  2. Enable Google+ API                                                 │
+│ │  3. Create OAuth 2.0 Credential (Web Application)                      │
+│ │  4. Add Authorized Redirect URIs:                                      │
+│ │     • http://localhost:8000/accounts/google/login/callback/            │
+│ │     • https://yourdomain.com/accounts/google/login/callback/           │
+│ │  5. Copy Client ID and Secret                                          │
+│ └─ .env Variables:                                                        │
+│    GOOGLE_OAUTH_CLIENT_ID=1234567890-abcdefghijk.apps.googleusercontent.com
+│    GOOGLE_OAUTH_SECRET_KEY=GOCSPX-1234567890abcdefghijk                  │
+│                                                                             │
+│ GITHUB:                                                                    │
+│ ├─ Get from: https://github.com/settings/developers                      │
+│ ├─ Steps:                                                                 │
+│ │  1. Go to Developer Settings → OAuth Apps                              │
+│ │  2. New OAuth App                                                       │
+│ │  3. Fill in Application Details                                        │
+│ │  4. Set Authorization Callback URL:                                    │
+│ │     • http://localhost:8000/accounts/github/login/callback/            │
+│ │     • https://yourdomain.com/accounts/github/login/callback/           │
+│ │  5. Copy Client ID and Client Secret                                   │
+│ └─ .env Variables:                                                        │
+│    GITHUB_OAUTH_CLIENT_ID=abc123def456ghi789jk                            │
+│    GITHUB_OAUTH_SECRET_KEY=ghp_1234567890abcdefghijklmnopqrstuvwxyz      │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ ENVIRONMENT FILE (.env) ─────────────────────────────────────────────────┐
+│                                                                             │
+│ Location: auth_project/.env                                               │
+│ Format: KEY=VALUE (no quotes needed)                                      │
+│                                                                             │
+│ Add these lines:                                                           │
+│ ───────────────                                                            │
+│ GOOGLE_OAUTH_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID                             │
+│ GOOGLE_OAUTH_SECRET_KEY=YOUR_GOOGLE_SECRET_KEY                           │
+│ GITHUB_OAUTH_CLIENT_ID=YOUR_GITHUB_CLIENT_ID                             │
+│ GITHUB_OAUTH_SECRET_KEY=YOUR_GITHUB_SECRET_KEY                           │
+│ ───────────────                                                            │
+│                                                                             │
+│ After editing:                                                             │
+│ 1. Save the file                                                          │
+│ 2. Restart server: python manage.py runserver                            │
+│ 3. Script will auto-load new credentials                                 │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ VERIFICATION COMMANDS ───────────────────────────────────────────────────┐
+│                                                                             │
+│ Check SocialApps exist:                                                    │
+│ $ python manage.py shell                                                  │
+│ >>> from allauth.socialaccount.models import SocialApp                   │
+│ >>> SocialApp.objects.all()                                              │
+│ <QuerySet [<SocialApp: Google>, <SocialApp: GitHub>]>                   │
+│                                                                             │
+│ Check Site configuration:                                                 │
+│ >>> from django.contrib.sites.models import Site                         │
+│ >>> Site.objects.get(id=1)                                               │
+│ <Site: localhost:8000>                                                    │
+│                                                                             │
+│ Check credentials loaded:                                                 │
+│ >>> app = SocialApp.objects.get(provider='google')                       │
+│ >>> print(app.client_id, app.secret)                                     │
+│ 1234567890-abcdefghijk... GOCSPX-1234567890abc...                        │
+│                                                                             │
+│ Success Indicator:                                                         │
+│ ✓ All 3 commands return results (not empty)                              │
+│ ✓ SocialApp count is 2 (Google + GitHub)                                 │
+│ ✓ Client IDs are your actual credentials (not "your-xxx-here")           │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING FLOWCHART ───────────────────────────────────────────────┐
+│                                                                             │
+│ Still getting 500 error?                                                   │
+│ │                                                                          │
+│ ├─→ Did you run setup_oauth_fixed.py?                                    │
+│ │   NO  → Run it now: python setup_oauth_fixed.py                       │
+│ │   YES → Continue                                                        │
+│ │                                                                          │
+│ ├─→ Did you add credentials to .env?                                     │
+│ │   NO  → Add GOOGLE_OAUTH_* and GITHUB_OAUTH_* variables               │
+│ │   YES → Continue                                                        │
+│ │                                                                          │
+│ ├─→ Did you restart server?                                              │
+│ │   NO  → Kill and restart: python manage.py runserver                 │
+│ │   YES → Continue                                                        │
+│ │                                                                          │
+│ ├─→ Check admin panel:                                                    │
+│ │   http://localhost:8000/admin/socialaccount/socialapp/                │
+│ │   Should see Google and GitHub apps                                    │
+│ │   If NOT → Run: python setup_oauth_fixed.py                          │
+│ │                                                                          │
+│ ├─→ Check browser console:                                               │
+│ │   F12 → Console tab → Look for specific error                         │
+│ │   Copy error and search docs                                          │
+│ │                                                                          │
+│ └─→ Still stuck? Check logs:                                             │
+│     Terminal output while running runserver                              │
+│     Look for traceback or error message                                  │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ COMMON MISTAKES ─────────────────────────────────────────────────────────┐
+│                                                                             │
+│ ❌ Copied credentials with quotes or spaces                              │
+│    FIX: Remove quotes and trim whitespace                                │
+│                                                                             │
+│ ❌ Used old/wrong credentials                                             │
+│    FIX: Get fresh credentials from provider console                      │
+│                                                                             │
+│ ❌ Didn't add redirect URLs to OAuth app settings                        │
+│    FIX: Add http://localhost:8000/accounts/google/login/callback/       │
+│         And https://yourdomain.com/accounts/google/login/callback/      │
+│                                                                             │
+│ ❌ Redirect URLs don't match exactly                                      │
+│    FIX: Case-sensitive! Must match 100% including trailing slash        │
+│                                                                             │
+│ ❌ Forgot to restart server after .env changes                          │
+│    FIX: Kill runserver (Ctrl+C) and restart                             │
+│                                                                             │
+│ ❌ Wrong SITE_ID in settings                                             │
+│    FIX: Check settings.py line 175: SITE_ID = 1                         │
+│                                                                             │
+│ ❌ Running script in wrong directory                                      │
+│    FIX: cd auth_project && python setup_oauth_fixed.py                 │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ BEFORE & AFTER COMPARISON ───────────────────────────────────────────────┐
+│                                                                             │
+│ BEFORE FIX:                              AFTER FIX:                       │
+│ ═══════════════════                      ════════════════                │
+│ ❌ Click Google button      →            ✓ Click Google button           │
+│ ❌ 500 error                             → Redirects to consent screen   │
+│ ❌ OAuth doesn't work       → User grants permission                      │
+│ ❌ Can't login with OAuth               → Redirected back to app        │
+│ ❌ SocialApp table empty                → Auto-logged in                 │
+│ ❌ No OAuth configuration               ✓ Perfect! It works             │
+│                                                                             │
+│ Database Change:                                                           │
+│ BEFORE: allauth_socialapp = []          AFTER: allauth_socialapp = [     │
+│                                                  Google app,              │
+│                                                  GitHub app,              │
+│                                                ]                          │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ QUICK LINKS & RESOURCES ─────────────────────────────────────────────────┐
+│                                                                             │
+│ Setup Script: auth_project/setup_oauth_fixed.py                          │
+│ Detailed Guide: OAUTH_500_ERROR_FIX.md                                   │
+│ Quick Reference: QUICK_FIX_OAUTH_500.txt                                 │
+│ Complete Summary: OAUTH_FIX_SUMMARY_2026.md                              │
+│ Codebase Analysis: COMPREHENSIVE_CODEBASE_ANALYSIS_2026_FINAL.txt        │
+│                                                                             │
+│ External Docs:                                                             │
+│ • Django-allauth: https://django-allauth.readthedocs.io/                 │
+│ • Google OAuth: https://console.cloud.google.com/                        │
+│ • GitHub OAuth: https://github.com/settings/developers                   │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ STATUS TRACKER ──────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Setup:                    [ ] Not started → [ ] Done                      │
+│ Credentials:              [ ] Not found → [ ] Added to .env              │
+│ Script Run:               [ ] Not run → [ ] Executed successfully         │
+│ Server Restart:           [ ] Not restarted → [ ] Restarted             │
+│ Testing:                  [ ] Not tested → [ ] Works!                    │
+│ Admin Verification:       [ ] Not checked → [ ] Verified                 │
+│ Documentation:            [ ] Not read → [ ] Understood                  │
+│ Production Ready:         [ ] Not ready → [ ] Ready!                     │
+│                                                                             │
+└───────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   Generated: 2026-02-07 | Status: COMPLETE                 ║
+╚════════════════════════════════════════════════════════════════════════════╝

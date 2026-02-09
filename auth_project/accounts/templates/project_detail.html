@@ -1,8 +1,9 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>{{ project.title }} | UniSync</title>
+    <title>{{ project.title }} | UniSinq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -16,6 +17,7 @@
             flex: 1;
         }
     </style>
+    <link rel="stylesheet" href="/static/css/realtime-notifications.css">
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
     {% csrf_token %}
@@ -25,8 +27,8 @@
         <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <a href="{% url 'main_home' %}" class="flex items-center space-x-2 hover:opacity-90 transition">
-                    <img src="/static/images/unisync_logo.jpg" alt="UniSync Logo" class="h-12 w-12 rounded-full object-cover shadow-lg">
-                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">UniSync</span>
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 rounded-full object-cover shadow-lg">
+                    <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">UniSinq</span>
                 </a>
             </div>
             <div class="flex gap-4">
@@ -127,7 +129,7 @@
                 <h2 class="text-xl font-bold text-yellow-300 mb-4">🚀 Share This Project</h2>
                 <div class="flex flex-wrap gap-3">
                     <!-- Twitter Share -->
-                    <a href="https://twitter.com/intent/tweet?text={{ project.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}{% url 'project_detail' project.id %}&via=unisync"
+                    <a href="https://twitter.com/intent/tweet?text={{ project.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}{% url 'project_detail' project.id %}&via=unisinq"
                        target="_blank"
                        class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition">
                         🐦 Twitter
@@ -203,7 +205,7 @@
     <!-- Footer -->
     <footer class="bg-black/50 backdrop-blur-lg py-8 mt-auto">
         <div class="max-w-7xl mx-auto px-6 text-center text-gray-400">
-            <p>&copy; 2025 UniSync. Bringing ideas to life. 🚀</p>
+            <p>&copy; 2025 UniSinq. Bringing ideas to life. 🚀</p>
         </div>
     </footer>
 
@@ -302,10 +304,42 @@
         }
     </script>
     
-    <!-- Load Comments Handler Script -->
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+    
+    <!-- Activity Log Container (optional, can be shown in sidebar) -->
+    <div id="activity-log" style="display: none;"></div>
+
+    <!-- Load Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="/static/js/comments-handler.js"></script>
+    <script src="/static/js/realtime-updates.js"></script>
+    
+    <!-- Real-time Updates Integration -->
+    <script>
+        // Expose real-time updates to global scope
+        window.realtimeUpdates = realtimeUpdates;
+        
+        // Helper functions for project operations
+        window.updateProjectStatus = function(newStatus) {
+            if (window.realtimeUpdates) {
+                window.realtimeUpdates.updateProjectStatus(newStatus);
+            }
+        };
+        
+        window.addProjectMember = function(userId) {
+            if (window.realtimeUpdates) {
+                window.realtimeUpdates.addMember(userId);
+            }
+        };
+        
+        window.postProjectComment = function(commentText) {
+            if (window.realtimeUpdates) {
+                window.realtimeUpdates.postComment(commentText);
+            }
+        };
+    </script>
 </body>
 </html>

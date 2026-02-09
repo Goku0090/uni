@@ -143,7 +143,7 @@ class BrevoMailBackend(BaseEmailBackend):
         # Build basic payload
         payload = {
             "sender": {
-                "name": "UniSync",
+                "name": "UniSinq",
                 "email": from_email
             },
             "to": [

@@ -1,0 +1,126 @@
+================================================================================
+                  PLACEHOLDER IMAGE ERROR - EXPLAINED
+================================================================================
+
+THE ERROR YOU SAW:
+  GET https://via.placeholder.com/36 net::ERR_NAME_NOT_RESOLVED
+  (Repeated 16+ times)
+
+WHAT IT MEANS:
+  ❌ Browser tried to load images from via.placeholder.com
+  ❌ Domain name couldn't be resolved (doesn't exist / unreachable)
+  ❌ Happened 16+ times (once per comment without profile photo)
+  ✓ Not blocking any functionality
+  ✓ Just UI polish issue
+
+WHERE IT WAS:
+  File: auth_project/accounts/static/js/comments-handler.js
+  Lines: 152, 160 (avatar fallback)
+
+WHY IT HAPPENED:
+  Code was using external placeholder service for user avatars:
+    https://via.placeholder.com/36?text=J
+  
+  When user had no profile photo:
+    Comment shows → No profile photo found
+    → Try to load placeholder
+    → External domain not reachable
+    → Error!
+
+================================================================================
+                           THE FIX
+================================================================================
+
+REPLACED:
+  'https://via.placeholder.com/36?text=' + username[0]
+
+WITH:
+  getDefaultAvatarUrl(username)
+
+NEW FUNCTION:
+  Generates SVG avatar locally (no external requests)
+  Color: Based on username (6 color options)
+  Initial: First letter of username
+  Format: Data URI (embedded in page)
+
+RESULT:
+  ✅ No external requests
+  ✅ No network errors
+  ✅ No console errors
+  ✅ Instant loading
+  ✅ Clean, colored avatars
+
+================================================================================
+                        WHAT YOU'LL SEE
+================================================================================
+
+BEFORE:
+  Console (F12): Dozens of red errors
+  Network tab: Failed requests to via.placeholder.com
+  Comments: Generic placeholder or broken images
+
+AFTER:
+  Console (F12): Clean - no errors ✅
+  Network tab: No placeholder.com requests ✅
+  Comments: Colored circles with user initials ✅
+
+EXAMPLES:
+  "john" → Purple circle with "J"
+  "alice" → Blue circle with "A"
+  "bob" → Green circle with "B"
+  Colors vary, all look professional
+
+================================================================================
+                        DEPLOYMENT
+================================================================================
+
+Status: Already fixed in your codebase
+
+To apply:
+  git add auth_project/accounts/static/js/comments-handler.js
+  git commit -m "Fix placeholder image errors: use local SVG avatars"
+  git push origin main
+
+Next time you deploy, this fix automatically goes live.
+
+================================================================================
+                      NOT BLOCKING
+================================================================================
+
+This was a secondary issue discovered while fixing WebSocket.
+
+Impact: LOW
+  • UI polish only
+  • No functional impact
+  • No data loss
+  • No security issue
+
+Priority: LOW
+  • Can be fixed anytime
+  • Not urgent
+  • Makes console cleaner
+
+Related: WebSocket 404 Fix
+  • Main issue: /ws/project/2/ → 404
+  • This fix: Placeholder images → errors
+  • Both are now resolved
+
+================================================================================
+                        SUMMARY
+================================================================================
+
+Issue:    Placeholder image API returning 404
+Cause:    Using external service that doesn't exist
+Fix:      Generate avatars locally (SVG data URI)
+Impact:   Cleaner console, better UX
+Status:   ✅ Fixed
+
+Before:   Errors in console, external dependencies
+After:    Clean console, no external requests
+
+================================================================================
+
+For detailed explanation: FIX_PLACEHOLDER_IMAGE_ERROR.md
+For WebSocket issue: 00_WEBSOCKET_FIX_START_HERE.md
+
+================================================================================

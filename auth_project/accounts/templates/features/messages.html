@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>Messages | UniSync</title>
+    <title>Messages | UniSinq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -426,9 +426,9 @@
             <!-- Mobile Menu Button -->
             <div class="flex items-center justify-between lg:hidden">
                 <a href="{% url 'main_home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
-                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-10 w-10 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-10 w-10 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
                     <div>
-                        <h1 class="text-lg font-bold text-white">UniSync</h1>
+                        <h1 class="text-lg font-bold text-white">UniSinq</h1>
                         <p class="text-xs text-gray-400 hidden sm:block">Collaborate & Innovate</p>
                     </div>
                 </a>
@@ -440,9 +440,9 @@
             <!-- Desktop Navigation -->
             <div class="hidden lg:flex items-center justify-between">
                 <a href="{% url 'main_home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
-                    <img src="{% static 'images/logo.jpg' %}" alt="UniSync Logo" class="h-12 w-12 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
+                    <img src="{% static 'images/logo.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 object-contain rounded-lg shadow-md ring-2 ring-purple-400 group-hover:ring-pink-400 transition">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">UniSync</h1>
+                        <h1 class="text-2xl font-bold text-white">UniSinq</h1>
                         <p class="text-xs text-gray-400">Collaborate & Innovate</p>
                     </div>
                 </a>
@@ -636,8 +636,13 @@
                         </div>
 
                         {% if conversations %}
+                            <!-- Debug: Show conversation count -->
+                            <div class="text-xs text-gray-400 px-4 py-2">
+                                Found {{ conversations|length }} conversation(s)
+                            </div>
                             <div class="space-y-3 max-h-[600px] overflow-y-auto" id="conversationsList">
                                 {% for conversation in conversations %}
+                                    {% if conversation.type == 'direct' and conversation.user %}
                                     <a href="{% url 'chat' conversation.user.id %}"
                                        class="conversation-card block rounded-xl p-4 transition-all duration-300 group">
                                         <div class="flex items-start gap-3">
@@ -656,7 +661,7 @@
                                                 <h4 class="font-bold text-white truncate group-hover:text-purple-300 transition-colors flex items-center gap-2">
                                                     <i data-lucide="message-circle" class="w-4 h-4 text-blue-400"></i>
                                                         {{ conversation.user.username }}
-                                </h4>
+                                 </h4>
                                 {% if conversation.unread_count > 0 %}
                                     <span class="unread-badge text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
                                         {{ conversation.unread_count }}
@@ -685,11 +690,66 @@
                                         </div>
 
                                         <!-- Hover effect indicator -->
-                                        <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div class="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 h-0.5 rounded-full"></div>
+                                         <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                             <div class="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 h-0.5 rounded-full"></div>
+                                         </div>
+                                        </a>
+                                        {% elif conversation.type == 'group' and conversation.chat_room %}
+                                        <a href="{% url 'enhanced_chat' conversation.chat_room.id %}"
+                                        class="conversation-card block rounded-xl p-4 transition-all duration-300 group">
+                                        <div class="flex items-start gap-3">
+                                            <!-- Avatar -->
+                                            <div class="relative">
+                                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-lg font-bold avatar-glow">
+                                                    {{ conversation.chat_room.name|first|upper }}
+                                                </div>
+
+                                                <!-- Group indicator -->
+                                                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-background flex items-center justify-center">
+                                                    <i data-lucide="users" class="w-2 h-2 text-white"></i>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                <h4 class="font-bold text-white truncate group-hover:text-blue-300 transition-colors flex items-center gap-2">
+                                                    <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i>
+                                                        {{ conversation.chat_room.name }}
+                                        </h4>
+                                        {% if conversation.unread_count > 0 %}
+                                        <span class="unread-badge text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
+                                         {{ conversation.unread_count }}
+                                        </span>
+                                        {% endif %}
                                         </div>
-                                    </a>
-                                {% endfor %}
+
+                                                {% if conversation.last_message %}
+                                                    <div class="message-preview rounded-lg p-2 mt-2">
+                                                        <p class="text-sm text-gray-300 truncate">
+                                                            <span class="font-medium text-cyan-300">{{ conversation.last_message.sender.username }}:</span>
+                                                            {{ conversation.last_message.content|truncatechars:45 }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                                            {{ conversation.last_message.created_at|timesince }}
+                                                        </p>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-sm text-gray-500 italic mt-2 flex items-center gap-2">
+                                                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                                                        No messages yet
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Hover effect indicator -->
+                                         <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                             <div class="w-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 h-0.5 rounded-full"></div>
+                                         </div>
+                                        </a>
+                                        {% endif %}
+                                        {% endfor %}
                             </div>
                         {% else %}
                             <div class="text-center py-16">
