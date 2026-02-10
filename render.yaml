@@ -1,52 +1,16 @@
 services:
   - type: web
-    name: unisync-django
-    env: python
-    region: oregon
-    plan: free
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn auth_project.wsgi:application --bind 0.0.0.0:$PORT"
+    name: unisync
+    runtime: python
+    runtimeVersion: 3.12.0
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn auth_project.wsgi:application --workers 3 --bind 0.0.0.0:$PORT
     envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: SECRET_KEY
-        sync: false
       - key: DEBUG
-        value: false
-      - key: DJANGO_SETTINGS_MODULE
-        value: auth_project.settings
+        value: "False"
       - key: PYTHON_VERSION
-        value: 3.11.6
-      - key: ALLOWED_HOSTS
-        sync: false
-      - key: BREVO_API_KEY
-        sync: false
-      - key: ZEPTO_MAIL_API_KEY
-        sync: false
-      - key: ZEPTO_MAIL_TOKEN
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GITHUB_CLIENT_ID
-        sync: false
-      - key: GITHUB_CLIENT_SECRET
-        sync: false
-      - key: RAPIDAPI_KEY
-        sync: false
-      - key: DEFAULT_FROM_EMAIL
-        sync: false
-
-  - type: pserv
-    name: unisync-postgres
-    env: postgres
-    region: oregon
-    plan: free
-    # Postgres automatically gets a DATABASE_URL env var
-
-databases:
-  - name: unisync-postgres
-    databaseName: unisync_db
-    user: unisync_user
-    plan: free
+        value: "3.12"
+      - key: PIP_DEFAULT_TIMEOUT
+        value: "600"
+      - key: PYTHONUNBUFFERED
+        value: "1"
