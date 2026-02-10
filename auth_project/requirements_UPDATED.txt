@@ -17,10 +17,10 @@ requests-oauthlib==1.3.1
 # Email - Brevo (Sendinblue)
 brevo-python==1.2.0
 
-# Data Processing and NLP
-nltk==3.8.1
-pandas==2.1.4
-openpyxl==3.1.2
+# Data Processing and NLP (Optional - only if needed for analytics)
+# nltk==3.8.1
+# pandas==2.1.4  # Removed: incompatible with Python 3.13
+# openpyxl==3.1.2
 
 # Image Processing
 Pillow==10.1.0
