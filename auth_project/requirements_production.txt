@@ -1,3 +1,6 @@
+# Production Requirements for UniSync
+# Stripped down and verified versions - use this for deployment
+
 # Django Core
 Django==4.2.8
 django-allauth==0.61.1
@@ -14,19 +17,12 @@ python-dotenv==1.0.0
 requests==2.31.0
 requests-oauthlib==1.3.1
 
-# Email - Brevo (Sendinblue)
-brevo-python>=2.0.0
-
-# Data Processing and NLP
+# Data Processing and NLP (optional - can be removed if not needed)
 nltk==3.8.1
 pandas==2.1.4
-openpyxl==3.1.2
 
 # Image Processing
 Pillow==10.1.0
-
-# Development and Testing
-django-debug-toolbar==4.2.0
 
 # Production Server
 gunicorn==21.2.0
@@ -54,20 +50,6 @@ django-storages==1.14.2
 # Task Queue (for background jobs)
 celery==5.3.4
 
-# Documentation
-sphinx==7.2.6
-sphinx-rtd-theme==2.0.0
-
-# Testing
-pytest==7.4.3
-pytest-django==4.7.0
-
-# Code Quality
-black==23.12.1
-flake8==6.1.0
-isort==5.13.2
-mypy==1.7.1
-
 # Additional Utilities
 django-filter==23.5
 django-crispy-forms==2.1
@@ -75,3 +57,10 @@ crispy-bootstrap5==0.7
 
 # API Documentation
 drf-spectacular==0.26.5
+
+# Email Backend Options
+# Option 1: Brevo Email (recommended)
+brevo-python>=2.0.0
+
+# Note: ZeptoMail backend is custom-implemented (see accounts/zepto_mail_backend.py)
+# Uses requests library for API calls - no PyPI package needed

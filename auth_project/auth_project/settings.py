@@ -223,15 +223,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# Email Configuration - Multiple Backend Support
-# Priority: Brevo (Production) -> ZeptoMail -> Gmail SMTP -> Console (Development)
+# Email Configuration - Brevo Primary
+# Priority: Brevo (Production) -> Gmail SMTP (Fallback) -> Console (Development)
 
 # Brevo Configuration (Primary - Recommended)
 BREVO_API_KEY = os.getenv('BREVO_API_KEY')
-
-# ZeptoMail Configuration (Alternative)
-ZEPTO_MAIL_API_KEY = os.getenv('ZEPTO_MAIL_API_KEY')
-ZEPTO_MAIL_TOKEN = os.getenv('ZEPTO_MAIL_TOKEN')
 
 # Gmail SMTP Configuration (Fallback)
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
@@ -242,10 +238,6 @@ if BREVO_API_KEY:
     # Use Brevo for production (recommended)
     EMAIL_BACKEND = 'accounts.brevo_mail_backend.BrevoMailBackend'
     print("[SUCCESS] EMAIL BACKEND: Using Brevo for OTP and transactional emails")
-elif ZEPTO_MAIL_API_KEY and ZEPTO_MAIL_TOKEN:
-    # Use ZeptoMail as alternative
-    EMAIL_BACKEND = 'accounts.zepto_mail_backend.ZeptoMailBackend'
-    print("[SUCCESS] EMAIL BACKEND: Using ZeptoMail for OTP and transactional emails")
 elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     # Use Gmail SMTP as fallback
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -258,7 +250,6 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     print("[WARNING] EMAIL BACKEND: Using console backend - OTP codes will be printed to console")
     print("[INFO] To use Brevo: Set BREVO_API_KEY in .env")
-    print("[INFO] To use ZeptoMail: Set ZEPTO_MAIL_API_KEY and ZEPTO_MAIL_TOKEN in .env")
 
 # Default sender email
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@unisinq.app')

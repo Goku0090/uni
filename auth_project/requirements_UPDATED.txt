@@ -1,4 +1,4 @@
-# Django Core - UPDATED FOR DJANGO 5.2.5 COMPATIBILITY
+# Django Core - Updated for Django 5.2.5 Compatibility
 Django==5.2.5
 django-allauth==0.70.0
 djangorestframework==3.14.0
@@ -14,22 +14,16 @@ python-dotenv==1.0.0
 requests==2.31.0
 requests-oauthlib==1.3.1
 
-# Email and Communications
-zeptomail==1.0.0
+# Email - Brevo (Sendinblue)
+brevo-python>=2.0.0
 
 # Data Processing and NLP
 nltk==3.8.1
 pandas==2.1.4
 openpyxl==3.1.2
 
-# API and External Services
-rapidapi==1.0.0
-
 # Image Processing
 Pillow==10.1.0
-
-# Development and Testing
-django-debug-toolbar==4.2.0
 
 # Production Server
 gunicorn==21.2.0
@@ -64,7 +58,6 @@ sphinx-rtd-theme==2.0.0
 # Testing
 pytest==7.4.3
 pytest-django==4.7.0
-selenium==4.16.0
 
 # Code Quality
 black==23.12.1
@@ -77,15 +70,9 @@ django-filter==23.5
 django-crispy-forms==2.1
 crispy-bootstrap5==0.7
 
-# Performance Monitoring
-django-performance-monitor==0.1.1
-
 # API Documentation
 drf-spectacular==0.26.5
 
-# Django 5.2.5 Compatibility Packages
+# Django 5.2.5 Compatibility
 typing-extensions==4.9.0
 asgiref==3.7.2
-
-# Brevo Email Backend (optional)
-brevo-python>=2.0.0
