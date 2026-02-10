@@ -2,9 +2,9 @@
 # Exit on error
 set -o errexit
 
-# Install Python dependencies
+# Install Python dependencies - Force binary wheels only (no source compilation)
 pip install --upgrade pip
-pip install -r auth_project/requirements.txt
+pip install --only-binary :all: -r auth_project/requirements.txt 2>/dev/null || pip install -r auth_project/requirements.txt
 
 # Collect static files
 cd auth_project
