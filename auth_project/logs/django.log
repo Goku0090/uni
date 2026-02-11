@@ -134587,3 +134587,6 @@ django.template.exceptions.TemplateSyntaxError: Invalid filter: 'multiply'
 [INFO] 2026-02-09 23:24:03 django.server log_message:213 - "GET /notifications/ HTTP/1.1" 200 11936
 [INFO] 2026-02-09 23:24:16 django.server log_message:213 - "GET /messages/ HTTP/1.1" 200 92461
 [INFO] 2026-02-09 23:24:16 django.server log_message:213 - "GET /static/js/api-utils.js HTTP/1.1" 304 0
+[INFO] 2026-02-11 14:24:47 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-11 14:24:49 accounts.signals_realtime ready:271 - [SUCCESS] Real-time signal handlers registered successfully
+[INFO] 2026-02-11 14:24:49 django.utils.autoreload run_with_reloader:667 - Watching for file changes with StatReloader
