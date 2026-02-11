@@ -2,24 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
+# System dependencies
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
 
-# Copy everything
+# Copy and install requirements
+COPY auth_project/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app
 COPY . .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r auth_project/requirements.txt
-
-# Make start script executable
+# Make scripts executable  
 RUN chmod +x start.sh
 
-# Expose port
 EXPOSE 8000
 
-# Run start script
-CMD ["./start.sh"]
+# Run migrations and start server
+CMD ["bash", "start.sh"]
