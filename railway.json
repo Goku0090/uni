@@ -1,5 +1,10 @@
 {
-  "buildCommand": "pip install -r auth_project/requirements.txt && python auth_project/manage.py collectstatic --noinput",
-  "startCommand": "gunicorn auth_project.wsgi:application --bind 0.0.0.0:$PORT",
-  "previewUrl": "https://$RAILWAY_DOMAIN"
+  "$schema": "https://railway.app/json-schema/railway.json",
+  "build": {
+    "builder": "dockerfile",
+    "buildCommand": "docker build -t app:latest ."
+  },
+  "deploy": {
+    "startCommand": "gunicorn auth_project.wsgi:application --workers 3 --bind 0.0.0.0:$PORT"
+  }
 }
