@@ -21,5 +21,5 @@ RUN chmod +x start.sh
 # Expose port
 EXPOSE 8000
 
-# Run start script
-CMD ["./start.sh"]
+# Run start script with shell to expand env vars
+CMD ["/bin/bash", "-c", "PORT=${PORT:-8000} exec ./start.sh"]
