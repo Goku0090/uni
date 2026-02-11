@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
-# Exit on error
 set -o errexit
 
-# Install Python dependencies - Force binary wheels only (no source compilation)
-pip install --upgrade pip
-pip install --only-binary :all: -r auth_project/requirements.txt 2>/dev/null || pip install -r auth_project/requirements.txt
+echo "========== Python Deployment Build =========="
+echo "Python version:"
+python --version
+echo ""
 
-# Collect static files
+echo "========== Upgrading pip =========="
+pip install --upgrade pip setuptools wheel
+
+echo "========== Installing dependencies =========="
 cd auth_project
+pip install -r requirements.txt
+
+echo "========== Collecting static files =========="
 python manage.py collectstatic --noinput --clear
 
-# Run database migrations
+echo "========== Running migrations =========="
 python manage.py migrate
 
-# Create superuser if needed (optional)
-# echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'adminpass') if not User.objects.filter(username='admin').exists() else None" | python manage.py shell
-
-# Create logs directory
-mkdir -p logs
-
-echo "Build completed successfully!"
+echo "========== Build Complete =========="
+echo "App is ready to start!"
