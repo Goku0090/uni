@@ -25,7 +25,16 @@ if not SECRET_KEY:
         print("   For production, set SECRET_KEY environment variable")
     else:
         raise ValueError("SECRET_KEY environment variable is required for production")
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Build ALLOWED_HOSTS - auto-detect Render domain
+ALLOWED_HOSTS_STR = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
+
+# Auto-add Render's external hostname if available
+if 'RENDER' in os.environ:
+    render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+    if render_hostname and render_hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_hostname)
+        print(f"[SUCCESS] Added Render hostname to ALLOWED_HOSTS: {render_hostname}")
 
 # Security middleware settings
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 't', 'yes')
