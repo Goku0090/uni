@@ -2,12 +2,12 @@ services:
   - type: web
     name: unisync
     runtime: python
-    runtimeVersion: 3.12.0
+    runtimeVersion: 3.11.0
     buildCommand: bash build.sh
     startCommand: cd backend && gunicorn auth_project.wsgi:application --workers 3 --worker-class sync --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12"
+        value: "3.11"
       - key: DEBUG
         value: "False"
       - key: PYTHONUNBUFFERED
