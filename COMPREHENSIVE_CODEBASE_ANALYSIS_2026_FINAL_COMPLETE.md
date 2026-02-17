@@ -1,597 +1,821 @@
-# UniSync Codebase - Complete Analysis (2026)
+# UniSync Codebase Analysis - Comprehensive Overview
 
-## Executive Summary
-
-**UniSync** is a comprehensive Django-based collaborative platform for students to create, share, and collaborate on projects. It integrates social features (connections, followers, likes), real-time messaging, comments, activity tracking, and project management with a robust authentication system supporting both traditional and OAuth login.
-
----
-
-## 1. TECHNOLOGY STACK
-
-### Backend
-- **Framework**: Django 4.x
-- **API**: Django REST Framework (DRF)
-- **Database**: PostgreSQL (production) / SQLite (development)
-- **Authentication**: Django Allauth (OAuth2 for Google/GitHub)
-- **Email**: Brevo/ZeptoMail backend services
-
-### Frontend
-- **Templates**: Django templates (Jinja2-like)
-- **Static Files**: CSS, JavaScript
-- **Real-time Features**: WebSocket support via Django Channels (planned)
-
-### Deployment
-- **Platforms**: Render.com, Railway.app
-- **Environment**: .env for configuration
-- **Docker**: Support via Procfile
+**Project**: UniSync (Student Collaboration Platform)  
+**Date**: February 2026  
+**Stack**: Django + React/Vite + Django Channels (WebSockets) + PostgreSQL
 
 ---
 
-## 2. PROJECT STRUCTURE
+## Table of Contents
+1. [Architecture Overview](#architecture-overview)
+2. [Database Models](#database-models)
+3. [Backend API Endpoints](#backend-api-endpoints)
+4. [Frontend Structure](#frontend-structure)
+5. [Real-time Features](#real-time-features)
+6. [Authentication System](#authentication-system)
+7. [Key Features Implementation](#key-features-implementation)
+8. [Data Flow](#data-flow)
 
+---
+
+## Architecture Overview
+
+UniSync uses a **hybrid architecture**:
+
+### Backend: Django (Multi-layered)
+- **Django Framework**: Server-side rendering + REST API
+- **Django Rest Framework (DRF)**: JSON APIs for frontend consumption
+- **Django Channels**: WebSocket support for real-time collaboration
+- **Database**: PostgreSQL (production), SQLite (development)
+
+### Frontend: React/Vite
+- Single Page Application (SPA) for dynamic project feed
+- Server-side rendered HTML templates for traditional pages
+- Axios for API communication
+- WebSocket client for real-time updates
+
+### Key Directories
 ```
-auth_project/
-├── accounts/                    # Main application
-│   ├── models.py               # 20+ data models
-│   ├── views.py                # Authentication & page views
-│   ├── views_contact.py        # Contact & policy views
-│   ├── urls.py                 # URL routing
-│   ├── forms.py                # Django forms
-│   ├── serializers.py          # DRF serializers
-│   ├── permissions.py          # Custom permissions
-│   ├── utils.py                # Utility functions
-│   ├── comment_api.py          # Comment endpoints
-│   ├── chat_api_improved.py    # Messaging API
-│   ├── zepto_mail_backend.py   # Email backend
-│   ├── brevo_mail_backend.py   # Alternative email
-│   ├── services/
-│   │   └── auth_service.py     # Auth business logic
-│   ├── migrations/             # Database migrations
-│   ├── templates/              # HTML templates
-│   │   ├── account/            # Auth templates
-│   │   └── components/         # Reusable components
-│   └── templatetags/           # Custom filters
-├── auth_project/
-│   ├── settings.py             # Django configuration
-│   ├── urls.py                 # Root URL config
-│   ├── wsgi.py                 # WSGI application
-│   └── asgi.py                 # ASGI application
-├── media/                      # User uploads
-├── static/                     # Static assets
-├── templates/                  # Base templates
-├── .env                        # Environment variables
-└── manage.py                   # Django CLI
+backend/
+├── accounts/              # Main Django app
+│   ├── models.py         # Database schema
+│   ├── views.py          # View handlers
+│   ├── urls.py           # URL routing
+│   ├── serializers.py    # DRF serializers
+│   ├── consumers.py      # WebSocket consumers
+│   ├── chat_api_improved.py    # Messaging APIs
+│   ├── comment_api.py    # Comments system
+│   ├── template_api.py   # Project templates
+│   └── templates/        # HTML templates
+├── auth_project/         # Django config
+│   ├── settings.py       # Settings & env config
+│   ├── urls.py          # Root URL routing
+│   ├── asgi.py          # ASGI config (Channels)
+│   └── wsgi.py          # WSGI config
+└── manage.py            # Django CLI
+
+frontend/
+├── src/
+│   ├── App.jsx          # React root component
+│   ├── main.jsx         # Vite entry point
+│   └── index.css        # Styling
+└── package.json         # Dependencies
 ```
 
 ---
 
-## 3. CORE DATA MODELS (21 Models)
+## Database Models
 
-### Authentication & Profiles
-| Model | Purpose | Key Fields |
-|-------|---------|-----------|
-| **User** | Django's built-in | username, email, password |
-| **StudentProfile** | Extended user info | full_name, college, bio, skills, interests, profile_photo, social_links |
-| **OTP** | One-time passwords | email, otp_code, purpose, expires_at, is_used |
+### Core User Management
+
+#### **StudentProfile**
+```
+- user (OneToOne → User)
+- full_name, college, location
+- bio, profile_photo
+- skills (JSON array)
+- interests (JSON array)
+- project_interests (JSON array)
+- role_preference
+- social_links (GitHub, LinkedIn, Portfolio, Behance)
+- profile_completed (boolean)
+```
+
+#### **OTP** (Authentication)
+```
+- email
+- otp_code (6-digit)
+- purpose (login/registration/reset)
+- is_used (boolean)
+- created_at, expires_at (5 minutes)
+```
 
 ### Project Management
-| Model | Purpose | Key Fields |
-|-------|---------|-----------|
-| **Project** | Main project entity | title, description, owner, visibility, status, category, tags |
-| **ProjectMember** | Team members with roles | project, user, role, is_active, joined_at |
-| **ProjectTask** | Tasks within projects | title, assigned_to, status, priority, due_date, completed_at |
-| **ProjectMilestone** | Project milestones | title, due_date, is_completed, completed_by |
-| **ProjectInvitation** | Join invitations | project, invited_user, role, status, expires_at |
 
-### Social & Engagement
-| Model | Purpose | Key Fields |
-|-------|---------|-----------|
-| **Connection** | User connections | sender, receiver, status (pending/accepted/rejected) |
-| **Follow** | User followers | follower, following |
-| **Like** | Project likes | user, project, created_at |
-| **Comment** | Project comments | user, project, content, parent (for threads), is_deleted |
-
-### Messaging & Chat
-| Model | Purpose | Key Fields |
-|-------|---------|-----------|
-| **Message** | DM & group messages | sender, receiver, chat_room, content, message_type, reply_to |
-| **ChatRoom** | Group chat containers | chat_type, name, is_active, created_by, members |
-| **ChatRoomMember** | Chat room participants | chat_room, user, is_active, joined_at |
-| **MessageReadStatus** | Read receipts | message, user, read_at |
-| **MessageFile** | Message attachments | message, file |
-| **MessageReaction** | Message emojis | message, user, reaction |
-| **File** | File uploads | user, file, filename, file_size, file_type |
-
-### Activity & Analytics
-| Model | Purpose | Key Fields |
-|-------|---------|-----------|
-| **Activity** | User action feed | user, activity_type, title, project, target_user |
-| **UserStats** | Dashboard statistics | projects_created, connections_made, likes_received, etc. |
-| **Notification** | User notifications | user, activity, is_read, created_at |
-
----
-
-## 4. KEY FEATURES & WORKFLOWS
-
-### 4.1 Authentication Flow
+#### **Project**
 ```
-User Registration
-  ↓
-Form Validation → OTP Generation → Email Send
-  ↓
-OTP Verification → StudentProfile Creation → Session Start
-```
-
-**Key Components:**
-- `RegisterForm` (accounts/forms.py) - Validation & field handling
-- `send_otp_email()` (accounts/views.py) - Email dispatch
-- `OTP.verify_otp()` (accounts/models.py) - Verification logic
-- OAuth integration via Allauth for social login
-
-### 4.2 Project Visibility Filtering
-```
-ProjectVisibilityFilter (utils.py)
-  ↓
-Filters projects based on:
-  • User ownership (visible to owner always)
-  • Visibility setting (public/private)
-  • Team membership
-  • Connection status
-```
-
-**Filter Logic:**
-- Owner can always see their project
-- Public projects visible to all authenticated users
-- Private projects visible only to team members
-- Restricted projects visible only to explicitly added members
-
-### 4.3 Comments System
-**Endpoints:**
-- `POST /api/projects/{id}/comments/` - Add comment
-- `GET /api/projects/{id}/comments/` - List comments
-- `DELETE /api/comments/{id}/` - Remove comment
-- `PUT /api/comments/{id}/` - Edit comment
-
-**Features:**
-- Thread replies (nested comments)
-- Comment count badge on project cards
-- Deletion with is_deleted flag for soft delete
-- Real-time updates via activity feed
-
-### 4.4 Messaging Architecture
-**Direct Messages:**
-- 1-to-1 user communication
-- Read status tracking
-- Message reactions
-- File attachments
-
-**Group Chats:**
-- Multiple members per room
-- Chat room ownership
-- Member management
-- Typing indicators
-
-**Optimization:**
-- MessageReadStatus model (scalable design)
-- Separate MessageFile & MessageReaction models
-- Query optimization with select_related/prefetch_related
-
-### 4.5 Social Engagement
-**Connections:**
-- Pending → Accepted workflow
-- Unique constraint prevents duplicate requests
-- Activity feed integration
-
-**Follows:**
-- One-way relationship
-- Separate from connections
-- Unique follower/following pair
-
-**Likes:**
-- Per-project engagement metric
-- User can like/unlike
-- Counted in UserStats
-
----
-
-## 5. API ENDPOINTS
-
-### Authentication
-```
-POST   /accounts/register/          - User registration
-POST   /accounts/login/              - User login
-POST   /accounts/otp-verify/         - OTP verification
-POST   /accounts/logout/             - Logout
-POST   /accounts/password-reset/     - Password reset
-```
-
-### Projects
-```
-GET    /api/projects/                - List (with filtering)
-POST   /api/projects/                - Create project
-GET    /api/projects/{id}/           - Project detail
-PUT    /api/projects/{id}/           - Update project
-DELETE /api/projects/{id}/           - Delete project
-POST   /api/projects/{id}/like/      - Toggle like
-GET    /api/projects/feed/           - Activity feed
-```
-
-### Comments
-```
-POST   /api/projects/{id}/comments/  - Add comment
-GET    /api/projects/{id}/comments/  - List comments
-PUT    /api/comments/{id}/           - Edit comment
-DELETE /api/comments/{id}/           - Delete comment
-```
-
-### Messaging
-```
-GET    /api/chat-rooms/              - List chat rooms
-POST   /api/chat-rooms/              - Create chat room
-GET    /api/messages/                - List messages
-POST   /api/messages/                - Send message
-PUT    /api/messages/{id}/           - Update message
-POST   /api/messages/{id}/read/      - Mark as read
-```
-
-### Social
-```
-POST   /api/connections/             - Send connection request
-GET    /api/connections/             - List connections
-PUT    /api/connections/{id}/        - Accept/Reject
-GET    /api/follow/{user}/           - Follow user
-DELETE /api/follow/{user}/           - Unfollow
-GET    /api/profile/{user}/          - View profile
-```
-
----
-
-## 6. KEY CLASSES & FUNCTIONS
-
-### Models
-
-#### StudentProfile
-```python
-- get_display_name()           # Returns full_name or username
-- profile_completed            # Boolean flag for onboarding
-- Social links: github, linkedin, portfolio, behance
-```
-
-#### Project
-```python
-- visibility: 'public', 'private', 'restricted'
-- status: 'draft', 'active', 'completed', 'archived'
-- is_archived, is_published flags
-- get_team_members()           # ProjectMember.objects.filter()
-- get_member_count()           # Count team size
-```
-
-#### ProjectVisibilityFilter (utils.py)
-```python
-- filter_projects(user)        # Returns filtered QuerySet
-- Logic: ownership > team membership > connections > public
-```
-
-#### Comment
-```python
-- user, project, content
-- parent (for thread replies)
-- is_deleted flag (soft delete)
+- owner (FK → User)
+- title, description
+- technologies (JSON array)
+- collaboration_needs (text)
+- visibility (public/private)
+- team_size_min, team_size_max
+- status (active/paused/completed)
+- looking_for (JSON array of roles)
+- application_deadline
+- media (JSONField for images/videos)
 - created_at, updated_at
 ```
 
-### Views
+#### **ProjectMember**
+```
+- project (FK → Project)
+- user (FK → User)
+- role (owner/lead/contributor/advisor)
+- joined_at
+- is_active (boolean)
+```
 
-#### Authentication Views (views.py)
-- `register_view()` - Handle registration flow with OTP
-- `login_view()` - Email-based login
-- `send_otp_email()` - Email dispatch with templating
+#### **ProjectTask**
+```
+- project (FK → Project)
+- title, description
+- assigned_to (FK → User)
+- assigned_by (FK → User)
+- status (todo/in_progress/review/completed/cancelled)
+- priority (low/medium/high/urgent)
+- due_date
+```
 
-#### Project Views
-- `project_feed()` - Filtered project list
-- `search_projects()` - Full-text search
-- `edit_profile()` - Profile management
+#### **ProjectMilestone**
+```
+- project (FK → Project)
+- title, description
+- due_date
+- is_completed (boolean)
+- completed_by (FK → User)
+```
 
-#### API Views (DRF)
-- `MessageListCreateView` - Message CRUD
-- `ChatRoomListCreateView` - Chat room management
-- `MessageStatusView` - Read receipt tracking
+#### **ProjectTemplate**
+```
+- name, category (web/mobile/ai/data/blockchain/iot/game)
+- description, icon
+- template_title, template_description
+- template_technologies (JSON)
+- template_looking_for (JSON)
+- difficulty_level (beginner/intermediate/advanced)
+- suggested_timeline, suggested_team_size
+- rating (0-5), usage_count
+- is_featured (boolean)
+```
 
-### Utils (utils.py)
+### Communication & Social
 
-#### StudentProfileNLP
+#### **ChatRoom**
+```
+- name
+- chat_type (direct/group)
+- members (M2M → User via ChatRoomMember)
+- created_at, updated_at
+```
+
+#### **ChatRoomMember**
+```
+- chat_room (FK → ChatRoom)
+- user (FK → User)
+- is_active (boolean)
+- joined_at
+```
+
+#### **Message**
+```
+- sender (FK → User)
+- receiver (FK → User, nullable for group chats)
+- chat_room (FK → ChatRoom, nullable for DMs)
+- content
+- message_type (text/file/image/call)
+- call_type (voice/video, nullable)
+- reply_to (self FK for threading)
+- created_at, updated_at
+```
+
+#### **MessageReadStatus**
+```
+- message (FK → Message)
+- user (FK → User)
+- read_at (DateTimeField)
+```
+
+#### **MessageReaction**
+```
+- message (FK → Message)
+- user (FK → User)
+- reaction (emoji/text)
+```
+
+#### **Comment**
+```
+- project (FK → Project)
+- user (FK → User)
+- content
+- reply_to (self FK for nested comments)
+- created_at, updated_at
+```
+
+### Social Features
+
+#### **Connection**
+```
+- sender (FK → User)
+- receiver (FK → User)
+- status (pending/accepted/rejected)
+- created_at, updated_at
+```
+
+#### **Follow**
+```
+- follower (FK → User)
+- following (FK → User)
+- created_at
+```
+
+#### **Like**
+```
+- user (FK → User)
+- project (FK → Project)
+- created_at
+```
+
+#### **Notification**
+```
+- user (FK → User)
+- sender (FK → User)
+- notification_type (message/comment/like/connection/invitation)
+- related_project/related_message (FK, nullable)
+- is_read (boolean)
+- created_at
+```
+
+---
+
+## Backend API Endpoints
+
+### Authentication APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register/` | User registration with email |
+| POST | `/api/auth/login/` | Login with OTP |
+| POST | `/api/auth/verify-otp/` | Verify OTP code |
+| POST | `/api/auth/logout/` | User logout |
+| POST | `/api/auth/password-reset/` | Password reset request |
+
+### Project APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/projects/` | List all projects (paginated) |
+| POST | `/api/projects/` | Create new project |
+| GET | `/api/projects/<id>/` | Get project details |
+| PUT | `/api/projects/<id>/` | Update project |
+| DELETE | `/api/projects/<id>/` | Delete project |
+| GET | `/api/projects/search/` | Search projects |
+| POST | `/api/projects/<id>/apply/` | Apply to join project |
+| GET | `/api/projects/<id>/members/` | Get project members |
+| POST | `/api/projects/<id>/invite/` | Invite user to project |
+
+### Messaging APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/chat-rooms/` | List chat rooms |
+| POST | `/api/chat-rooms/` | Create chat room |
+| GET | `/api/chat-rooms/<id>/` | Get chat room details |
+| GET | `/api/chat-rooms/<id>/messages/` | Get messages in chat room |
+| POST | `/api/messages/` | Send message |
+| PUT | `/api/messages/<id>/` | Edit message |
+| DELETE | `/api/messages/<id>/` | Delete message |
+| POST | `/api/messages/<id>/react/` | Add reaction to message |
+
+### Comments APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/projects/<id>/comments/` | Get project comments |
+| POST | `/api/projects/<id>/comments/` | Post comment |
+| PUT | `/api/comments/<id>/` | Edit comment |
+| DELETE | `/api/comments/<id>/` | Delete comment |
+
+### Profile & Social APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user-profile/` | Get current user profile |
+| PUT | `/api/user-profile/` | Update user profile |
+| GET | `/api/users/<id>/profile/` | Get user profile |
+| POST | `/api/connections/` | Send connection request |
+| GET | `/api/connections/` | List connections |
+| PUT | `/api/connections/<id>/` | Accept/reject connection |
+| POST | `/api/likes/` | Like a project |
+| DELETE | `/api/likes/<id>/` | Unlike a project |
+
+### Template APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/templates/` | List project templates |
+| GET | `/api/templates/<id>/` | Get template details |
+| POST | `/api/templates/<id>/use/` | Use template to create project |
+| POST | `/api/templates/<id>/rate/` | Rate template |
+
+### Notification APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/notifications/` | Get user notifications |
+| POST | `/api/notifications/<id>/read/` | Mark notification as read |
+
+---
+
+## Frontend Structure
+
+### React Component Hierarchy
+
+```
+App.jsx (root)
+├── Header (navigation, logo)
+├── MainHome
+│   ├── ProjectCard (list items)
+│   │   ├── Comments section
+│   │   └── Like/Share buttons
+│   └── Project Feed (paginated)
+├── Chat
+│   ├── ChatRoomList
+│   └── ChatWindow
+│       ├── MessageList
+│       └── MessageInput
+├── Profile
+│   ├── UserProfile
+│   ├── StudentProfileForm
+│   └── Skills/Interests editor
+├── FindCollaborators
+│   ├── SearchFilters
+│   └── CollaboratorCard
+├── ProjectDetail
+│   ├── ProjectHeader
+│   ├── ProjectMembers
+│   ├── Tasks section
+│   └── Activity feed
+└── Footer
+```
+
+### State Management
+
+**Current Approach**: React Hooks (`useState`, `useEffect`)
+
+- **App.jsx**: Manages project feed state
+  ```javascript
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  ```
+
+- **Chat components**: Message list, current room state
+- **Profile components**: Form state, user data
+
+### API Client
+
+**Axios configuration** for API calls:
+```javascript
+const API_BASE_URL = 'http://localhost:8000/api/'
+// Used for all REST API calls from React
+```
+
+### Key Frontend Pages
+
+1. **Dashboard/Main Home** (`/`) - Project feed with real-time updates
+2. **Project Detail** (`/projects/<id>/`) - Full project information
+3. **Chat** (`/messages/`) - Messaging interface
+4. **Find Collaborators** (`/find-collaborators/`) - Search and connect
+5. **User Profile** (`/profile/`) - Student profile management
+6. **Project Templates** (`/templates/`) - Browse and create from templates
+
+---
+
+## Real-time Features
+
+### Django Channels Architecture
+
+#### WebSocket Consumers
+
+1. **ProjectUpdateConsumer** (`consumers.py`)
+   - Broadcasts project changes to team members
+   - Updates: title, description, team members, status
+   - Groups: `project_{id}`
+
+2. **ActivityFeedConsumer** (`consumers.py`)
+   - Real-time activity feed updates
+   - Broadcasts: comments, likes, new projects
+   - Groups: `activity_feed`
+
+3. **NotificationConsumer** (`consumers.py`)
+   - Sends notifications to users
+   - Types: messages, project invites, likes, comments
+   - Groups: `notifications_{user_id}`
+
+4. **ChatConsumer** (`consumers.py`)
+   - Real-time messaging
+   - Broadcasting messages to chat room members
+   - Groups: `chat_{room_id}`
+
+#### WebSocket Connection Flow
+
+```
+Client (React)
+    ↓
+WebSocket URL: ws://localhost:8000/ws/...
+    ↓
+Django Channels ASGI (routing.py)
+    ↓
+Consumer class (connect/receive/disconnect)
+    ↓
+Broadcast to group
+    ↓
+All connected clients in group receive
+```
+
+#### Routing Configuration
+
 ```python
-- analyze_interests()          # Parse skill/interest data
-- generate_recommendations()   # Suggest collaborators
+# asgi.py
+application = ProtocolTypeRouter({
+    'http': ...,
+    'websocket': AuthMiddlewareStack(
+        URLRouter([
+            path('ws/projects/<id>/', ProjectUpdateConsumer.as_asgi()),
+            path('ws/chat/<id>/', ChatConsumer.as_asgi()),
+            path('ws/notifications/', NotificationConsumer.as_asgi()),
+            path('ws/activity-feed/', ActivityFeedConsumer.as_asgi()),
+        ])
+    )
+})
 ```
 
-#### ProjectVisibilityFilter
+### Real-time Signals
+
+Django Signals trigger WebSocket broadcasts when models change:
+
 ```python
-- filter_projects(user)        # Main filtering logic
-- For each project:
-    1. Check ownership (always visible)
-    2. Check visibility setting
-    3. Check team membership
-    4. Check connections
-    5. Allow public access
+# signals_realtime.py
+@receiver(post_save, sender=Comment)
+def broadcast_comment(sender, instance, created, **kwargs):
+    # Broadcast to activity feed when comment is added
+    channel_layer.group_send(...)
+
+@receiver(post_save, sender=Like)
+def broadcast_like(sender, instance, created, **kwargs):
+    # Broadcast when project is liked
+    channel_layer.group_send(...)
 ```
 
 ---
 
-## 7. REQUEST/RESPONSE FLOW
+## Authentication System
 
-### Project Feed Request
-```
-GET /project_feed/
-  ↓
-project_feed() view
-  ↓
-ProjectVisibilityFilter.filter_projects(user)
-  ↓
-Query projects with:
-  - select_related('user')
-  - prefetch_related('members', 'comments', 'likes')
-  ↓
-Template rendering (base_with_footer.html)
-  ↓
-HTML response with cards
-```
+### OTP-Based Authentication
 
-### Comment Addition
-```
-POST /api/projects/{id}/comments/
-  ↓
-add_comment() (comment_api.py)
-  ↓
-Validate: user authenticated, project exists
-  ↓
-Create Comment object
-  ↓
-Update project comment count
-  ↓
-Create Activity entry
-  ↓
-Return JSON response
+1. **Registration Flow**
+   ```
+   User enters email → OTP generated → Email sent → Verify OTP → Create User
+   ```
+
+2. **Login Flow**
+   ```
+   User enters email → OTP generated → Email sent → Verify OTP → Session created
+   ```
+
+3. **Password Reset**
+   ```
+   User requests reset → OTP sent → Verify OTP → Set new password
+   ```
+
+### OTP Implementation
+
+```python
+# models.py - OTP Model
+class OTP(models.Model):
+    email = EmailField()
+    otp_code = CharField(max_length=6)  # 6-digit random code
+    purpose = CharField(choices=['login', 'registration', 'reset'])
+    is_used = BooleanField(default=False)
+    expires_at = DateTimeField()  # 5 minutes from creation
+    
+    def is_valid(self):
+        return not self.is_used and now() < self.expires_at
 ```
 
-### Message Send
+### Email Service Integration
+
+**Email Backends**:
+- **Brevo** (Primary)
+- **Zepto** (Fallback)
+
+```python
+# brevo_mail_backend.py
+class BrevoBackend(BaseEmailBackend):
+    def send_messages(self, email_messages):
+        # Uses Brevo API to send emails
 ```
-POST /api/messages/
-  ↓
-MessageListCreateView.create()
-  ↓
-Validate: user in chat_room (ChatRoomMember check)
-  ↓
-Create Message object
-  ↓
-Optionally attach files
-  ↓
-Mark as read by sender
-  ↓
-Return message detail
+
+### Google OAuth Integration
+
+**Social Authentication**:
+- Configured via django-allauth
+- Providers: Google (primary)
+- Flow: OAuth redirect → User authentication → Profile creation
+
+---
+
+## Key Features Implementation
+
+### 1. Project Management
+
+**Features**:
+- Create/edit/delete projects
+- Public/private visibility
+- Team member management
+- Role-based access (owner/lead/contributor/advisor)
+- Task tracking with status and priority
+- Milestones and timelines
+
+**Implementation**:
+- Models: `Project`, `ProjectMember`, `ProjectTask`, `ProjectMilestone`
+- Views: `post_project()`, `edit_project()`, `project_detail()`
+- APIs: REST endpoints in `urls.py`
+
+### 2. Real-time Collaboration
+
+**Features**:
+- Live project updates (title, description, members)
+- Real-time activity feed
+- Live comments
+- Real-time notifications
+
+**Implementation**:
+- Django Channels consumers for WebSocket
+- `signals_realtime.py` for event broadcasting
+- Group subscriptions via `channel_layer.group_send()`
+
+### 3. Messaging System
+
+**Features**:
+- Direct messaging (1-to-1)
+- Group chats
+- Message threading/replies
+- Read receipts
+- Message reactions
+- File sharing
+
+**Implementation**:
+- Models: `ChatRoom`, `Message`, `MessageReadStatus`, `MessageReaction`
+- API: `chat_api_improved.py` with REST endpoints
+- WebSocket: `ChatConsumer` for real-time delivery
+- Database: Separate `MessageReadStatus` for scalability
+
+### 4. Comments & Engagement
+
+**Features**:
+- Project comments
+- Nested/threaded comments
+- Like/reaction system
+- Share functionality
+
+**Implementation**:
+- Model: `Comment` (with reply_to self-reference)
+- API: `comment_api.py`
+- Real-time: Broadcast via signals to activity feed
+
+### 5. Project Templates
+
+**Features**:
+- Pre-made project templates by category
+- Difficulty levels
+- Resource recommendations
+- User ratings and reviews
+- Usage tracking
+
+**Implementation**:
+- Models: `ProjectTemplate`, `TemplateRating`, `TemplateUsageLog`
+- API: `template_api.py`
+- Categories: web, mobile, AI/ML, data science, blockchain, IoT, game dev
+
+### 6. Social Features
+
+**Features**:
+- Connection requests
+- User following
+- Activity feeds
+- Notifications
+- Profile browsing
+
+**Implementation**:
+- Models: `Connection`, `Follow`, `Like`, `Notification`, `Activity`
+- Signals: Auto-create notifications on actions
+- API: `find_collaborators()` for search
+
+---
+
+## Data Flow
+
+### Project Creation Flow
+
+```
+1. User submits form (frontend)
+   ↓
+2. POST /api/projects/ (REST API)
+   ↓
+3. post_project() view validates & creates Project
+   ↓
+4. Project model save() triggered
+   ↓
+5. Signals broadcast to activity feed (WebSocket)
+   ↓
+6. All connected clients receive update
+   ↓
+7. Frontend updates project list
+```
+
+### Message Sending Flow
+
+```
+1. User types & sends message (Chat component)
+   ↓
+2. WebSocket send() to ChatConsumer
+   ↓
+3. Message object created in database
+   ↓
+4. Consumer broadcasts to chat room group
+   ↓
+5. All room members receive in real-time
+   ↓
+6. MessageReadStatus tracked separately
+```
+
+### Comment & Notification Flow
+
+```
+1. User posts comment (Project detail page)
+   ↓
+2. POST /api/comments/ (REST API)
+   ↓
+3. Comment model created
+   ↓
+4. post_save signal triggered
+   ↓
+5. Broadcast to activity_feed group (WebSocket)
+   ↓
+6. Create Notification for project owner
+   ↓
+7. Notification sent via NotificationConsumer
+   ↓
+8. Frontend displays badge & real-time alert
 ```
 
 ---
 
-## 8. SECURITY FEATURES
-
-### Authentication
-- **CSRF Protection**: Enabled middleware
-- **OTP Verification**: 6-digit, 5-min expiry
-- **OAuth2**: Allauth with Google/GitHub
-- **Password Hashing**: Django's PBKDF2
-
-### Authorization
-- **Custom Permissions**: 
-  - `IsChatRoomMember` - Chat access control
-  - `IsProjectOwnerOrTeamMember` - Project editing
-- **Decorators**: 
-  - `@check_chat_room_member` - Function-level checks
-  - `@check_project_owner` - Ownership verification
-
-### Data Protection
-- **Soft Deletes**: Comments use is_deleted flag
-- **File Validation**: 
-  - Image types only for profile photos
-  - File size limits
-- **SQL Injection Prevention**: Django ORM parameterization
-
-### Privacy
-- **Project Visibility**: Enforced at model/view level
-- **Message Filtering**: Only visible to room members
-- **Activity Filtering**: Only shows public activities
-
----
-
-## 9. PERFORMANCE OPTIMIZATIONS
+## Performance Optimizations
 
 ### Database
-- **Select Related**: Used for foreign key relationships
-- **Prefetch Related**: For reverse/M2M queries
-- **Indexing**: On frequently queried fields (user_id, project_id)
-- **Pagination**: Implemented in list views
+- **Indexing**: Foreign keys, created_at fields
+- **Caching**: Project list, user profiles (Django cache)
+- **Pagination**: 10 items per page for feeds
+- **Query optimization**: select_related(), prefetch_related()
 
-### Caching (Potential)
-- User profiles
-- Project visibility filters
-- User statistics
-- Message counts
+### Frontend
+- **Code splitting**: Vite for lazy loading
+- **Asset compression**: CSS/JS minification
+- **Lazy loading**: Images with intersection observer
+- **State management**: Minimal re-renders with useEffect cleanup
 
-### Query Optimization
-```python
-# Good: Minimal queries
-projects = Project.objects.filter(user=user).select_related('user')
-
-# Bad: N+1 queries
-for project in projects:
-    print(project.user.username)  # Query per project
-```
+### API
+- **Response compression**: gzip enabled
+- **Rate limiting**: IP-based throttling
+- **CORS**: Configured for frontend origin
+- **CSRF protection**: Token-based
 
 ---
 
-## 10. COMMON ISSUES & FIXES
+## Deployment Architecture
 
-### Known Issues
-1. **Comment Badge**: Comment count not updating real-time
-   - Solution: Refresh on page load or use WebSocket
-2. **Profile Photo Not Loading**: Permission issues
-   - Solution: Check media folder permissions and CDN setup
-3. **Message Read Status**: Delayed synchronization
-   - Solution: Use MessageReadStatus model instead of Message.is_read
-4. **Login Issues**: OTP expired or not received
-   - Solution: Check email configuration and OTP generation
+### Local Development
+- **Server**: Django development server (python manage.py runserver)
+- **Database**: SQLite
+- **WebSocket**: Daphne server (daphne -b 0.0.0.0 -p 8000 auth_project.asgi:application)
+- **Frontend**: Vite dev server with HMR
 
-### Debugging Tools
-- `debug_profiles.py` - Profile inspection
-- `debug_find_collaborators.py` - Collaborator filtering
-- `test_comments_api.py` - Comment endpoint testing
-- `test_email.py` - Email configuration validation
+### Production (Railway/Render)
+- **Server**: Gunicorn/Daphne
+- **Database**: PostgreSQL
+- **Static files**: Whitenoise or separate CDN
+- **Environment**: Docker container with compose
 
----
+### Environment Variables
 
-## 11. DEPLOYMENT CHECKLIST
-
-### Environment Variables Required
 ```
+DJANGO_SECRET_KEY=...
 DEBUG=False
-SECRET_KEY=<secure-key>
-DATABASE_URL=postgresql://user:pass@host/db
-EMAIL_BACKEND=accounts.zepto_mail_backend.ZeptoMailBackend
-ZEPTO_API_KEY=<key>
 ALLOWED_HOSTS=yourdomain.com
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
+DATABASES_URL=postgresql://user:pass@host/db
+
+# Email
+EMAIL_BACKEND=accounts.brevo_mail_backend.BrevoBackend
+BREVO_API_KEY=...
+
+# OAuth
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+OAUTH_REDIRECT_URI=http://yourdomain.com/oauth/callback
+
+# Storage
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_STORAGE_BUCKET_NAME=...
 ```
 
-### Pre-Deployment Tasks
-1. Run migrations: `python manage.py migrate`
-2. Collect static files: `python manage.py collectstatic --noinput`
-3. Create superuser: `python manage.py createsuperuser`
-4. Set up OAuth apps in Django admin
-5. Configure email backend
-
-### Post-Deployment
-1. Verify CSRF protection
-2. Test OAuth flow
-3. Validate email delivery
-4. Monitor error logs
-5. Check database backups
-
 ---
 
-## 12. FUTURE ENHANCEMENTS
+## Testing Strategy
 
-### Planned Features
-1. **Real-time Chat**: WebSocket integration (Django Channels)
-2. **Video Calls**: Twilio or Agora integration
-3. **File Sharing**: S3 integration
-4. **Advanced Analytics**: Project performance metrics
-5. **Mobile App**: React Native or Flutter
-6. **AI Recommendations**: Collaborator suggestions
-7. **Notifications**: Push notifications via FCM
+### Backend Testing
+- Unit tests for models (`models.py`)
+- API endpoint tests (`test_views.py`)
+- WebSocket consumer tests (`test_consumers.py`)
+- Integration tests for flows
 
-### Performance Improvements
-1. Celery for async tasks (emails, notifications)
-2. Redis for caching/sessions
-3. CDN for static assets
-4. GraphQL API alternative
-5. Database query optimization
+### Frontend Testing
+- Component testing with React Testing Library
+- E2E tests with Cypress/Playwright
+- Manual testing for WebSocket features
 
----
-
-## 13. FILE REFERENCE GUIDE
-
-### Critical Files
-| File | Purpose |
-|------|---------|
-| `settings.py` | Django config, database, apps, middleware |
-| `models.py` | All 21 data models |
-| `views.py` | Authentication & page rendering |
-| `urls.py` | URL routing |
-| `forms.py` | Form validation |
-| `serializers.py` | DRF serializers for API |
-| `comment_api.py` | Comment endpoints |
-| `chat_api_improved.py` | Messaging API |
-| `permissions.py` | Authorization checks |
-| `utils.py` | Business logic (filtering, NLP) |
-
-### Important Templates
-| Template | Purpose |
-|----------|---------|
-| `base_with_footer.html` | Main layout wrapper |
-| `project_detail.html` | Project display with comments |
-| `account/student_profile.html` | User profile view |
-| `my_projects.html` | User's projects |
-| `find_collaborators.html` | Collaborator search |
-
----
-
-## 14. QUICK START FOR DEVELOPERS
-
-### Setup
+### Test Commands
 ```bash
-# Clone & navigate
-git clone <repo>
-cd auth_project
+# Backend
+python manage.py test accounts
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+# Frontend
+npm test
+npm run e2e
+```
 
-# Install dependencies
-pip install -r requirements.txt
+---
 
-# Setup environment
-cp .env.template .env
-# Edit .env with your config
+## Known Issues & Recent Fixes
 
-# Database setup
-python manage.py migrate
+1. **CSRF Token Errors**: Fixed by ensuring CSRF middleware properly enabled
+2. **Template Recursion**: Fixed by removing recursive includes
+3. **Like Button State**: Fixed state management in React components
+4. **Project Detail Loading**: Optimized database queries with select_related()
+5. **WebSocket Connection**: Fixed Daphne routing configuration
+6. **Email Delivery**: Configured fallback from Brevo to Zepto
+7. **OAuth Configuration**: Fixed redirect URI matching
+8. **Django Signals**: Fixed signal imports to avoid circular dependencies
 
-# Create superuser
-python manage.py createsuperuser
+---
 
-# Run server
+## Future Enhancements
+
+1. **Video Calls**: Integration with Agora/Twilio
+2. **Advanced Matching**: ML-based skill-project matching
+3. **Analytics Dashboard**: Project performance metrics
+4. **Automated Testing**: CI/CD pipeline setup
+5. **Mobile App**: React Native version
+6. **AI Assistant**: Project recommendation engine
+7. **Payment Integration**: Subscription features
+8. **Advanced Search**: Elasticsearch integration
+
+---
+
+## Quick Reference
+
+### Important Files Location
+
+| Purpose | File |
+|---------|------|
+| Database models | `backend/accounts/models.py` |
+| URL routing | `backend/accounts/urls.py` |
+| View handlers | `backend/accounts/views.py` |
+| WebSocket setup | `backend/accounts/consumers.py` |
+| Real-time signals | `backend/accounts/signals_realtime.py` |
+| Chat API | `backend/accounts/chat_api_improved.py` |
+| Comments API | `backend/accounts/comment_api.py` |
+| Templates API | `backend/accounts/template_api.py` |
+| Django settings | `backend/auth_project/settings.py` |
+| ASGI config | `backend/auth_project/asgi.py` |
+| React entry | `frontend/src/App.jsx` |
+| React main | `frontend/src/main.jsx` |
+
+### Quick Commands
+
+```bash
+# Backend
+cd backend
 python manage.py runserver
-```
-
-### Common Commands
-```bash
-# Create migration
 python manage.py makemigrations
-
-# Apply migration
 python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Collect static files
-python manage.py collectstatic
-
-# Run tests
+python manage.py shell
 python manage.py test
 
-# Interactive shell
-python manage.py shell
+# Frontend
+cd frontend
+npm install
+npm run dev
+npm run build
+
+# WebSocket (production-like)
+daphne -b 0.0.0.0 -p 8000 auth_project.asgi:application
 ```
 
 ---
 
-## 15. CONCLUSION
-
-UniSync is a **production-grade Django application** with:
-- ✅ Robust authentication (traditional + OAuth)
-- ✅ Comprehensive data models (21 models)
-- ✅ REST API with DRF
-- ✅ Social features (connections, likes, follows)
-- ✅ Real-time messaging
-- ✅ Project management
-- ✅ Comments & engagement
-- ✅ Role-based access control
-- ✅ Activity tracking
-
-The codebase is **well-structured**, **scalable**, and **deployment-ready** with proper security, error handling, and optimization patterns in place.
-
+**End of Analysis**  
+This document provides a complete technical overview of the UniSync platform.
