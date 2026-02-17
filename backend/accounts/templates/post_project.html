@@ -714,7 +714,7 @@
           <div class="row" style="justify-content:center;margin-top:12px;gap:12px">
             <button type="button" id="prevBtn" class="form-input" style="max-width:160px;display:none" onclick="prevStep()">← Previous</button>
             <button type="button" id="nextBtn" class="btn-primary" style="max-width:200px" onclick="nextStep()">Next step →</button>
-            <button type="submit" id="submitBtn" class="btn-primary" style="max-width:200px;display:none">Launch Project 🚀</button>
+            <button type="submit" id="submitBtn" class="btn-primary" style="max-width:200px;display:none" onclick="gtag('event', 'create_project', {'source': 'form'});">Launch Project 🚀</button>
           </div>
 
         </form>

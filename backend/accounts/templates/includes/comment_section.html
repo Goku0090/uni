@@ -14,7 +14,7 @@
             <!-- Comment Input Form -->
             {% if user.is_authenticated %}
             <div class="comment-input-wrapper mb-4">
-                <form class="comment-form" data-project-id="{{ project.id }}">
+                <form class="comment-form" data-project-id="{{ project.id }}" onsubmit="gtag('event', 'post_comment', {'project_id': {{ project.id }}});">
                     {% csrf_token %}
                     <div class="input-group" style="display: flex; gap: 0; margin-bottom: 0;">
                         <textarea 

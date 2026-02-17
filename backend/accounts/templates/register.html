@@ -317,7 +317,7 @@
                     {% endif %}
 
                     <!-- Multi-Step Registration Form -->
-                    <form method="POST" class="space-y-6" id="registerForm">
+                    <form method="POST" class="space-y-6" id="registerForm" onsubmit="gtag('event', 'sign_up', {'method': 'email'}); return true;">
                         {% csrf_token %}
 
                         <!-- Step 1: Basic Information -->

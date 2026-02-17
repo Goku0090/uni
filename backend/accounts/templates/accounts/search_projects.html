@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>Search Projects</h2>
-<form method="get">
+<form method="get" onsubmit="gtag('event', 'search_projects', {'search_term': document.querySelector('input[name=q]').value});">
     <input type="text" name="q" value="{{ query }}" placeholder="Search projects...">
     <button type="submit">Search</button>
 </form>

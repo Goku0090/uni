@@ -579,6 +579,12 @@
 
             if (!message) return;
 
+            // Track event
+            gtag('event', 'send_message', {
+                'recipient': '{{ other_user.username }}',
+                'message_length': message.length
+            });
+
             const form = document.getElementById('messageForm');
             const formData = new FormData(form);
 

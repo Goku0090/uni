@@ -114,7 +114,7 @@
 
 
                     <!-- Enhanced Login Form -->
-                    <form method="POST" action="" class="space-y-6" id="loginForm" novalidate>
+                    <form method="POST" action="" class="space-y-6" id="loginForm" novalidate onsubmit="gtag('event', 'login', {'method': 'email'}); return true;">
                         {% csrf_token %}
 
                         <div class="space-y-2">
@@ -191,7 +191,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Google Login -->
                             {% if GOOGLE_CLIENT_ID %}
-                            <a href="/accounts/google/login/" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30">
+                            <a href="/accounts/google/login/" onclick="gtag('event', 'login', {'method': 'google'});" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30">
                             {% else %}
                             <button type="button" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30 opacity-50 cursor-not-allowed" disabled title="Google OAuth not configured">
                             {% endif %}
@@ -206,7 +206,7 @@
 
                             <!-- GitHub Login -->
                             {% if GITHUB_CLIENT_ID %}
-                            <a href="/accounts/github/login/" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30">
+                            <a href="/accounts/github/login/" onclick="gtag('event', 'login', {'method': 'github'});" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30">
                             {% else %}
                             <button type="button" class="social-btn magnetic-hover group bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 border border-white/20 hover:border-white/30 opacity-50 cursor-not-allowed" disabled title="GitHub OAuth not configured">
                             {% endif %}
