@@ -10,7 +10,9 @@ import django
 
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'auth_project.settings')
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add backend directory to path
+backend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend')
+sys.path.insert(0, backend_dir)
 
 django.setup()
 
