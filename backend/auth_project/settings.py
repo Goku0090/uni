@@ -210,10 +210,13 @@ ACCOUNT_LOGOUT_REDIRECT_URL = '/login/'
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 
+# Custom adapter to handle MultipleObjectsReturned
+SOCIALACCOUNT_ADAPTER = 'accounts.custom_adapter.CustomSocialAccountAdapter'
+
 # Custom forms for social account signup
-SOCIALACCOUNT_FORMS = {
-    'signup': 'accounts.forms.CustomSocialSignupForm',
-}
+# SOCIALACCOUNT_FORMS = {
+#     'signup': 'accounts.forms.CustomSocialSignupForm',
+# }
 
 # --- REST Framework Settings ---
 REST_FRAMEWORK = {
