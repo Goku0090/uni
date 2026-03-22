@@ -197,6 +197,98 @@ Best regards,
         # Note: OTP is still created, user can use retry or contact support
 
 
+def send_newsletter_confirmation(email):
+    """Send newsletter confirmation email"""
+    subject = "✅ Welcome to UniSinq Newsletter!"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [email]
+
+    text_message = f"""
+Thank you for subscribing to UniSinq updates!
+
+You'll receive:
+- New project listings
+- Collaboration opportunities  
+- Platform updates
+- Success stories
+
+Manage preferences: [unsubscribe link]
+Questions? Contact support@unisinq.com
+
+Best,
+UniSinq Team 🚀
+"""
+
+    html_message = f"""
+<!DOCTYPE html>
+<html>
+<head><style>body{{font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;}}</style></head>
+<body>
+<div style="background:#f8f9fa;padding:40px 20px;max-width:600px;margin:0 auto;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+    <h2 style="color:#1a1a1a;">🎉 Welcome to UniSinq!</h2>
+    <p>Thanks for subscribing! Stay updated with:</p>
+    <ul style="color:#555;">
+        <li>🚀 New project listings</li>
+        <li>🤝 Collaboration opportunities</li>
+        <li>✨ Platform updates</li>
+        <li>⭐ Success stories</li>
+    </ul>
+    <div style="background:#3ab7bf;color:white;padding:15px;border-radius:8px;margin:20px 0;text-align:center;">
+        <h3>Ready to collaborate?</h3>
+        <a href="http://127.0.0.1:8000/main_home/" style="color:white;font-weight:bold;text-decoration:none;">Find Projects Now →</a>
+    </div>
+    <p style="color:#666;font-size:14px;">Manage preferences or unsubscribe anytime at the bottom of emails.</p>
+    <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
+    <p style="color:#888;font-size:12px;">UniSinq Team | support@unisinq.com</p>
+</div>
+</body>
+</html>
+"""
+
+    try:
+        msg = EmailMultiAlternatives(subject, text_message, from_email, to)
+        msg.attach_alternative(html_message, "text/html")
+        msg.send()
+        logger.info(f"Newsletter confirmation sent to {email}")
+    except Exception as e:
+        logger.error(f"Failed to send newsletter confirmation to {email}: {str(e)}")
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def newsletter_subscribe(request):
+    """Handle newsletter subscription via AJAX"""
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return JsonResponse({'success': False, 'message': 'Email required'})
+        
+        if Newsletter.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': 'Already subscribed!'})
+        
+        # Create subscriber
+        Newsletter.objects.create(
+            email=email,
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+        # Send confirmation
+        send_newsletter_confirmation(email)
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Subscribed! Confirmation sent to your email.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'})
+    except Exception as e:
+        logger.error(f"Newsletter subscribe error: {str(e)}")
+        return JsonResponse({'success': False, 'message': 'Server error'})
+
+
 # Dashboard - Simplified to avoid redirect loops
 @login_required
 def dashboard_view(request):
@@ -777,8 +869,9 @@ def resend_otp_view(request, purpose):
     
 @login_required
 def main_home(request):
-    """Simplified main home view for testing"""
-    from django.db.models import Q
+    """Simplified main home view - OPTIMIZED for performance"""
+    from django.db.models import Q, Count
+    from django.core.cache import cache
     
     # Get unread notifications count for badge
     unread_count = 0
@@ -790,12 +883,17 @@ def main_home(request):
     if request.user.is_authenticated:
         unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
         
-        # Get visible projects based on user profile compatibility
-        all_projects = Project.objects.all().order_by('-created_at')
+        # Get visible projects - first get all, then process
+        # Using select_related for user and student_profile to avoid N+1
+        all_projects = Project.objects.select_related('user__student_profile').order_by('-created_at')[:50]
+        
         visible_projects, project_match_details = ProjectVisibilityFilter.get_visible_projects(
             request.user,
             all_projects
         )
+        
+        # Limit to 20 after visibility filter
+        visible_projects = visible_projects[:20]
         
         # Get projects liked by current user
         liked_project_ids = set(
@@ -816,6 +914,15 @@ def main_home(request):
                 connection_status[other_user_id] = conn['status']
         
         # Add match badge info and comments to each project
+        # Use annotate for comment count instead of separate queries
+        project_ids = [p.id for p in visible_projects]
+        comment_counts = dict(
+            Comment.objects.filter(project_id__in=project_ids)
+            .values('project_id')
+            .annotate(cnt=Count('id'))
+            .values_list('project_id', 'cnt')
+        )
+        
         for project in visible_projects:
             if project.id in project_match_details:
                 match_info = project_match_details[project.id]
@@ -823,9 +930,23 @@ def main_home(request):
                 project.match_reasons = match_info['reasons']
                 project.match_badge = ProjectVisibilityFilter.get_project_match_badge(match_info['score'])
             
-            # Fetch comments for the project to display on load
-            project.comments_list = Comment.objects.filter(project=project).select_related('user').order_by('-created_at')[:5]
-            project.comments_count = Comment.objects.filter(project=project).count()
+            # Get comment count from pre-computed dict
+            project.comments_count = comment_counts.get(project.id, 0)
+            # Fetch only 5 latest comments
+            project.comments_list = Comment.objects.filter(
+                project=project
+            ).select_related('user').order_by('-created_at')[:5]
+    
+    # Cache homepage stats for 60 seconds to reduce DB load
+    homepage_stats = cache.get('homepage_stats')
+    if homepage_stats is None:
+        homepage_stats = {
+            'total_projects': Project.objects.count(),
+            'active_users': User.objects.filter(is_active=True).count(),
+            'total_connections': Connection.objects.filter(status='accepted').count(),
+            'success_stories': 45
+        }
+        cache.set('homepage_stats', homepage_stats, 60)
     
     return render(request, 'main_home.html', {
         'feed_posts': visible_projects,
@@ -834,12 +955,7 @@ def main_home(request):
         'liked_project_ids': liked_project_ids,
         'categories': ['Web Development', 'Mobile Apps', 'AI/ML', 'Data Science'],
         'available_techs': ['Python', 'JavaScript', 'React', 'Django', 'Node.js'],
-        'homepage_stats': {
-            'total_projects': Project.objects.count(),
-            'active_users': User.objects.filter(is_active=True).count(),
-            'total_connections': Connection.objects.filter(status='accepted').count(),
-            'success_stories': 45
-        },
+        'homepage_stats': homepage_stats,
         'active_filters': {},
         'has_filters': False,
         'unread_notification_count': unread_count,
@@ -1311,8 +1427,15 @@ def add_reaction(request, message_id):
 
 @login_required
 def notifications_view(request):
-    """View all notifications"""
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    """View all notifications - OPTIMIZED"""
+    # Use select_related to avoid N+1 queries for related objects
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).select_related(
+        'from_user',
+        'message_obj',
+        'connection'
+    ).order_by('-created_at')
 
     # Mark all as read when viewing
     if request.method == 'POST' and request.POST.get('mark_read'):
@@ -1320,9 +1443,13 @@ def notifications_view(request):
         messages.success(request, 'All notifications marked as read!')
         return redirect('notifications')
 
+    # Get unread count - use cached value from earlier if available
+    # or do it in a single query
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+
     return render(request, 'features/notifications.html', {
         'notifications': notifications,
-        'unread_count': notifications.filter(is_read=False).count()
+        'unread_count': unread_count
     })
 
 
@@ -1561,22 +1688,31 @@ def find_collaborators(request):
         other_user_id = conn.receiver.id if conn.sender == request.user else conn.sender.id
         connection_status[other_user_id] = conn.status
 
-    # Get statistics for the template
+    # Get statistics for the template - OPTIMIZED with caching
     total_users = User.objects.count()
     active_projects = Project.objects.filter(created_at__gte=timezone.now() - timezone.timedelta(days=30)).count()
     connections_today = Connection.objects.filter(created_at__date=timezone.now().date()).count()
 
-    # Get all unique skills/interests for skills count
-    all_interests = set()
-    all_colleges = set()
-    for profile in StudentProfile.objects.all():
-        if profile.interests:
-            interests = [interest.strip() for interest in profile.interests.split(',')]
-            all_interests.update(interests)
-        if profile.college:
-            all_colleges.add(profile.college)
-    skills_count = len(all_interests)
-    colleges_list = sorted(list(all_colleges))
+    # Get all unique skills/interests - use VALUES and DISTINCT for performance
+    # Cache for 5 minutes
+    skills_count = cache.get('skills_count')
+    colleges_list = cache.get('colleges_list')
+    
+    if skills_count is None:
+        # Use raw SQL-like approach via values/annotate for performance
+        interests_qs = StudentProfile.objects.exclude(interests__isnull=True).values_list('interests', flat=True)
+        all_interests = set()
+        for interests_str in interests_qs:
+            if interests_str:
+                interests = [i.strip() for i in interests_str.split(',')]
+                all_interests.update(interests)
+        skills_count = len(all_interests)
+        
+        colleges_qs = StudentProfile.objects.exclude(college__isnull=True).values_list('college', flat=True).distinct()
+        colleges_list = sorted(list(set(colleges_qs)))
+        
+        cache.set('skills_count', skills_count, 300)
+        cache.set('colleges_list', colleges_list, 300)
 
     # Determine which template to use (enhanced or original)
     template_name = "find_collaborators_enhanced.html"
@@ -2052,7 +2188,7 @@ def user_profile_api(request, user_id):
 
 @login_required
 def message_view(request):
-    """Main messaging page - show conversations (direct messages and group chats)"""
+    """Main messaging page - OPTIMIZED for performance"""
     # Get all users the current user has messaged with or is connected to
     connected_users = Connection.objects.filter(
         Q(sender=request.user, status='accepted') |
@@ -2067,24 +2203,21 @@ def message_view(request):
         else:
             conversation_users.add(conn.sender)
 
-    # Also include users we've sent messages to (even if not connected)
+    # OPTIMIZATION: Bulk fetch users instead of N+1 queries
     sent_messages = Message.objects.filter(sender=request.user).values_list('receiver', flat=True).distinct()
     received_messages = Message.objects.filter(receiver=request.user).values_list('sender', flat=True).distinct()
+    
+    all_user_ids = set(sent_messages) | set(received_messages)
+    if None in all_user_ids:
+        all_user_ids.discard(None)
+    
+    if all_user_ids:
+        users_dict = {u.id: u for u in User.objects.filter(id__in=all_user_ids)}
+        for user_id in all_user_ids:
+            if user_id in users_dict:
+                conversation_users.add(users_dict[user_id])
 
-    for user_id in sent_messages:
-        if user_id:  # Skip None values
-            try:
-                conversation_users.add(User.objects.get(id=user_id))
-            except User.DoesNotExist:
-                pass  # User was deleted, skip
-    for user_id in received_messages:
-        if user_id:  # Skip None values
-            try:
-                conversation_users.add(User.objects.get(id=user_id))
-            except User.DoesNotExist:
-                pass  # User was deleted, skip
-
-    # Get all group chat rooms where user is a member (ADDED)
+    # Get all group chat rooms where user is a member
     group_chat_rooms = ChatRoom.objects.filter(
         members__user=request.user,
         is_active=True
@@ -2093,26 +2226,32 @@ def message_view(request):
     # Convert to list and sort by most recent message
     conversations = []
     
+    # OPTIMIZATION: Batch get last messages for all conversations
+    last_messages_map = {}
+    if conversation_users:
+        user_ids = [u.id for u in conversation_users]
+        last_messages_qs = Message.objects.filter(
+            Q(sender=request.user, receiver_id__in=user_ids) |
+            Q(receiver=request.user, sender_id__in=user_ids)
+        ).order_by('-created_at')
+        
+        # Get most recent message per conversation pair
+        for msg in last_messages_qs:
+            other_user_id = msg.receiver_id if msg.sender_id == request.user.id else msg.sender_id
+            if other_user_id not in last_messages_map:
+                last_messages_map[other_user_id] = msg
+    
     # Add direct message conversations
     for user in conversation_users:
-        last_message = Message.objects.filter(
-            Q(sender=request.user, receiver=user) |
-            Q(sender=user, receiver=request.user)
-        ).order_by('-created_at').first()
-
-        # Count unread messages from this user
-        # A message is unread if there's no MessageReadStatus for the receiver
-        all_messages = Message.objects.filter(
+        last_message = last_messages_map.get(user.id)
+        
+        # Count unread messages using MessageReadStatus
+        unread_count = Message.objects.filter(
             sender=user,
             receiver=request.user
-        ).values_list('id', flat=True)
-        
-        read_message_ids = MessageReadStatus.objects.filter(
-            message_id__in=all_messages,
-            user=request.user
-        ).values_list('message_id', flat=True)
-        
-        unread_count = len(set(all_messages) - set(read_message_ids))
+        ).exclude(
+            id__in=MessageReadStatus.objects.filter(user=request.user).values('message_id')
+        ).count()
 
         conversations.append({
             'type': 'direct',
@@ -2122,18 +2261,16 @@ def message_view(request):
             'unread_count': unread_count
         })
     
-    # Add group chat conversations (ADDED)
+    # Add group chat conversations
     for room in group_chat_rooms:
         last_message = room.messages.order_by('-created_at').first()
         
         # Count unread messages in group chat
-        all_room_messages = room.messages.values_list('id', flat=True)
-        read_room_message_ids = MessageReadStatus.objects.filter(
-            message_id__in=all_room_messages,
-            user=request.user
-        ).values_list('message_id', flat=True)
-        
-        unread_count = len(set(all_room_messages) - set(read_room_message_ids))
+        unread_count = room.messages.exclude(
+            id__in=MessageReadStatus.objects.filter(
+                user=request.user
+            ).values('message_id')
+        ).count()
         
         conversations.append({
             'type': 'group',
@@ -2157,7 +2294,7 @@ def message_view(request):
 
 @login_required
 def chat_view(request, user_id):
-    """Chat with a specific user"""
+    """Chat with a specific user - AJAX optimized for messages page"""
     other_user = get_object_or_404(User, id=user_id)
 
     # Check if users are connected
@@ -2168,18 +2305,31 @@ def chat_view(request, user_id):
 
     is_connected = connection and connection.status == 'accepted'
 
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        uploaded_file = request.FILES.get('file')
+    messages_list = Message.objects.filter(
+        Q(sender=request.user, receiver=other_user) |
+        Q(sender=other_user, receiver=request.user)
+    ).order_by('created_at').prefetch_related('files__file', 'reactions')
 
-        # Handle file upload
-        if uploaded_file:
-            # Validate file size (max 10MB)
-            if uploaded_file.size > 10 * 1024 * 1024:
-                messages.error(request, 'File size cannot exceed 10MB.')
-                return redirect('chat', user_id=user_id)
+    # AJAX request detection for messages page optimization
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
-            # Create File instance
+    content = request.POST.get('content', '').strip()
+    uploaded_file = request.FILES.get('file') if hasattr(request, 'FILES') and 'file' in request.FILES else None
+
+    if not content and not uploaded_file:
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Please enter a message or upload a file.'}, safe=False)
+        messages.error(request, 'Please enter a message or upload a file.')
+
+    message_obj = None
+
+    # Handle file upload
+    if uploaded_file:
+        if uploaded_file.size > 10 * 1024 * 1024:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'File size cannot exceed 10MB.'}, safe=False)
+            messages.error(request, 'File size cannot exceed 10MB.')
+        else:
             file_obj = File.objects.create(
                 user=request.user,
                 file=uploaded_file,
@@ -2188,59 +2338,51 @@ def chat_view(request, user_id):
                 file_type=uploaded_file.content_type
             )
 
-            # Create message with file attachment
-            message = Message.objects.create(
+            message_obj = Message.objects.create(
                 sender=request.user,
                 receiver=other_user,
                 content=content or f"📎 {uploaded_file.name}"
             )
 
-            # Attach file to message
-            MessageFile.objects.create(message=message, file=file_obj)
+            MessageFile.objects.create(message=message_obj, file=file_obj)
 
-        elif content:
-            # Create regular text message
-            message = Message.objects.create(
-                sender=request.user,
-                receiver=other_user,
-                content=content
-            )
-        else:
-            messages.error(request, 'Please enter a message or upload a file.')
-            return redirect('chat', user_id=user_id)
+    elif content:
+        message_obj = Message.objects.create(
+            sender=request.user,
+            receiver=other_user,
+            content=content
+        )
 
-        # Create notification for receiver (only if there's content or it's a file)
-        if content or uploaded_file:
-            notification_message = content[:50] if content else f"📎 {uploaded_file.name}"
+        if message_obj:
+            notification_message = content[:50] if content else f"📎 {uploaded_file.name if uploaded_file else 'File'}"
             create_notification(
                 user=other_user,
                 notification_type='message',
                 title=f'New message from {request.user.username}',
                 message=f'{request.user.username}: {notification_message}...',
                 from_user=request.user,
-                message_obj=message
+                message_obj=message_obj
             )
 
-        # Mark messages from this user as read (when replying)
-        unread_msgs = Message.objects.filter(
-            sender=other_user,
-            receiver=request.user
-        ).exclude(
-            read_statuses__user=request.user
-        )
-        for msg in unread_msgs:
-            msg.mark_as_read_by(request.user)
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message_id': message_obj.id,
+                    'content': message_obj.content,
+                    'timestamp': message_obj.created_at.isoformat(),
+                    'sender_id': request.user.id
+                }, safe=False)
 
-        return redirect('chat', user_id=user_id)
-
-    # Get all messages between users with reaction counts
-    messages = Message.objects.filter(
-    Q(sender=request.user, receiver=other_user) |
-    Q(sender=other_user, receiver=request.user)
-    ).order_by('created_at').prefetch_related('files__file', 'reactions')
+        # Non-AJAX fallback - reload page
+        if not is_ajax:
+            messages.success(request, 'Message sent successfully!')
+            messages_list = Message.objects.filter(
+                Q(sender=request.user, receiver=other_user) |
+                Q(sender=other_user, receiver=request.user)
+            ).order_by('created_at').prefetch_related('files__file', 'reactions')
 
     # Add reaction counts to each message
-    for message in messages:
+    for message in messages_list:
         reactions = MessageReaction.objects.filter(message=message).values('reaction').annotate(
             count=models.Count('reaction')
         ).order_by('reaction')
@@ -2261,7 +2403,7 @@ def chat_view(request, user_id):
 
     return render(request, 'features/chat.html', {
         'other_user': other_user,
-        'messages': messages,
+        'messages': messages_list,
         'is_connected': is_connected,
         'connection': connection,
         'room_name': room_name

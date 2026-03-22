@@ -22,16 +22,16 @@
                 </p>
                 <!-- Social Links -->
                 <div class="flex space-x-3">
-                    <a href="https://github.com/Goku0090/unisinq" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-purple-600 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="GitHub">
+                    <a href="https://github.com/unisinq-svg" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-purple-600 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="GitHub">
                         <i class="fab fa-github"></i>
                     </a>
                     <a href="https://twitter.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-blue-500 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-blue-700 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="LinkedIn">
+                    <a href="https://www.linkedin.com/in/unisinq-s-2943973b9/" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-blue-700 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="LinkedIn">
                         <i class="fab fa-linkedin"></i>
                     </a>
-                    <a href="https://instagram.com" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-pink-500 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="Instagram">
+                    <a href="https://www.instagram.com/unisin_q/" target="_blank" class="w-10 h-10 flex items-center justify-center text-[#8b949e] bg-white/5 hover:bg-pink-500 hover:text-white rounded-lg transition-all duration-300 transform hover:scale-110" title="Instagram">
                         <i class="fab fa-instagram"></i>
                     </a>
                 </div>
@@ -87,16 +87,20 @@
                     Stay Updated
                 </h4>
                 <p class="text-[#8b949e] text-xs mb-4">Get the latest updates on new features and announcements.</p>
-                <form class="flex gap-2" onsubmit="return handleNewsletterSignup(event)">
+                <form id="newsletter-form" class="flex gap-2">
                     <input type="email" 
+                           id="newsletter-email"
+                           name="email"
                            placeholder="Enter your email" 
                            class="flex-1 bg-[#1a1f26] border border-purple-500/30 rounded-lg px-3 py-2 text-[#c9d1d9] text-sm placeholder-[#8b949e] focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400/50 transition-all" 
                            required>
                     <button type="submit" 
+                            id="newsletter-submit"
                             class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all transform hover:scale-105 shadow-lg">
                         Subscribe
                     </button>
                 </form>
+                <p id="newsletter-message" class="text-[#8b949e] text-[10px]"></p>
                 <p class="text-[#8b949e] text-[10px] mt-2">💜 We respect your privacy. Unsubscribe at any time.</p>
             </div>
 
@@ -123,30 +127,71 @@
     </div>
 </footer>
 
-<!-- Newsletter Success Message Script -->
 <script>
-    function handleNewsletterSignup(event) {
-        event.preventDefault();
-        const email = event.target.querySelector('input[type="email"]').value;
-        
-        // Show success message
-        const formContainer = event.target.parentElement;
-        const successMessage = document.createElement('div');
-        successMessage.className = 'bg-[#238636] text-white px-4 py-3 rounded mt-4 text-sm';
-        successMessage.textContent = `✓ Thank you for subscribing! Check your email at ${email} for confirmation.`;
-        formContainer.appendChild(successMessage);
-        
-        // Reset form
-        event.target.reset();
-        
-        // Remove success message after 5 seconds
-        setTimeout(() => {
-            successMessage.remove();
-        }, 5000);
-        
-        return false;
-    }
-</script>
+            // Real Newsletter AJAX Handler - Integrated with Backend
+            document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const form = e.target;
+                const emailInput = document.getElementById('newsletter-email');
+                const submitBtn = document.getElementById('newsletter-submit');
+                const messageEl = document.getElementById('newsletter-message');
+                
+                const email = emailInput.value.trim();
+                if (!email) {
+                    showNotification('Please enter your email', 'error');
+                    return;
+                }
+                
+                // Loading state
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subscribing...';
+                messageEl.textContent = '';
+                messageEl.className = 'text-[#8b949e] text-[10px] mt-2';
+                
+                try {
+                    const response = await fetch('/accounts/newsletter/subscribe/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({email: email})
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        form.reset();
+                        showNotification(data.message || 'Subscribed successfully! 🎉', 'success');
+                        messageEl.textContent = '✓ Subscribed! Confirmation sent.';
+                        messageEl.className = 'text-green-400 text-[10px] mt-2 font-semibold';
+                    } else {
+                        showNotification(data.message || 'Subscription failed', 'error');
+                        messageEl.textContent = '✗ ' + (data.message || 'Subscription failed');
+                        messageEl.className = 'text-red-400 text-[10px] mt-2 font-semibold';
+                    }
+                } catch (error) {
+                    console.error('Subscription error:', error);
+                    showNotification('Network error. Please try again.', 'error');
+                    messageEl.textContent = '✗ Network error';
+                    messageEl.className = 'text-red-400 text-[10px] mt-2 font-semibold';
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+            
+            // Fallback notification function (if not defined globally)
+            if (typeof showNotification === 'undefined') {
+                window.showNotification = function(message, type = 'info') {
+                    // Simple alert fallback
+                    const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+                    alert(`${type.toUpperCase()}: ${message}`);
+                };
+            }
+        </script>
 
 <!-- Font Awesome for Social Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

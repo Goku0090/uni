@@ -1319,9 +1319,13 @@
 
                 <!-- User Info -->
                 <div class="flex items-center gap-3 mb-4 pt-8">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold shadow-lg">
-                        {{ post.user.username|first|upper }}
-                    </div>
+                    <a href="{% url 'user_profile' post.user.username %}" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer overflow-hidden">
+                        {% if post.user.student_profile.profile_photo %}
+                            <img src="{{ post.user.student_profile.profile_photo.url }}" alt="{{ post.user.username }}" class="w-full h-full object-cover">
+                        {% else %}
+                            {{ post.user.username|first|upper }}
+                        {% endif %}
+                    </a>
                     <div class="flex-1">
                         <p class="font-semibold text-white">{{ post.user.username }}</p>
                         <p class="text-xs text-gray-400">{{ post.created_at|date:"M d, Y" }}</p>
