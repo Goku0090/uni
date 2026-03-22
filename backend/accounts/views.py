@@ -468,33 +468,20 @@ def login_view(request):
     try:
         from allauth.socialaccount.models import SocialApp
         
-        # Check for duplicate social apps (common issue)
+        # Check for social apps in database
         google_apps = SocialApp.objects.filter(provider='google')
         github_apps = SocialApp.objects.filter(provider='github')
         
-        # OAuth is only enabled if:
-        # 1. Exactly 1 SocialApp of that provider exists
-        # 2. The credential env var is set (not placeholder)
+        # OAuth is enabled if environment variables are set (not placeholder)
         google_client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
         github_client_id = os.getenv('GITHUB_CLIENT_ID', '').strip()
         
-        has_google = (
-            google_apps.count() == 1 
-            and google_client_id 
-            and not google_client_id.startswith('your-')
-            and 'example' not in google_client_id
-        )
-        has_github = (
-            github_apps.count() == 1 
-            and github_client_id 
-            and not github_client_id.startswith('your-')
-            and 'example' not in github_client_id
-        )
+        # Simplified check - just verify env vars are set and not placeholders
+        has_google = bool(google_client_id) and not google_client_id.startswith('your-') and 'example' not in google_client_id
+        has_github = bool(github_client_id) and not github_client_id.startswith('your-') and 'example' not in github_client_id
         
-        if google_apps.count() > 1:
-            logger.warning(f"Multiple Google SocialApp entries found ({google_apps.count()}). OAuth may not work.")
-        if github_apps.count() > 1:
-            logger.warning(f"Multiple GitHub SocialApp entries found ({github_apps.count()}). OAuth may not work.")
+        # Log status for debugging
+        logger.info(f"OAuth status - Google: {has_google} (apps: {google_apps.count()}, env set: {bool(google_client_id)}) | GitHub: {has_github} (apps: {github_apps.count()}, env set: {bool(github_client_id)})")
             
     except Exception as e:
         logger.error(f"Error checking social apps: {e}")
