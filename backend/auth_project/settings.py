@@ -373,7 +373,14 @@ if not os.path.exists(LOGS_DIR):
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
+# CSRF Trusted Origins - include localhost and production domains
+csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://localhost:8000')
+# Auto-add Render domain if available
+if 'RENDER' in os.environ:
+    render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+    if render_hostname:
+        csrf_origins += f',https://{render_hostname}'
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',') if origin.strip()]
     
 # Initialize logger
 logger = logging.getLogger(__name__)
