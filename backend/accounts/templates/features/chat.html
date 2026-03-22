@@ -353,21 +353,58 @@
         }
 
         // Handle file upload preview
-        function handleFileSelect(event) {
+function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                const fileInfo = document.getElementById('file-info');
                 const maxSize = 10 * 1024 * 1024; // 10MB
-
                 if (file.size > maxSize) {
                     alert('File size cannot exceed 10MB');
                     event.target.value = '';
-                    fileInfo.textContent = '';
                     return;
                 }
 
-                fileInfo.textContent = `📎 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                // Show preview in message box
+                const preview = document.getElementById('file-preview');
+                const size = (file.size / 1024 / 1024).toFixed(1);
+                let icon = '📎';
+                let previewHtml = '';
+                
+                if (file.type.startsWith('image/')) {
+                    const url = URL.createObjectURL(file);
+                    icon = '🖼️';
+                    previewHtml = `<img src="${url}" class="w-12 h-12 object-cover rounded-lg shadow-md">`;
+                } else if (file.name.endsWith('.pdf')) {
+                    icon = '📄';
+                } else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+                    icon = '📝';
+                }
+
+                preview.innerHTML = `
+                    <div class="flex items-center gap-3 p-3 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 mb-3">
+                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-lg font-semibold flex-shrink-0">
+                            ${icon}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-sm truncate">${file.name}</div>
+                            <div class="text-xs text-gray-500">${size} MB</div>
+                        </div>
+                        <button type="button" onclick="clearFilePreview()" class="text-gray-400 hover:text-red-500 text-xl ml-2">&times;</button>
+                    </div>
+                `;
+                preview.classList.remove('hidden');
+                
+                // Update send button
+                const sendBtn = document.querySelector('button[type="submit"]');
+                sendBtn.innerHTML = '<span>Send + File</span> 📎';
             }
+        }
+
+        function clearFilePreview() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-preview').classList.add('hidden');
+            // Reset send button
+            const sendBtn = document.querySelector('button[type="submit"]');
+            sendBtn.innerHTML = '<span>Send</span> ✉️';
         }
 
         // Apply theme on page load
@@ -393,8 +430,9 @@
     <!-- Navbar -->
     <nav class="shadow-lg sticky top-0 z-50" style="background-color: var(--bg-secondary);">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+{% load static %}
     <div class="flex items-center space-x-2">
-    <span class="text-2xl float-3d">🚀</span>
+<img src="{% static 'image/WhatsApp Image 2025-11-05 at 13.35.52_c3e25622.jpg' %}" alt="UniSinq Logo" class="h-10 w-10 object-contain rounded-lg shadow-md float-3d" style="animation: float3D 4s ease-in-out infinite;">
     <h1 class="text-2xl font-bold" style="color: var(--bg-accent);">UniSinq</h1>
     </div>
     <div class="flex gap-6 items-center">
@@ -441,8 +479,8 @@
         <div id="messages-container" class="rounded-2xl p-6 mb-6 shadow-xl max-h-96 overflow-y-auto card-3d" style="background-color: var(--bg-soft); border: 1px solid #555;">
         {% if messages %}
         <div class="space-y-4">
-        {% for message in messages %}
-        {% load static %}
+{% load static %}
+{% for message in messages %}
         <div class="flex {% if message.sender == user %}justify-end{% else %}justify-start{% endif %}" data-message-id="{{ message.id }}">
         <div class="max-w-xs lg:max-w-md">
         <!-- Message bubble -->
@@ -509,22 +547,26 @@
 
         <!-- Message Form -->
         {% if is_connected %}
+        <!-- File Preview Area -->
+        <div id="file-preview" class="hidden mb-4 p-4 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+            <!-- Preview content populated by JS -->
+        </div>
+
         <form method="post" enctype="multipart/form-data" class="p-6 rounded-2xl shadow-xl" style="background-color: var(--bg-soft); border: 1px solid #555;">
             {% csrf_token %}
-        <!-- File upload -->
-        <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Attach file (optional)</label>
-                <input type="file" name="file" onchange="handleFileSelect(event)"
-                   class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/80">
-                <p id="file-info" class="text-xs text-gray-500 mt-1"></p>
-            </div>
-            <!-- Message input -->
-            <div class="flex gap-4">
-            <input type="text" name="content" placeholder="Type your message..."
-            class="flex-1 px-4 py-3 rounded-lg focus:outline-none" style="background-color: var(--bg-secondary); border: 1px solid #555; color: var(--text-primary);"
-            maxlength="500" oninput="handleInput()" onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.submit(); }">
-            <button type="submit" class="px-6 py-3 text-white rounded-lg font-semibold transition button-3d glow-3d">
-                    Send
+
+            <div class="flex gap-3 items-end">
+                <button type="button" onclick="document.getElementById('file-input').click()" class="p-3 rounded-xl hover:bg-gray-600 flex items-center transition-all duration-200 shadow-md hover:shadow-lg" style="background-color: var(--bg-secondary);" title="Attach file">
+                    📎
+                </button>
+                <input type="file" name="file" id="file-input" onchange="handleFileSelect(event)" class="hidden" accept="image/*,.pdf,.doc,.docx,.txt">
+                <input type="text" name="content" id="message-input" placeholder="Type your message..." 
+                       class="flex-1 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" 
+                       style="background-color: var(--bg-secondary); border: 1px solid #555; color: var(--text-primary); max-height: 120px;"
+                       maxlength="1000" oninput="handleInput()" onkeypress="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleSubmit(event);}">
+                <button type="submit" id="send-button" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-2 min-w-[100px] justify-center">
+                    <span>Send</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
             </div>
         </form>

@@ -52,6 +52,9 @@ urlpatterns = [
     path('reject-connection/<int:connection_id>/', views.reject_connection, name='reject_connection'),
     path('my-connections/', views.my_connections, name='my_connections'),
 
+    # File download route
+    path('download-file/<int:file_id>/', views.download_file, name='download_file'),
+
     # Catch-all route for homepage - must be last
     path('', views.main, name='main'),
 ]

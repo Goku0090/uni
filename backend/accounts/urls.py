@@ -138,4 +138,7 @@ urlpatterns = [
     # =============================================
     # All template routes removed for now
     # To re-enable, uncomment template_api imports and re-add these routes
+    
+    # Newsletter subscription
+    path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
 ]

@@ -330,9 +330,10 @@
         <div class="max-w-5xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <a href="{% url 'messages' %}" class="text-gray-600 hover:text-blue-600 transition">
-                        ←
-                    </a>
+<a href="{% url 'messages' %}" class="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+    <img src="{% static 'images/unisinq_logo_new.jpg' %}" alt="UniSinq Logo" class="h-12 w-12 object-contain rounded-lg shadow-md ring-2 ring-blue-100 group-hover:ring-blue-300 transition">
+    ←
+</a>
                     
                     <div class="flex items-center gap-4">
                         <div class="avatar">
@@ -346,19 +347,9 @@
                                     {{ other_user.username }}
                                 {% endif %}
                             </h2>
-                            <div class="flex items-center gap-2">
-                                {% if is_connected %}
-                                    <span class="inline-flex items-center gap-1 text-sm text-green-600">
-                                        <span class="w-2 h-2 bg-green-600 rounded-full"></span>
-                                        Connected
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex items-center gap-1 text-sm text-yellow-600">
-                                        <span class="w-2 h-2 bg-yellow-600 rounded-full"></span>
-                                        Not connected
-                                    </span>
-                                {% endif %}
-                            </div>
+
+<!-- Active contact status removed -->
+
                         </div>
                     </div>
                 </div>
@@ -487,8 +478,9 @@
                            onchange="handleFileSelect(event)"
                            accept="image/*,.pdf,.doc,.docx,.txt">
 
-                    <button type="button" onclick="document.getElementById('fileInput').click()" class="action-button" title="Attach file">
-                        📎
+class="bg-blue-500 hover:bg-blue-600 text-white w-10 h-10 rounded-lg shadow-lg flex items-center justify-center transition-all duration-200 hover:shadow-xl hover:scale-105" title="Attach file">
+    📎
+
                     </button>
 
                     <button type="button" onclick="sendMessage()" class="send-button" id="sendBtn">

@@ -254,6 +254,13 @@ class File(models.Model):
     def is_image(self):
         return self.file_type.startswith('image/')
 
+    @property
+    def file_size_mb(self):
+        """File size in MB, rounded to 1 decimal"""
+        if self.file_size == 0:
+            return 0
+        return round(self.file_size / (1024 * 1024), 1)
+
     def __str__(self):
         return self.filename
 
@@ -804,6 +811,8 @@ class TemplateRating(models.Model):
         ordering = ['-created_at']
 
 
+
+
 class TemplateUsageLog(models.Model):
     """Track when templates are used to create projects"""
 
@@ -817,6 +826,23 @@ class TemplateUsageLog(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class Newsletter(models.Model):
+    """Newsletter subscribers for "Stay Updated" section"""
+    
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    confirmed = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.email
+    
+    class Meta:
+        ordering = ['-subscribed_at']
+        verbose_name_plural = "Newsletter Subscribers"
 
 
 # ============================================================================
