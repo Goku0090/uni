@@ -19,5 +19,8 @@ python manage.py collectstatic --noinput --clear
 echo "========== Running migrations =========="
 python manage.py migrate
 
+echo "========== Setting up social apps =========="
+python manage.py setup_social_apps
+
 echo "========== Build Complete =========="
 echo "App is ready to start!"
