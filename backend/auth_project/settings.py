@@ -390,3 +390,4 @@ CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',') if 
 logger = logging.getLogger(__name__)
 
 # In development:
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
